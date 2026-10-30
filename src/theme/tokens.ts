@@ -30,8 +30,8 @@ export const tokens = {
   },
 
   font: {
-    /** Reference uses "Polysans Slim" (commercial). Archivo 300/400 is the free stand-in. */
-    sans: "'Archivo', 'Helvetica Neue', Arial, sans-serif",
+    /** Reference uses "Polysans Slim" (commercial). Inter Tight 300 has the same width ("DESIGN THAT" = 727px at 117px). */
+    sans: "'Inter Tight', 'Helvetica Neue', Arial, sans-serif",
     /** Handwritten "Agency" word next to the logo. */
     script: "'Homemade Apple', 'Caveat', cursive",
     weight: {
@@ -42,9 +42,9 @@ export const tokens = {
 
   /** Fluid type scale. Measured px at 1536px wide → vw. */
   type: {
-    display: { size: 'clamp(56px, 7.64vw, 128px)', lineHeight: 1, letterSpacing: '-0.01em' }, // 117px hero h1
-    h2: { size: 'clamp(40px, 5.5vw, 92px)', lineHeight: 1, letterSpacing: '-0.01em' }, // 84px section titles, CTA, footer
-    h3: { size: 'clamp(26px, 3.333vw, 56px)', lineHeight: 1, letterSpacing: '-0.005em' }, // 51px insights titles
+    display: { size: 'clamp(56px, 7.64vw, 128px)', lineHeight: 1, letterSpacing: '0' }, // 117px hero h1 (reference: letter-spacing normal)
+    h2: { size: 'clamp(40px, 5.5vw, 92px)', lineHeight: 1, letterSpacing: '0' }, // 84px section titles, CTA, footer
+    h3: { size: 'clamp(26px, 3.333vw, 56px)', lineHeight: 1, letterSpacing: '0' }, // 51px insights titles
     lead: { size: 'clamp(20px, 2.222vw, 36px)', lineHeight: 1.1 }, // 34px awards paragraph
     body: { size: 'clamp(16px, 1.3vw, 22px)', lineHeight: 1.25 }, // testimonials
     nav: { size: '14px', lineHeight: '0.9', letterSpacing: '0.04em' },
