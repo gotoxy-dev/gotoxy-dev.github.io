@@ -66,7 +66,7 @@
     line-height: 0.96;
   }
 }
-/* reference ≤479px: margin-bottom 110px, LET'S TALK 64px, arrow 44px */
+/* reference ≤479px (`.here-to-talk-sec.mobile`): margin-bottom 110px, headline 32px, LET'S TALK 32px with a 24px arrow */
 @media (max-width: 479px) {
   .section {
     margin-bottom: 110px;
@@ -74,12 +74,18 @@
   .eyebrow {
     margin-bottom: 40px;
   }
-  .button {
-    font-size: 64px;
+  .headline {
+    font-size: 32px;
     line-height: 1;
+    margin-bottom: 40px;
+  }
+  .button {
+    font-size: 32px;
+    line-height: 1;
+    gap: 10px;
   }
   .button svg {
-    width: 44px;
-    height: 44px;
+    width: 24px;
+    height: 24px;
   }
 }

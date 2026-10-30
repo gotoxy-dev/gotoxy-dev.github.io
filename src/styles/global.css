@@ -224,8 +224,12 @@ ul {
     opacity var(--motion-duration-d400) linear;
 }
 
-/* reference ≤479px: h5/h6 captions 12px / 140% */
+/* reference ≤479px: h2 48px / 96%, h5/h6 captions 12px / 140% */
 @media (max-width: 479px) {
+  .t-h2 {
+    font-size: 48px;
+    line-height: 0.96;
+  }
   .t-caption {
     font-size: 12px;
     line-height: 1.4;

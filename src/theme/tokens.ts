@@ -42,10 +42,10 @@ export const tokens = {
 
   /** Fluid type scale. Measured px at 1536px wide → vw. */
   type: {
-    display: { size: 'clamp(64px, 7.64vw, 128px)', lineHeight: 1, letterSpacing: '0' }, // 117px hero h1; 64px on phones (reference h1 ≤479px)
-    h2: { size: 'clamp(48px, 5.5vw, 92px)', lineHeight: 1, letterSpacing: '0' }, // 84px section titles, CTA, footer; 48px on phones
+    display: { size: 'clamp(56px, 7.64vw, 128px)', lineHeight: 1, letterSpacing: '0' }, // 117px hero h1, 58.7px on tablets; phones override to 64px max
+    h2: { size: 'clamp(42px, 5.5vw, 92px)', lineHeight: 1, letterSpacing: '0' }, // 84px section titles, CTA, footer; 42px on tablets, 48px on phones
     h3: { size: 'clamp(32px, 3.333vw, 56px)', lineHeight: 1, letterSpacing: '0' }, // 51px insights titles; 32px on phones/tablets
-    lead: { size: 'clamp(20px, 2.222vw, 36px)', lineHeight: 1.1 }, // 34px awards paragraph
+    lead: { size: 'clamp(32px, 2.222vw, 36px)', lineHeight: 1.1 }, // 34px awards paragraph; 32px on phones/tablets (reference h3)
     body: { size: 'clamp(16px, 1.3vw, 22px)', lineHeight: 1.25 }, // testimonials
     nav: { size: '14px', lineHeight: '0.9', letterSpacing: '0.04em' },
     small: { size: '14px', lineHeight: '20px', letterSpacing: '0' },

@@ -84,7 +84,24 @@
     font-size: 18px;
   }
 }
+/* reference phones: BACK TO TOP above the links, link arrows always visible, GET IN TOUCH 64px */
 @media (max-width: 479px) {
+  .top {
+    flex-direction: column-reverse;
+    align-items: flex-start;
+    gap: 40px;
+  }
+  .socials :global(.alink) {
+    transform: none;
+  }
+  .socials :global(.alink-arrow) {
+    width: var(--layout-linkArrow);
+    opacity: 1;
+  }
+  .touch {
+    font-size: 64px;
+    line-height: 1;
+  }
   .email {
     font-size: 16px;
   }

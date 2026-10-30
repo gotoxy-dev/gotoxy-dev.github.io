@@ -60,29 +60,19 @@
 .langActive {
   color: var(--color-textStrong);
 }
+/* reference phones: "MENU" text trigger, 14px caps */
 .burger {
   pointer-events: auto;
-  display: none;
-  width: 40px;
-  height: 40px;
   position: relative;
+  z-index: 1;
+  display: none;
+  padding: 8px 0;
+  font-size: var(--type-nav-size);
+  line-height: var(--type-nav-lineHeight);
+  letter-spacing: var(--type-nav-letterSpacing);
+  text-transform: uppercase;
+  color: var(--color-textStrong);
 }
-.burger span {
-  position: absolute;
-  left: 8px;
-  right: 8px;
-  height: 1.5px;
-  background: var(--color-textStrong);
-  transition:
-    transform var(--motion-duration-d400) var(--motion-ease-outSine),
-    opacity var(--motion-duration-d300) linear;
-}
-.burger span:nth-child(1) { top: 14px; }
-.burger span:nth-child(2) { top: 20px; }
-.burger span:nth-child(3) { top: 26px; }
-.burger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
-.burger.open span:nth-child(2) { opacity: 0; }
-.burger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
 
 /*
  * Mobile menu (reference "mob-menu-OPEN/CLOSE"): the panel slides in from
@@ -135,7 +125,9 @@
   transition-delay: calc(var(--motion-duration-d400) + var(--i) * var(--motion-duration-d100));
 }
 
+/* reference ≤991px: 76px navbar, text menu trigger */
 @media (max-width: 991px) {
+  .nav { height: 76px; }
   .menu { display: none; }
   .burger { display: block; }
 }

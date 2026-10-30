@@ -54,15 +54,14 @@ export function Navbar() {
             ))}
           </nav>
 
+          {/* reference phones: a text "MENU" trigger instead of an icon */}
           <button
             className={`${styles.burger} ${open ? styles.open : ''}`}
-            aria-label="Toggle menu"
+            aria-label={lang === 'es' ? 'Abrir o cerrar el menú' : 'Toggle menu'}
             aria-expanded={open}
             onClick={() => setOpen((v) => !v)}
           >
-            <span />
-            <span />
-            <span />
+            {open ? (lang === 'es' ? 'Cerrar' : 'Close') : (lang === 'es' ? 'Menú' : 'Menu')}
           </button>
         </div>
       </header>

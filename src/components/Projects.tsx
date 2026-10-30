@@ -77,6 +77,10 @@ function ProjectCard({ project }: { project: Project }) {
             </span>
           ))}
         </span>
+        {/* reference phones: tags give way to a ↘ arrow */}
+        <svg className={styles.arrow} viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.2" aria-hidden="true">
+          <path d="M2 2l10 10M12 4v8H4" />
+        </svg>
       </div>
 
       <div className={styles.mediaWrap} data-scrub="media">

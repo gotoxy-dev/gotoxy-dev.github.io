@@ -127,37 +127,90 @@
   }
 }
 
+/*
+ * Reference phone layout (`.what-our-clients-sec.mobile`): title, then the rows
+ * (name + role + READ, company on its own line), then a full-width "SEE MORE ON"
+ * pill, then the client logos stacked vertically.
+ */
 @media (max-width: 767px) {
-  .head {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 24px;
-  }
-  .title {
-    overflow: hidden;
-  }
-  .summary,
-  .bodyGrid {
-    grid-template-columns: 1fr auto;
-  }
-  .company {
-    display: none;
-  }
-  .scope {
-    grid-column: 1 / -1;
-  }
-  .quote {
-    grid-column: 1 / -1;
-  }
-  /* reference ≤479px: section padding 70px 20px 80px, title margin-bottom 30px */
   .section {
     padding-top: 70px;
   }
+  .section > :global(.container) {
+    display: flex;
+    flex-direction: column;
+  }
   .head {
+    display: contents;
+  }
+  .title {
+    order: 0;
     margin-bottom: 30px;
+    overflow: hidden;
+  }
+  .rows {
+    order: 1;
+  }
+  .seeMore {
+    order: 2;
+    justify-content: center;
+    width: 100%;
+    margin-top: 40px;
+    padding: 16px 20px;
+    border: 1px solid var(--color-pill);
+    border-radius: var(--radius-pill);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    color: var(--color-text);
+    transform: none;
+  }
+  .seeMore :global(.alink-arrow) {
+    display: none;
+  }
+  .summary {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      'author btn'
+      'company company';
+    row-gap: 12px;
+    padding: 16px 0;
+  }
+  .author {
+    grid-area: author;
+  }
+  .readBtn {
+    grid-area: btn;
+    align-self: start;
+  }
+  .company {
+    grid-area: company;
+  }
+  .bodyGrid {
+    grid-template-columns: 1fr;
+    padding: 24px 0 40px;
+  }
+  .scope,
+  .quote {
+    grid-column: 1 / -1;
   }
   .marquee {
-    padding-block: 40px;
+    padding-block: 60px 20px;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .track {
+    flex-direction: column;
+    align-items: center;
+    gap: 36px;
+    width: 100%;
+    animation: none;
+  }
+  .logoItem {
+    padding: 0;
+  }
+  /* the duplicated set used by the desktop loop */
+  .logoItem:nth-child(n + 9) {
+    display: none;
   }
 }
 /* reference ≤991px: padding-top 60px */

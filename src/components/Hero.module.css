@@ -64,15 +64,17 @@
 /* reference ≤479px: padding 91px 20px 64px, canvas 100px below the text */
 @media (max-width: 767px) {
   .hero {
-    min-height: 100svh;
+    min-height: 0;
     padding-top: 91px;
     padding-bottom: 64px;
   }
+  /* reference `.hero-bg` on phones: 334px tall box 100px from the top, object pushed to the right edge */
   .canvasWrap {
     top: 100px;
-    left: -40vw;
-    width: 180vw;
-    height: 90vw;
+    left: auto;
+    right: -34vw;
+    width: 124vw;
+    height: 334px;
   }
   .row {
     flex-direction: column;
@@ -80,9 +82,9 @@
   .row > span {
     white-space: normal;
   }
-  /* reference phones: 64px; capped so the longest Spanish word ("CONECTAMOS") fits the 20px gutters */
+  /* reference phones: 64px; capped so the longest Spanish word ("CONSTRUIMOS") fits the 20px gutters */
   .headline {
-    font-size: min(var(--type-display-size), 12.2vw);
+    font-size: min(64px, 12.2vw);
   }
   .row.right {
     align-items: flex-start;
