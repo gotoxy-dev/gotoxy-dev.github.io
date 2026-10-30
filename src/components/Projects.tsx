@@ -12,7 +12,7 @@ export function Projects() {
   return (
     <section className={styles.section} id="projects">
       <div className={`container ${styles.list}`}>
-        {projects.map((p) => (
+        {projects.filter((p) => p.featured).map((p) => (
           <ProjectCard key={p.id} project={p} />
         ))}
       </div>

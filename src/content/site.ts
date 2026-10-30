@@ -22,6 +22,8 @@ export interface Project {
   /** poster shown before the video is ready */
   poster: string
   href: string
+  /** Shown as a card on the home (the reference shows four); every case keeps its page and next-link. */
+  featured?: boolean
 }
 
 export interface Testimonial {
@@ -155,6 +157,7 @@ export const projects: Project[] = [
     video: '/assets/videos/project-01.webm',
     poster: '/assets/videos/project-01.jpg',
     href: '/projects/japon-in-box',
+    featured: true,
   },
   {
     id: 'cam',
@@ -163,6 +166,7 @@ export const projects: Project[] = [
     video: '/assets/videos/project-02.webm',
     poster: '/assets/videos/project-02.jpg',
     href: '/projects/instituto-cam',
+    featured: true,
   },
   {
     id: 'animageneris',
@@ -179,6 +183,7 @@ export const projects: Project[] = [
     video: '/assets/videos/project-04.webm',
     poster: '/assets/videos/project-04.jpg',
     href: '/projects/ai-agents-operations',
+    featured: true,
   },
   {
     id: 'inspection',
@@ -187,6 +192,7 @@ export const projects: Project[] = [
     video: '/assets/videos/project-05.webm',
     poster: '/assets/videos/project-05.jpg',
     href: '/projects/site-inspection-reports',
+    featured: true,
   },
   {
     id: 'speech',
