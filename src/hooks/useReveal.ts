@@ -14,8 +14,9 @@ export interface RevealOptions {
  * mirroring a Webflow IX2 "scroll into view" action list.
  *
  *   data-reveal="y"       translateY(from) → 0
+ *   data-reveal="x"       translateX(from) → 0
  *   data-reveal="fade"    opacity 0 → 1
- *   data-reveal="y-fade"  both
+ *   data-reveal="y-fade" / "x-fade"  move + fade
  *   data-reveal="width"   width 0% → 100%
  *
  * Per-element overrides (all optional):
@@ -59,7 +60,11 @@ export function useReveal<T extends HTMLElement>(options?: RevealOptions) {
           gsap.set(el, { y: d.revealFrom ?? tokens.motion.distance.block })
           tl.to(el, { y: 0, duration: moveDur, ease: moveEase }, moveDelay)
         }
-        if (kind === 'fade' || kind === 'y-fade') {
+        if (kind === 'x' || kind === 'x-fade') {
+          gsap.set(el, { x: d.revealFrom ?? tokens.motion.distance.block })
+          tl.to(el, { x: 0, duration: moveDur, ease: moveEase }, moveDelay)
+        }
+        if (kind === 'fade' || kind === 'y-fade' || kind === 'x-fade') {
           gsap.set(el, { opacity: 0 })
           tl.to(
             el,

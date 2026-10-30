@@ -42,9 +42,9 @@ export const tokens = {
 
   /** Fluid type scale. Measured px at 1536px wide → vw. */
   type: {
-    display: { size: 'clamp(56px, 7.64vw, 128px)', lineHeight: 1, letterSpacing: '0' }, // 117px hero h1 (reference: letter-spacing normal)
-    h2: { size: 'clamp(40px, 5.5vw, 92px)', lineHeight: 1, letterSpacing: '0' }, // 84px section titles, CTA, footer
-    h3: { size: 'clamp(26px, 3.333vw, 56px)', lineHeight: 1, letterSpacing: '0' }, // 51px insights titles
+    display: { size: 'clamp(64px, 7.64vw, 128px)', lineHeight: 1, letterSpacing: '0' }, // 117px hero h1; 64px on phones (reference h1 ≤479px)
+    h2: { size: 'clamp(48px, 5.5vw, 92px)', lineHeight: 1, letterSpacing: '0' }, // 84px section titles, CTA, footer; 48px on phones
+    h3: { size: 'clamp(32px, 3.333vw, 56px)', lineHeight: 1, letterSpacing: '0' }, // 51px insights titles; 32px on phones/tablets
     lead: { size: 'clamp(20px, 2.222vw, 36px)', lineHeight: 1.1 }, // 34px awards paragraph
     body: { size: 'clamp(16px, 1.3vw, 22px)', lineHeight: 1.25 }, // testimonials
     nav: { size: '14px', lineHeight: '0.9', letterSpacing: '0.04em' },
@@ -60,6 +60,7 @@ export const tokens = {
     containerMax: 'none',
     gutter: 'clamp(20px, 3.906vw, 60px)',
     navHeight: '88px',
+    navHeightMobile: '51px', // reference `.navbar-wrapper` ≤479px
     /** Trailing arrow of small links (reference `.footer-arrow`) */
     linkArrow: '11px',
     hero: {

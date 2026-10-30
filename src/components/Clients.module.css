@@ -149,10 +149,20 @@
   .quote {
     grid-column: 1 / -1;
   }
+  /* reference ≤479px: section padding 70px 20px 80px, title margin-bottom 30px */
   .section {
     padding-top: 70px;
   }
+  .head {
+    margin-bottom: 30px;
+  }
   .marquee {
-    padding-block: 60px;
+    padding-block: 40px;
+  }
+}
+/* reference ≤991px: padding-top 60px */
+@media (min-width: 768px) and (max-width: 991px) {
+  .section {
+    padding-top: 60px;
   }
 }

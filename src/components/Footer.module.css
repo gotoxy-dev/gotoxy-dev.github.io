@@ -75,6 +75,27 @@
   font-size: 16px;
   text-transform: uppercase;
 }
+/* reference ≤991px: links line-height 220%, email 18px; ≤479px: email 16px, disclaimer margin 15px */
+@media (max-width: 991px) {
+  .socials {
+    line-height: 2.2;
+  }
+  .email {
+    font-size: 18px;
+  }
+}
+@media (max-width: 479px) {
+  .email {
+    font-size: 16px;
+  }
+  .bottom {
+    margin-top: 15px;
+    padding: 15px 0;
+  }
+  .touchWrap {
+    margin-top: 40px;
+  }
+}
 .bottom {
   margin-top: var(--layout-footer-bottomTop);
   padding: 18px 0;

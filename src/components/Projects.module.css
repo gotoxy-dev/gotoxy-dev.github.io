@@ -61,10 +61,28 @@
   opacity: 0;
 }
 
+/* reference ≤991px: card margin-bottom 60px, padding-top 12px, title row margin 12px */
+@media (max-width: 991px) {
+  .card {
+    padding-top: 12px;
+    margin-bottom: 60px;
+  }
+  .lineWrap,
+  .head {
+    margin-bottom: 12px;
+  }
+}
+/* reference ≤479px: padding-top 14px, 17px gaps, list margin-bottom 80px */
 @media (max-width: 767px) {
+  .section {
+    padding-bottom: 20px;
+  }
   .card {
     padding-top: 14px;
     margin-bottom: 60px;
+  }
+  .lineWrap {
+    margin-bottom: 17px;
   }
   .head {
     flex-direction: column;

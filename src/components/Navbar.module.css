@@ -139,3 +139,9 @@
   .menu { display: none; }
   .burger { display: block; }
 }
+/* reference ≤479px: navbar 51px tall, 20px side padding */
+@media (max-width: 479px) {
+  .nav {
+    height: var(--layout-navHeightMobile);
+  }
+}

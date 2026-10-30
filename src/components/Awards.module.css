@@ -158,20 +158,34 @@
   display: block;
 }
 
+/* reference ≤991px: padding 100px top/bottom, list margin 60px/30px */
 @media (max-width: 991px) {
   .section {
-    padding: 40px 0 100px;
+    padding: 100px 0;
   }
   .intro {
     width: 100%;
   }
   .rows {
-    margin: 40px 0 0;
+    margin: 60px 0 30px;
   }
   .preview {
     display: none;
   }
   .entry {
     padding-left: 0;
+  }
+}
+/* reference ≤479px: padding 40px 20px 100px, list margin 40px 0 0, rows 20px padding */
+@media (max-width: 479px) {
+  .section {
+    padding: 40px 0 100px;
+  }
+  .rows {
+    margin: 40px 0 0;
+  }
+  .summary {
+    min-height: 0;
+    padding: 20px 0;
   }
 }
