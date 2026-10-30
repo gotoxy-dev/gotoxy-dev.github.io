@@ -201,12 +201,16 @@
   .track {
     flex-direction: column;
     align-items: center;
-    gap: 36px;
+    gap: 60px;
     width: 100%;
     animation: none;
   }
   .logoItem {
     padding: 0;
+  }
+  /* reference phones: logos ~24px tall, stacked */
+  .logoItem img {
+    height: 26px;
   }
   /* the duplicated set used by the desktop loop */
   .logoItem:nth-child(n + 9) {

@@ -165,4 +165,8 @@
   .text {
     margin: 0;
   }
+  /* reference phones: no trailing arrow under the tag */
+  .arrow {
+    display: none;
+  }
 }
