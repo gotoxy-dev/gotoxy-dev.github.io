@@ -6,12 +6,12 @@
   line-height: 1;
 }
 .mark {
-  height: 26px;
-  width: 26px;
+  height: 32px;
+  width: 32px;
 }
 .word {
   font-family: var(--font-sans);
-  font-size: 22px;
+  font-size: 26px;
   font-weight: var(--font-weight-regular);
   letter-spacing: -0.02em;
   text-transform: lowercase;

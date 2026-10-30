@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { hero } from '@/content/site'
+import { useContent } from '@/i18n'
 import { useReveal } from '@/hooks/useReveal'
 import { tokens } from '@/theme/tokens'
 import { ImageSequence } from './ImageSequence'
@@ -9,6 +9,7 @@ import styles from './Hero.module.css'
 const LINE_DELAYS = ['0ms', tokens.motion.duration.d100, tokens.motion.duration.d100, tokens.motion.duration.d200]
 
 export function Hero() {
+  const { hero } = useContent()
   const ref = useReveal<HTMLElement>({ immediate: true })
   const [ready, setReady] = useState(false)
   const onReady = useCallback(() => setReady(true), [])

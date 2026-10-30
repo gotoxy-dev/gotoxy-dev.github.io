@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { awards } from '@/content/site'
+import { useContent } from '@/i18n'
 import { useReveal } from '@/hooks/useReveal'
 import { tokens } from '@/theme/tokens'
 import styles from './Awards.module.css'
@@ -20,6 +20,7 @@ const ArrowIcon = () => (
 )
 
 export function Awards() {
+  const { awards } = useContent()
   const ref = useReveal<HTMLElement>({ offset: 25 })
   const [openId, setOpenId] = useState<string | null>(null)
 

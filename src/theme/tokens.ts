@@ -15,7 +15,7 @@ export const tokens = {
     bg: '#000000',
     surface: '#0a0a0a',
     text: '#d2cfcf', // rgb(210,207,207) — headlines & body
-    textStrong: '#ffffff', // nav links
+    textStrong: '#e8e6e3', // nav links (reference rgb(232,230,227))
     textMuted: '#969494', // rgb(150,148,148) — captions, tags, roles
     textDim: '#575757', // secondary hairlines / footer small print
     line: '#333333', // rgb(51,51,51) — list hairlines
@@ -49,7 +49,9 @@ export const tokens = {
     body: { size: 'clamp(16px, 1.3vw, 22px)', lineHeight: 1.25 }, // testimonials
     nav: { size: '14px', lineHeight: '0.9', letterSpacing: '0.04em' },
     small: { size: '14px', lineHeight: '20px', letterSpacing: '0' },
-    caption: { size: '14px', lineHeight: '1.6', letterSpacing: '0.02em' }, // hero caption, CTA eyebrow, "+50 more"
+    caption: { size: '14px', lineHeight: '1.6', letterSpacing: '0' }, // hero caption, CTA eyebrow (reference: normal tracking)
+    link: { size: '14px', lineHeight: '28px', letterSpacing: '0' }, // footer links
+    more: { size: '1.389vw', lineHeight: '1.2', letterSpacing: '0' }, // "More insights" link (21.33px)
     tag: { size: '11px', lineHeight: '1.5', letterSpacing: '0.04em' },
   },
 

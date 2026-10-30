@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { projects, type Project } from '@/content/site'
+import type { Project } from '@/content/site'
+import { useContent } from '@/i18n'
 import { useReveal } from '@/hooks/useReveal'
 import { useInView } from '@/hooks/useInView'
 import { useScrub } from '@/hooks/useScrub'
@@ -7,6 +8,7 @@ import { tokens } from '@/theme/tokens'
 import styles from './Projects.module.css'
 
 export function Projects() {
+  const { projects } = useContent()
   return (
     <section className={styles.section} id="projects">
       <div className={`container ${styles.list}`}>

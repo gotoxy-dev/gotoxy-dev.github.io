@@ -8,12 +8,13 @@
   justify-content: space-between;
   align-items: flex-start;
 }
+/* reference `.footer-link-text`: 14px / 28px, normal tracking */
 .socials {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  font-size: 12px;
-  letter-spacing: 0.04em;
+  font-size: var(--type-link-size);
+  line-height: var(--type-link-lineHeight);
+  letter-spacing: var(--type-link-letterSpacing);
   text-transform: uppercase;
 }
 .backTop {

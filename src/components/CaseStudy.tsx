@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Link } from '@tanstack/react-router'
-import { caseStudies, type CaseStudy as CaseStudyContent } from '@/content/site'
+import type { CaseStudy as CaseStudyContent } from '@/content/site'
+import { useLanguage } from '@/i18n'
 import { useReveal } from '@/hooks/useReveal'
 import { useScrub } from '@/hooks/useScrub'
 import { tokens } from '@/theme/tokens'
@@ -64,6 +65,8 @@ function buildCaseScrub(tl: gsap.core.Timeline, root: HTMLElement) {
 }
 
 export function CaseStudy({ study }: { study: CaseStudyContent }) {
+  const { content: { caseStudies }, lang } = useLanguage()
+  const nextLabel = lang === 'es' ? 'Siguiente proyecto' : 'Next project'
   const revealRef = useReveal<HTMLDivElement>({ immediate: true })
   const scrubRef = useScrub<HTMLDivElement>(buildCaseScrub, {
     start: 'top top',
@@ -86,7 +89,7 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
 
   return (
     <div ref={setRefs} className={styles.root}>
-      <Link to="/" className={styles.close} aria-label="Close case study" {...fade}>
+      <Link to="/" className={styles.close} aria-label={lang === 'es' ? 'Cerrar caso' : 'Close case study'} {...fade}>
         <CloseIcon />
       </Link>
 
@@ -154,7 +157,7 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
           {next && (
             <div className={styles.pageLink}>
               <Link to="/projects/$slug" params={{ slug: next.slug }} className={styles.caseLink}>
-                Next project
+                {nextLabel}
                 <ArrowIcon />
               </Link>
             </div>
@@ -221,7 +224,7 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
         ))}
         {next && (
           <Link to="/projects/$slug" params={{ slug: next.slug }} className={styles.button}>
-            Next project
+            {nextLabel}
           </Link>
         )}
       </div>

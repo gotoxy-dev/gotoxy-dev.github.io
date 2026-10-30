@@ -1,4 +1,4 @@
-import { footer } from '@/content/site'
+import { useContent } from '@/i18n'
 import { useReveal } from '@/hooks/useReveal'
 import { tokens } from '@/theme/tokens'
 import styles from './Footer.module.css'
@@ -20,6 +20,7 @@ const ArrowUp = () => (
 const external = (href: string) => (href.startsWith('http') ? { target: '_blank', rel: 'noreferrer' } : {})
 
 export function Footer() {
+  const { footer } = useContent()
   // "p-scroll-in": text blocks move y 2vw → 0 in 600ms outCirc once 50% in view
   const ref = useReveal<HTMLElement>({ offset: 50 })
 

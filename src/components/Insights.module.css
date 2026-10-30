@@ -16,10 +16,12 @@
   text-transform: uppercase;
   font-weight: var(--font-weight-light);
 }
+/* reference "MORE INSIGHTS": 1.39vw, muted */
 .more {
-  color: var(--color-text);
+  color: var(--color-textMuted);
   text-transform: uppercase;
-  font-size: var(--type-small-size);
+  font-size: var(--type-more-size);
+  line-height: var(--type-more-lineHeight);
 }
 .list {
   border-top: 1px solid var(--color-lineStrong);

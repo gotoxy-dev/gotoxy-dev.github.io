@@ -15,7 +15,7 @@ Landing de **gotoxy** (software a medida, integraciones y automatización con IA
 
 ## Reglas de arquitectura (no romper)
 1. **Tokens centralizados**: `src/theme/tokens.ts` es la única fuente de colores, tipografías, escala, spacing, easings, duraciones, z-index y breakpoints. `applyTheme()` los inyecta como CSS vars (`--color-text`, `--type-h2-size`, `--motion-ease-expo`…). **Nunca** hardcodear colores/tamaños en componentes o CSS; agregar el token y usar la var.
-2. **Contenido centralizado**: `src/content/site.ts` contiene todo el texto, links y rutas de media de cada sección, tipado. Los componentes solo consumen esos objetos.
+2. **Contenido centralizado y bilingüe**: `src/content/site.ts` (EN) y `src/content/site.es.ts` (ES, voseo como gotoxy.dev) contienen todo el texto, links y rutas de media de cada sección con la misma forma (`SiteContent`). Los componentes lo leen con `useContent()` / `useLanguage()` de `src/i18n.tsx` (idioma persistido en localStorage, selector ES | EN en el Navbar). Al cambiar un texto, cambiarlo en los dos archivos.
 3. **Rutas**: `src/routes/` (file-based). `src/routeTree.gen.ts` lo genera el plugin de TanStack en dev/build — no editarlo a mano.
 4. **Estilos**: CSS Modules por componente (`X.module.css`). Clases globales compartidas (`.container`, `.pill`, `.crop`, `.hairline`, `.ulink`, `.t-*`) viven en `src/styles/global.css`; dentro de un módulo se referencian con `:global(.pill)`.
 5. **Animaciones**: `src/hooks/useReveal.ts` (GSAP + ScrollTrigger) anima descendientes con `data-reveal="line|fade|scale-x"`; el texto que hace slide-up va envuelto en `<span class="crop">`. Acordeones y expansiones usan `grid-template-rows/columns` animadas en CSS. Respetar `prefers-reduced-motion`.
@@ -25,7 +25,6 @@ Landing de **gotoxy** (software a medida, integraciones y automatización con IA
 `Navbar` · `Hero` (+ `ImageSequence` canvas: intro + mouse-X) · `Projects` (video autoplay solo en viewport) · `Clients` (acordeones + marquee) · `Awards` (acordeones + imagen sticky) · `Cta` · `Insights` (hover expande thumbnail) · `Footer` · `Logo`.
 
 ## Pendiente / ideas de continuación
-- Versión en español (gotoxy.dev es bilingüe EN/ES; esta landing es EN).
 - Reemplazar los reels generados por grabaciones reales de cada producto; convertir WebM → MP4 cuando haya ffmpeg (Safari < 17).
 - Página `/our-story` si hace falta.
 - Opcional: smooth scroll (Lenis), preloader, formulario de contacto.

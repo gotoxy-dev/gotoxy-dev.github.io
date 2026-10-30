@@ -43,6 +43,23 @@
   letter-spacing: var(--type-nav-letterSpacing);
   text-transform: uppercase;
 }
+.langs {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: 8px;
+}
+.lang {
+  font-size: var(--type-nav-size);
+  line-height: var(--type-nav-lineHeight);
+  letter-spacing: var(--type-nav-letterSpacing);
+  color: var(--color-textMuted);
+  transition: color var(--motion-duration-d300) linear;
+}
+.lang:hover,
+.langActive {
+  color: var(--color-textStrong);
+}
 .burger {
   pointer-events: auto;
   display: none;

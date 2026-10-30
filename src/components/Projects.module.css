@@ -28,7 +28,7 @@
   font-size: var(--type-small-size);
   line-height: var(--type-small-lineHeight);
   text-transform: uppercase;
-  letter-spacing: 0.02em;
+  letter-spacing: 0;
 }
 .tags {
   display: flex;

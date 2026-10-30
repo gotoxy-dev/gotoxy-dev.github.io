@@ -31,6 +31,6 @@ Instagram: https://www.instagram.com/gotoxy.dev/
 
 - Name: gotoxy (from the Turbo Pascal `gotoxy()` call that moves the cursor to an exact coordinate).
 - Location: Rosario, Santa Fe, Argentina.
-- Languages: Spanish, English.
+- Languages: Spanish, English. The site has an ES | EN switch; content is identical in both.
 - Website: https://gotoxy.dev
 - Sitemap: https://gotoxy.dev/sitemap.xml

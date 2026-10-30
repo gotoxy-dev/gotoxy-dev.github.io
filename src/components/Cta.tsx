@@ -1,4 +1,4 @@
-import { cta } from '@/content/site'
+import { useContent } from '@/i18n'
 import { useReveal } from '@/hooks/useReveal'
 import { tokens } from '@/theme/tokens'
 import styles from './Cta.module.css'
@@ -7,6 +7,7 @@ const { duration, distance } = tokens.motion
 const stagger = (i: number) => `${i * parseFloat(duration.d100)}ms`
 
 export function Cta() {
+  const { cta } = useContent()
   const sectionRef = useReveal<HTMLElement>({ offset: 25 })
   const eyebrowRef = useReveal<HTMLParagraphElement>({ offset: 33 })
   const headlineRef = useReveal<HTMLHeadingElement>({ offset: 33 })

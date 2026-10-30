@@ -1,4 +1,4 @@
-import { insights } from '@/content/site'
+import { useContent } from '@/i18n'
 import { useReveal } from '@/hooks/useReveal'
 import { tokens } from '@/theme/tokens'
 import styles from './Insights.module.css'
@@ -6,6 +6,7 @@ import styles from './Insights.module.css'
 const { duration, distance } = tokens.motion
 
 export function Insights() {
+  const { insights } = useContent()
   const ref = useReveal<HTMLElement>({ offset: 25 })
 
   return (

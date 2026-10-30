@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link } from '@tanstack/react-router'
-import { nav } from '@/content/site'
+import { useLanguage, type Lang } from '@/i18n'
 import { Logo } from './Logo'
 import styles from './Navbar.module.css'
 
+const LANGS: Lang[] = ['es', 'en']
+
 export function Navbar() {
+  const { content: { nav }, lang, setLang } = useLanguage()
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
@@ -25,6 +28,20 @@ export function Navbar() {
           </Link>
 
           <nav className={styles.menu} aria-label="Primary">
+            {/* language switch, as on gotoxy.dev */}
+            <span className={styles.langs} role="group" aria-label="Language">
+              {LANGS.map((l) => (
+                <button
+                  key={l}
+                  type="button"
+                  className={`${styles.lang} ${lang === l ? styles.langActive : ''}`}
+                  aria-pressed={lang === l}
+                  onClick={() => setLang(l)}
+                >
+                  {l.toUpperCase()}
+                </button>
+              ))}
+            </span>
             {items.map((l) => (
               <a
                 key={l.label}
@@ -51,6 +68,13 @@ export function Navbar() {
       </header>
 
       <div className={`${styles.overlay} ${open ? styles.open : ''}`} aria-hidden={!open}>
+        <span className={styles.langs}>
+          {LANGS.map((l) => (
+            <button key={l} type="button" className={`${styles.lang} ${lang === l ? styles.langActive : ''}`} aria-pressed={lang === l} onClick={() => setLang(l)}>
+              {l.toUpperCase()}
+            </button>
+          ))}
+        </span>
         {items.map((l, i) => (
           <a
             key={l.label}

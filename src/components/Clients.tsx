@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { clients, type Testimonial } from '@/content/site'
+import type { Testimonial } from '@/content/site'
+import { useContent } from '@/i18n'
 import { useReveal } from '@/hooks/useReveal'
 import { tokens } from '@/theme/tokens'
 import styles from './Clients.module.css'
@@ -10,6 +11,7 @@ const { duration, distance } = tokens.motion
 const SEE_MORE_DELAY = `${parseFloat(duration.d300) + parseFloat(duration.d500)}ms`
 
 export function Clients() {
+  const { clients } = useContent()
   const sectionRef = useReveal<HTMLElement>({ offset: 15 })
   const titleRef = useReveal<HTMLHeadingElement>({ offset: 33 })
   const [openId, setOpenId] = useState<string | null>(null)
@@ -100,6 +102,7 @@ function ArrowUpRight() {
  * READ / CLOSE buttons swap. Only one item is open at a time.
  */
 function TestimonialRow({ item, open, onToggle }: { item: Testimonial; open: boolean; onToggle: () => void }) {
+  const { clients } = useContent()
   return (
     <div className={`${styles.row} ${open ? styles.open : ''}`}>
       <button className={`${styles.summary} t-small`} onClick={onToggle} aria-expanded={open}>

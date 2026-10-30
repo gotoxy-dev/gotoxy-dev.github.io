@@ -356,7 +356,7 @@ export const footer = {
   copyright: brand.copyright,
 }
 
-const caseMedia = (slug: string, overrides: Partial<CaseStudy['media']> = {}) => ({
+export const caseMedia = (slug: string, overrides: Partial<CaseStudy['media']> = {}) => ({
   background: `/assets/cases/${slug}/page-1.jpg`,
   device: `/assets/cases/${slug}/device.png`,
   video: `/assets/cases/${slug}/reel.webm`,
@@ -597,4 +597,5 @@ export const caseStudies: CaseStudy[] = [
 ]
 
 export const site = { brand, nav, hero, projects, clients, awards, cta, insights, footer, caseStudies }
+export type SiteContent = typeof site
 export default site

@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import { brand } from '@/content/site'
+import { useLanguage } from '@/i18n'
 import { homeJsonLd, useSeo } from '@/seo'
 import { Hero } from '@/components/Hero'
 import { Projects } from '@/components/Projects'
@@ -13,13 +13,21 @@ export const Route = createFileRoute('/')({
   component: HomePage,
 })
 
+const TITLE = {
+  en: (name: string) => `${name} — Custom software, integrations & AI automation`,
+  es: (name: string) => `${name} — Software, integraciones y automatización a medida`,
+}
+
 function HomePage() {
-  const jsonLd = useMemo(() => homeJsonLd(), [])
+  const { content, lang } = useLanguage()
+  const jsonLd = useMemo(() => homeJsonLd(content, lang), [content, lang])
   useSeo({
-    title: `${brand.name} — Custom software, integrations & AI automation`,
-    description: brand.description,
+    title: TITLE[lang](content.brand.name),
+    description: content.brand.description,
     path: '/',
     jsonLd,
+    lang,
+    domain: content.brand.domain,
   })
   return (
     <>
