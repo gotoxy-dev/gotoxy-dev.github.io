@@ -1,0 +1,37 @@
+# Feature: Noomo homepage animations (exact replica)
+
+Objective: implement in `src/` the animations captured in `reference/noomo/spec/home-animations-unique.md`, with the exact targets, distances, durations, delays and easings.
+Branch: `master` (repository has no commits yet; work-unit commits are skipped until the owner makes the baseline commit). Delivery: ask-on-risk. Test runner: none configured; proportional check is `npm run build` + visual check at 1536 px and 390 px.
+
+## Specs
+
+- S1 Hero load (`a-127 HP LOADING`): the four headline lines move from `translateY(8vw)` to 0 in 700 ms `outSine`, delays 0/100/100/200 ms; caption fades in 500 ms at +500 ms; canvas fades in 300 ms at +400 ms; navbar fades in 500 ms at +500 ms.
+- S2 Hero canvas: no intro playback. Frame index follows the pointer X instantly with the reference formula `(frameCount - floor(x / innerWidth * frameCount)) % frameCount` (inverted direction, left edge = first frame).
+- S3 Projects: per card, hairline grows `width 0% → 100%` in 800 ms `outSine` when the card top reaches 50% of the viewport (`a-165`). While scrolling in view (`a-128`, scrub, start `top 50%`, end `bottom 50%`): title wrapper y 40px → 0 at 50% → 20px at 100%, opacity 0 → 1 at 33%; media wrapper y 80px → 0 at 50% → 40px at 100%, opacity 0 → 1 at 33%.
+- S4 Clients: section reveal (`a-145`, offset 15%): title wrapper and list start at `translateY(3vw)` opacity 0; title opacity 400 ms `outSine` + move 500 ms `outSine`; list move 500 ms `outSine` +200 ms, opacity 500 ms +300 ms; "see more" fades 300 ms after. Title lines (`a-158`, offset 33%): y 7vw → 0 in 700 ms `outSine`, stagger 100 ms. Accordion (`a-175/176`): body height animates in 350 ms `ease`, READ/CLOSE button swap, exclusive open. Row hover (`a-177/178`): button background → `rgba(255,255,255,0.2)` in 300 ms, back in 500 ms.
+- S5 Awards: container reveal (`a-146`, offset 25%): y 3vw → 0 in 500 ms `outSine`, opacity 0 → 1 in 400 ms linear. Row hover (`a-60/61`): preview image opacity 0 → 1 in 400 ms and y -8px → 0 in 500 ms `outSine`, row line color `#575757` → `#ffffff` in 500 ms; out: opacity 100 ms, y -8px 100 ms `outSine`, line 200 ms. Open (`a-124/48/57`): arrow 90° → 0° in 200 ms `outSine`; list height auto in 500 ms `outSine` (1000 ms for 12 entries); entry lines width 0 → 100% in 500 ms `outSine` and entries y 10px → 0 + opacity in 500 ms, stagger 100 ms from +200 ms. Close: 300 ms `outExpo` (`outSine` height for Awwwards) everything back, arrow → 90°.
+- S6 CTA: eyebrow lines (`a-158`) y 7vw → 0 700 ms `outSine` stagger 100 ms; headline lines (`a-159`, offset 33%) y 7vw → 0 700 ms `outCirc` stagger 100 ms (5 lines); container reveal `a-146`. LET'S TALK hover (`a-114/115`): arrow rotates 0 → -90° in 300 ms `ease`, back in 200 ms `ease`.
+- S7 Insights: container reveal `a-146`. Item rest state: text wrapper `translateX(-31vw)`, image `translateX(-27vw)` opacity 0. Hover (`a-111`): both to 0 in 800 ms `ease`, image opacity 400 ms `ease`. Out (`a-113`): back in 400 ms `ease`, opacity 0 in 200 ms. Only the hovered item shows its image.
+- S8 Small links (nav, footer socials, MORE INSIGHTS, SEE MORE ON) (`a-22/23`): rest at `translateX(-10px)` with arrow width 0 opacity 0; hover: link x → 0 in 400 ms linear, arrow width → 11px in 300 ms `outSine`, opacity → 1 in 400 ms; out: width 0 in 200 ms, x -10px in 100 ms, opacity 0 in 100 ms. Nav main links (`a/a-2`, `a-3/4`, `a-5/6`, `a-26/27`, `a-28/29`): underline width 0 → full in 400 ms `outQuart`, back to 0 in 300 ms `outQuart`.
+- S9 Footer: text reveal (`a-32`, offset 50%) y 2vw → 0 in 600 ms `outCirc`. Back-to-top hover (`a-39/40`): arrow 1 y 0 → -30px and arrow 2 y 30px → 0 in 300 ms `outCirc`; out reset in 300 ms.
+- S10 Easings and durations live in `src/theme/tokens.ts` only; components read CSS vars or the token object. Webflow names map to: outSine `0.39,0.575,0.565,1`; outQuart `0.165,0.84,0.44,1`; outCirc `0.075,0.82,0.165,1`; outExpo `0.19,1,0.22,1`; ease `0.25,0.1,0.25,1`.
+- S11 `prefers-reduced-motion` keeps all content visible with no motion. `npm run build` passes.
+
+## Tasks
+
+- T1 (S10) tokens + CustomEase registration + generic `useReveal` rewrite — route: inline — done (src/theme/tokens.ts, src/theme/motion.ts, src/hooks/useReveal.ts, src/hooks/useScrub.ts, src/styles/global.css)
+- T2 (S1, S2) Hero + ImageSequence + Navbar load fade — route: inline — done (lines measured at y=122.88px = 8vw before play, 0 after; nav/canvas/caption opacity 1)
+- T3 (S3) Projects line draw + scroll scrub — route: inline — done (at progress 0.5: line 1280px = 100%, head y≈0 op 1, media y≈0 op 1)
+- T4 (S4) Clients reveal, accordion, hover — route: inline — done (title lines y=107.52px = 7vw until top crosses 67%, then 0; accordion opens to 268px, pill reads CLOSE)
+- T5 (S5) Awards reveal, hover preview, accordion — route: inline — done (hover: preview op 1 / y 0, row border #fff; open: entry lines and rows stagger)
+- T6 (S6, S7, S8, S9) CTA, Insights, Footer, Navbar hovers — route: inline — done (insights rest: image -414.72px = 27vw, text -476.16px = 31vw; hover both 0; CTA 5 lines + eyebrow at 0; footer blocks at 0)
+- T7 (S11) build + visual check — route: inline — done (`npm run build` passes; desktop 1536 and mobile 375 checked, no horizontal overflow)
+
+## Log
+
+- L1 (2026-10-29) User: "Sí, implementa las animaciones en src/ siguiendo reference/noomo/spec/home-animations-unique.md, empezando por el Hero."
+- L2 Interpretation: in every IX2 action list, step 1 is treated as the rest/initial state and step 2+ as the animated steps (designer intent, matches the observed site). OUT lists animate back to the rest state. Webflow `smoothing` maps to GSAP `scrub = smoothing / 50` seconds. Scroll-into-view `offset X%` maps to ScrollTrigger start `top (100 - X)%`.
+- L3 Repository has zero commits; feature document kept locally, work-unit commits deferred to the owner.
+- L4 (2026-10-29) GSAP `CustomEase.create` rejects the CSS `cubic-bezier()` wrapper ("malformed path"); `ease()` in src/theme/motion.ts strips it and passes the four numbers.
+- L5 (2026-10-29) `cta.headline` in src/content/site.ts became an array of five lines so each line can animate like the reference `h2.h2-1…5`. Engram mirror: pending (saved as an observation, not as the `odd/noomo-animations/tasks` topic).
+- L6 Risk: none (tokens renamed and every consumer in src/ updated; no external contract).

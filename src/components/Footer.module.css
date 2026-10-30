@@ -1,0 +1,86 @@
+.footer {
+  border-top: 1px solid var(--color-line);
+  padding-top: 40px;
+  overflow: hidden;
+}
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.socials {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.backTop {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-textMuted);
+}
+.circle {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--color-textMuted);
+  border-radius: 50%;
+  overflow: hidden;
+}
+.arrowOut,
+.arrowIn {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  transition: transform var(--motion-duration-d300) linear;
+}
+.arrowIn {
+  transform: translateY(var(--motion-distance-backTopArrow));
+}
+.backTop:hover .arrowOut {
+  transform: translateY(calc(-1 * var(--motion-distance-backTopArrow)));
+  transition-timing-function: var(--motion-ease-outCirc);
+}
+.backTop:hover .arrowIn {
+  transform: translateY(0);
+  transition-timing-function: var(--motion-ease-outCirc);
+}
+.touchWrap {
+  margin-top: 56px;
+  will-change: transform;
+}
+.touch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2em;
+  font-size: clamp(40px, 5.2vw, 84px);
+}
+.touch svg {
+  width: 0.7em;
+  height: 0.7em;
+  stroke: currentColor;
+  stroke-width: 0.9;
+  fill: none;
+}
+.email {
+  display: inline-block;
+  margin-top: 14px;
+  font-size: 16px;
+  text-transform: uppercase;
+}
+.bottom {
+  margin-top: 90px;
+  padding: 18px 0;
+  border-top: 1px solid var(--color-line);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--color-textMuted);
+  text-transform: uppercase;
+}

@@ -1,0 +1,38 @@
+.eyebrow {
+  color: var(--color-textMuted);
+  margin-bottom: clamp(48px, 7vh, 96px);
+}
+.line {
+  display: block;
+  will-change: transform;
+}
+.headline {
+  display: flex;
+  flex-direction: column;
+  max-width: 80vw;
+  font-size: clamp(36px, 5.2vw, 84px);
+  overflow: hidden;
+}
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+  margin-top: clamp(48px, 8vh, 110px);
+  font-size: clamp(36px, 5.2vw, 84px);
+  line-height: 1;
+  text-transform: uppercase;
+  font-weight: var(--font-weight-light);
+}
+.button svg {
+  width: 0.72em;
+  height: 0.72em;
+  stroke: currentColor;
+  stroke-width: 0.9;
+  fill: none;
+  transform: rotate(0deg);
+  transition: transform var(--motion-duration-d200) var(--motion-ease-ease);
+}
+.button:hover svg {
+  transform: rotate(-90deg);
+  transition-duration: var(--motion-duration-d300);
+}

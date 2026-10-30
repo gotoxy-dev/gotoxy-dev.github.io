@@ -1,0 +1,145 @@
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 60px;
+}
+.title {
+  display: flex;
+  flex-direction: column;
+}
+.titleLine {
+  display: block;
+  will-change: transform;
+}
+.seeMore {
+  color: var(--color-textMuted);
+}
+.seeMore img {
+  height: 21px;
+  margin-left: 4px;
+}
+
+/* accordion rows */
+.rows {
+  border-top: 1px solid var(--color-line);
+}
+.row {
+  border-bottom: 1px solid var(--color-line);
+}
+.summary {
+  display: grid;
+  grid-template-columns: 34% 1fr auto;
+  align-items: center;
+  width: 100%;
+  padding: 18px 0;
+  text-align: left;
+  gap: 24px;
+}
+.author {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+.role {
+  color: var(--color-textMuted);
+}
+.readBtn {
+  justify-self: end;
+}
+.readBtn :global(.pill) {
+  height: 22px;
+  padding: 0 10px;
+  background: transparent;
+}
+/* "Hover IN/OUT Faq": button background rgba(255,255,255,.2) in 300ms, back in 500ms */
+.row:hover .readBtn :global(.pill) {
+  background: var(--color-pillHover);
+  transition-duration: var(--motion-duration-d300);
+}
+.body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--motion-duration-d350) var(--motion-ease-ease);
+}
+.row.open .body {
+  grid-template-rows: 1fr;
+}
+.bodyInner {
+  overflow: hidden;
+  min-height: 0;
+}
+.bodyGrid {
+  display: grid;
+  grid-template-columns: 34% 1fr auto;
+  gap: 24px;
+  padding: 48px 0 70px;
+}
+.scope {
+  color: var(--color-textMuted);
+  white-space: pre-line;
+}
+.quote {
+  white-space: pre-line;
+  max-width: 48ch;
+}
+
+/* logo marquee */
+.marquee {
+  margin-top: 150px;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+}
+.track {
+  display: flex;
+  width: max-content;
+  animation: scroll calc(var(--motion-marquee-durationSec) * 1s) linear infinite;
+}
+.marquee:hover .track {
+  animation-play-state: paused;
+}
+.logoItem {
+  flex: none;
+  padding-inline: clamp(40px, 6vw, 110px);
+  display: flex;
+  align-items: center;
+}
+.logoItem img {
+  height: 44px;
+  width: auto;
+  opacity: 0.8;
+  filter: grayscale(1);
+}
+@keyframes scroll {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 767px) {
+  .head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+  }
+  .title {
+    overflow: hidden;
+  }
+  .summary,
+  .bodyGrid {
+    grid-template-columns: 1fr auto;
+  }
+  .company {
+    display: none;
+  }
+  .scope {
+    grid-column: 1 / -1;
+  }
+  .quote {
+    grid-column: 1 / -1;
+  }
+  .marquee {
+    margin-top: 80px;
+  }
+}

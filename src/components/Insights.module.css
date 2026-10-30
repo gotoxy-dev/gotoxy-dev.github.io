@@ -1,0 +1,101 @@
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 36px;
+}
+.title {
+  font-size: clamp(22px, 2vw, 32px);
+  text-transform: uppercase;
+  font-weight: var(--font-weight-light);
+}
+.more {
+  color: var(--color-text);
+  text-transform: uppercase;
+  font-size: 14px;
+}
+.list {
+  border-top: 1px solid var(--color-lineStrong);
+}
+.item {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 2.22vw 0 2.78vw;
+  border-bottom: 1px solid var(--color-lineStrong);
+  overflow: hidden;
+}
+.thumb {
+  position: absolute;
+  top: 2.22vw;
+  left: 0;
+  width: var(--layout-insightImageWidth);
+  aspect-ratio: 720 / 440;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateX(var(--layout-insightImageShift));
+  transition:
+    transform var(--motion-duration-d400) var(--motion-ease-ease),
+    opacity var(--motion-duration-d200) var(--motion-ease-ease);
+}
+.thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.text {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 48px;
+  min-height: 14.24vw;
+  margin-left: calc(-1 * var(--layout-insightTextShift));
+  transform: translateX(var(--layout-insightTextShift));
+  transition: transform var(--motion-duration-d400) var(--motion-ease-ease);
+}
+.item:hover .thumb,
+.item:focus-visible .thumb {
+  opacity: 1;
+  transform: translateX(0);
+  transition:
+    transform var(--motion-duration-d800) var(--motion-ease-ease),
+    opacity var(--motion-duration-d400) var(--motion-ease-ease);
+}
+.item:hover .text,
+.item:focus-visible .text {
+  transform: translateX(0);
+  transition-duration: var(--motion-duration-d800);
+}
+.itemTitle {
+  max-width: 34ch;
+}
+.text :global(.pill) {
+  align-self: flex-start;
+}
+.arrow {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  color: var(--color-textDim);
+  margin-top: 6px;
+}
+
+@media (max-width: 767px) {
+  .item {
+    flex-direction: column;
+    gap: 20px;
+    padding: 32px 0;
+  }
+  .thumb {
+    position: static;
+    width: 100%;
+    opacity: 1;
+    transform: none;
+  }
+  .text {
+    min-height: 0;
+    margin-left: 0;
+    transform: none;
+  }
+}

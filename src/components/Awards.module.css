@@ -1,0 +1,167 @@
+.intro {
+  max-width: 50%;
+  margin-bottom: 110px;
+  text-transform: uppercase;
+}
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr;
+  gap: 40px;
+  align-items: start;
+}
+.visual {
+  position: sticky;
+  top: 25vh;
+  height: 50vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* "reddot-out" (rest): opacity 0, translateY(-8px). Out transitions: opacity 100ms, move 100ms outSine */
+.visualImg {
+  position: absolute;
+  width: 60%;
+  max-width: 320px;
+  opacity: 0;
+  transform: translateY(var(--motion-distance-awardPreview));
+  transition:
+    opacity var(--motion-duration-d100) linear,
+    transform var(--motion-duration-d100) var(--motion-ease-outSine);
+}
+/* "reddot-in": opacity 400ms linear, move 500ms outSine */
+.visualImg.active {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity var(--motion-duration-d400) linear,
+    transform var(--motion-duration-d500) var(--motion-ease-outSine);
+}
+.rows {
+  border-top: 1px solid var(--color-lineStrong);
+}
+.row {
+  border-bottom: 1px solid var(--color-lineStrong);
+  transition: border-color var(--motion-duration-d200) linear;
+}
+.row:hover {
+  border-color: var(--color-lineHover);
+  transition-duration: var(--motion-duration-d500);
+}
+.summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 26px 0;
+}
+.name {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  font-size: var(--type-body-size);
+  font-weight: var(--font-weight-light);
+}
+.count {
+  color: var(--color-textMuted);
+  font-size: 12px;
+  letter-spacing: 0.05em;
+}
+.toggle {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  color: var(--color-textDim);
+}
+/* arrow: closed = rotate(90deg); open → 0deg in 200ms outSine; close → 90deg in 300ms outExpo */
+.arrow {
+  width: 10px;
+  height: 10px;
+  transform: rotate(90deg);
+  transition: transform var(--motion-duration-d300) var(--motion-ease-outExpo);
+}
+.row.open .arrow {
+  transform: rotate(0deg);
+  transition: transform var(--motion-duration-d200) var(--motion-ease-outSine);
+}
+/* list height: open 500ms outSine (1000ms for the long list); close 300ms outExpo (outSine for the long list) */
+.body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--motion-duration-d300) var(--motion-ease-outExpo);
+}
+.row.long .body {
+  transition-timing-function: var(--motion-ease-outSine);
+}
+.row.open .body {
+  grid-template-rows: 1fr;
+  transition: grid-template-rows var(--motion-duration-d500) var(--motion-ease-outSine);
+}
+.row.long.open .body {
+  transition-duration: var(--motion-duration-d1000);
+}
+.bodyInner {
+  overflow: hidden;
+  min-height: 0;
+}
+.entries {
+  padding-bottom: 10px;
+}
+.entry {
+  position: relative;
+  padding-left: 28%;
+}
+/* each entry line draws 0 → 100% in 500ms outSine; collapses in 300ms outExpo */
+.entryLine {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 1px;
+  width: 0;
+  background: var(--color-line);
+  transition: width var(--motion-duration-d300) var(--motion-ease-outExpo);
+}
+.row.open .entryLine {
+  width: 100%;
+  transition: width var(--motion-duration-d500) var(--motion-ease-outSine) var(--entry-delay);
+}
+/* each entry text: y 10px → 0 and opacity 0 → 1 in 500ms (delay 200ms + 100ms per row); close 300ms outExpo */
+.entryText {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 11px 0;
+  font-size: 14px;
+  opacity: 0;
+  transform: translateY(var(--motion-distance-awardEntry));
+  transition:
+    opacity var(--motion-duration-d300) var(--motion-ease-outExpo),
+    transform var(--motion-duration-d300) var(--motion-ease-outExpo);
+}
+.row.open .entryText {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity var(--motion-duration-d500) linear var(--entry-delay),
+    transform var(--motion-duration-d500) var(--motion-ease-outSine) var(--entry-delay);
+}
+.more {
+  margin-top: 40px;
+  display: flex;
+  justify-content: flex-end;
+  text-align: right;
+  text-transform: uppercase;
+  font-size: var(--type-body-size);
+  line-height: 1.1;
+  font-weight: var(--font-weight-light);
+}
+.moreLine {
+  display: block;
+}
+
+@media (max-width: 991px) {
+  .intro { max-width: 100%; margin-bottom: 64px; }
+  .grid { grid-template-columns: 1fr; }
+  .visual { display: none; }
+  .entry { padding-left: 0; }
+}
