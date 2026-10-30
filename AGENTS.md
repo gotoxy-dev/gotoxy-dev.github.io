@@ -7,7 +7,7 @@ Landing de **gotoxy** (software a medida, integraciones y automatización con IA
 - `npm install`
 - `npm run dev` → http://localhost:5173
 - `npm run build` → `tsc -b && vite build` (debe pasar sin errores antes de dar por terminada cualquier tarea)
-- Medios: abrir `http://localhost:5173/scripts/media-generator.html` con el dev server, "Generate all" descarga `site-media.zip` → descomprimir en `public/assets/`. `__generateOg()` descarga `og.jpg` → `public/og.jpg`. (`scripts/generate-assets.py` es la versión antigua en Python y requiere ffmpeg.)
+- Medios: abrir `http://localhost:5173/scripts/media-generator.html` con el dev server, "Generate all" descarga `site-media.zip` → descomprimir en `public/assets/`. `__generateOg()` descarga `og.jpg` → `public/og.jpg`. `__generateProject(n, stillsOnly)` regenera solo el proyecto `n` (1–6). Las capturas reales de los sitios de clientes viven en `public/assets/cases/<slug>/screens/` (desktop) y `screens-mobile/` (375px) y se muestran dentro del laptop y del teléfono. (`scripts/generate-assets.py` es la versión antigua en Python y requiere ffmpeg.)
 
 ## SEO
 - Metadatos estáticos en `index.html`; por ruta, `src/seo.ts` (`useSeo`) actualiza title/description/canonical/OG/Twitter e inyecta JSON-LD (Organization, WebSite, ItemList en home; Article + BreadcrumbList en cada caso).

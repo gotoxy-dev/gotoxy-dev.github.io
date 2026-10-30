@@ -37,34 +37,47 @@
 
       // ---------------------------------------------------------------- projects
       // `screens`: real website captures (1536×639 each, consecutive scroll offsets) stitched into one
-      // tall image and scrolled inside a laptop frame. Projects without screens use the mock UI.
+      // tall image and scrolled inside a laptop frame. `mobileScreens`: the same site captured at 375px
+      // (469×1015 device pixels), shown inside the phone. Projects without screens use the mock UI.
       const PROJECTS = [
         { n: 1, slug: 'japon-in-box', device: 'laptop', theme: { bg: ['#120606', '#2a0c0e', '#050202'], glow: '#b5282b', accent: '#e8c9a8', ui: 'shop' }, label: 'JAPÓN IN BOX',
-          screens: [1, 2, 3, 4, 5].map((i) => `/assets/cases/japon-in-box/screens/japon-web-0${i}.jpg`), captureHeight: 639 },
+          screens: [1, 2, 3, 4, 5].map((i) => `/assets/cases/japon-in-box/screens/japon-web-0${i}.jpg`), captureHeight: 639,
+          mobileScreens: [1, 2, 3, 4].map((i) => `/assets/cases/japon-in-box/screens-mobile/japon-mob-0${i}.jpg`), mobileHeaderCut: 105 },
         { n: 2, slug: 'instituto-cam', device: 'laptop', theme: { bg: ['#06101f', '#0f2a5c', '#020510'], glow: '#1c4fb8', accent: '#9fc0ff', ui: 'tiles' }, label: 'INSTITUTO CAM',
-          screens: [1, 2, 3, 4].map((i) => `/assets/cases/instituto-cam/screens/cam-web-0${i}.jpg`), headerCut: 80 },
+          screens: [1, 2, 3, 4].map((i) => `/assets/cases/instituto-cam/screens/cam-web-0${i}.jpg`), headerCut: 80,
+          mobileScreens: [1, 2, 3, 4].map((i) => `/assets/cases/instituto-cam/screens-mobile/cam-mob-0${i}.jpg`), mobileHeaderCut: 100 },
         { n: 3, slug: 'animageneris', device: 'phone', theme: { bg: ['#120812', '#3a0f3d', '#050205'], glow: '#d6336c', accent: '#ff7a59', ui: 'tiles' }, label: 'ANIMAGENERIS' },
         { n: 4, slug: 'ai-agents-operations', device: 'laptop', theme: { bg: ['#07111a', '#0d1f2d', '#020406'], glow: '#2bb7a3', accent: '#67e8d5', ui: 'site' }, label: 'AI AGENTS' },
         { n: 5, slug: 'site-inspection-reports', device: 'tablet', theme: { bg: ['#1a1408', '#4a3a14', '#0a0803'], glow: '#f0b35c', accent: '#ffe08a', ui: 'map' }, label: 'INSPECTION REPORTS' },
         { n: 6, slug: 'english-conversation-app', device: 'phone', theme: { bg: ['#0a0a0a', '#1d1d1d', '#000'], glow: '#b8e02a', accent: '#d9ff5c', ui: 'site' }, label: 'ENGLISH CORRECTION' },
       ]
 
-      /** Loads and stitches the real captures of a project into `theme.screen` (an offscreen canvas). */
+      /** Loads and stitches a list of captures into one tall offscreen canvas. */
+      async function stitch(srcs, headerCut, captureHeight) {
+        const imgs = await Promise.all(srcs.map((src) => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src })))
+        // `headerCut`: height of a sticky header to crop from every capture after the first
+        const cut = headerCut || 0
+        // `captureHeight`: scroll step used while capturing; taller captures are cropped so seams line up
+        const useH = (i) => Math.min(i.naturalHeight, captureHeight || i.naturalHeight)
+        const w = imgs[0].naturalWidth
+        const h = imgs.reduce((s, i, idx) => s + useH(i) - (idx ? cut : 0), 0)
+        const off = document.createElement('canvas'); off.width = w; off.height = h
+        const c = off.getContext('2d'); let y = 0
+        imgs.forEach((i, idx) => { const top = idx ? cut : 0; const hh = useH(i) - top; c.drawImage(i, 0, top, i.naturalWidth, hh, 0, y, i.naturalWidth, hh); y += hh })
+        return off
+      }
+
+      /** Loads the real captures of each project into `theme.screen` (laptop) and `theme.phoneScreen` (phone). */
       async function loadScreens() {
         for (const p of PROJECTS) {
-          if (!p.screens || p.theme.screen) continue
-          const imgs = await Promise.all(p.screens.map((src) => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src })))
-          // `headerCut`: height of a sticky header to crop from every capture after the first
-          const cut = p.headerCut || 0
-          // `captureHeight`: scroll step used while capturing; taller captures are cropped so seams line up
-          const useH = (i) => Math.min(i.naturalHeight, p.captureHeight || i.naturalHeight)
-          const w = imgs[0].naturalWidth
-          const h = imgs.reduce((s, i, idx) => s + useH(i) - (idx ? cut : 0), 0)
-          const off = document.createElement('canvas'); off.width = w; off.height = h
-          const c = off.getContext('2d'); let y = 0
-          imgs.forEach((i, idx) => { const top = idx ? cut : 0; const hh = useH(i) - top; c.drawImage(i, 0, top, i.naturalWidth, hh, 0, y, i.naturalWidth, hh); y += hh })
-          p.theme.screen = off
-          log(`${p.slug}: stitched ${imgs.length} captures → ${w}×${h}`)
+          if (p.screens && !p.theme.screen) {
+            p.theme.screen = await stitch(p.screens, p.headerCut, p.captureHeight)
+            log(`${p.slug}: stitched ${p.screens.length} captures → ${p.theme.screen.width}×${p.theme.screen.height}`)
+          }
+          if (p.mobileScreens && !p.theme.phoneScreen) {
+            p.theme.phoneScreen = await stitch(p.mobileScreens, p.mobileHeaderCut)
+            log(`${p.slug}: stitched ${p.mobileScreens.length} phone captures → ${p.theme.phoneScreen.width}×${p.theme.phoneScreen.height}`)
+          }
         }
       }
 
@@ -171,7 +184,8 @@
         // screen
         const sx = -w / 2 + bezel, sy = -h / 2 + bezel, sw = w - bezel * 2, sh = h - bezel * 2
         ctx.save(); rr(sx, sy, sw, sh, Math.max(0, r - bezel)); ctx.clip()
-        if (theme.screen && kind !== 'phone') screenImage(sx, sy, sw, sh, theme.screen, t)
+        if (kind === 'phone' && theme.phoneScreen) screenImage(sx, sy, sw, sh, theme.phoneScreen, t)
+        else if (theme.screen && kind !== 'phone') screenImage(sx, sy, sw, sh, theme.screen, t)
         else screenUI(sx, sy, sw, sh, theme, t, seed)
         // glass reflection
         const gl = ctx.createLinearGradient(sx, sy, sx + sw, sy + sh)
@@ -347,27 +361,43 @@
         for (let i = 0; i < FRAMES; i++) {
           await still(`hero-seq/frame_${String(i + 1).padStart(3, '0')}.webp`, 1080, 1080, () => heroFrame(1080, (i / FRAMES) * Math.PI * 2), 'image/webp', 0.9)
         }
-        for (const p of PROJECTS) {
-          status.textContent = `project ${p.n}…`
-          const dir = `cases/${p.slug}`
-          await still(`${dir}/page-1.jpg`, 900, 1100, () => scene(p, 900, 1100, 0, 'page1'))
-          // transparent device mockup for the first page
-          await still(`${dir}/device.png`, 440, 900, () => { ctx.clearRect(0, 0, 440, 900); device('phone', 220, 450, 860, 0, p.theme, 0.5, p.n) }, 'image/png')
-          await still(`${dir}/page-3.jpg`, 900, 1100, () => scene(p, 900, 1100, 1.2, 'page3'))
-          if (stillsOnly) {
-            await still(`videos/project-0${p.n}.jpg`, 1400, 849, () => scene(p, 1400, 849, 0))
-            await still(`${dir}/reel.jpg`, 1280, 720, () => scene(p, 1280, 720, 0))
-          } else {
-            await record(`videos/project-0${p.n}.webm`, 1400, 849, 6, (t) => scene(p, 1400, 849, t), `videos/project-0${p.n}.jpg`)
-            await record(`${dir}/reel.webm`, 1280, 720, 6, (t) => scene(p, 1280, 720, t + 2), `${dir}/reel.jpg`)
-          }
+        for (const p of PROJECTS) await projectMedia(p, stillsOnly)
+        downloadZip('site-media.zip')
+      }
+
+      /** Stills + reels of one project (card video, case page images, case reel). */
+      async function projectMedia(p, stillsOnly) {
+        status.textContent = `project ${p.n}…`
+        const dir = `cases/${p.slug}`
+        await still(`${dir}/page-1.jpg`, 900, 1100, () => scene(p, 900, 1100, 0, 'page1'))
+        // transparent device mockup for the first page
+        await still(`${dir}/device.png`, 440, 900, () => { ctx.clearRect(0, 0, 440, 900); device('phone', 220, 450, 860, 0, p.theme, 0.5, p.n) }, 'image/png')
+        await still(`${dir}/page-3.jpg`, 900, 1100, () => scene(p, 900, 1100, 1.2, 'page3'))
+        if (stillsOnly) {
+          await still(`videos/project-0${p.n}.jpg`, 1400, 849, () => scene(p, 1400, 849, 0))
+          await still(`${dir}/reel.jpg`, 1280, 720, () => scene(p, 1280, 720, 0))
+        } else {
+          await record(`videos/project-0${p.n}.webm`, 1400, 849, 6, (t) => scene(p, 1400, 849, t), `videos/project-0${p.n}.jpg`)
+          await record(`${dir}/reel.webm`, 1280, 720, 6, (t) => scene(p, 1280, 720, t + 2), `${dir}/reel.jpg`)
         }
+      }
+
+      function downloadZip(name) {
         status.textContent = 'zipping…'
         const zip = makeZip(files)
-        const a = document.createElement('a'); a.href = URL.createObjectURL(zip); a.download = 'site-media.zip'; document.body.appendChild(a); a.click()
+        const a = document.createElement('a'); a.href = URL.createObjectURL(zip); a.download = name; document.body.appendChild(a); a.click()
         status.textContent = `done: ${files.length} files, ${(zip.size / 1048576).toFixed(1)} MB`
         log(status.textContent)
         window.__mediaDone = { files: files.length, bytes: zip.size }
+      }
+
+      /** One project only (by its `n`) → site-media.zip with just its files. */
+      async function generateProject(n, stillsOnly) {
+        files.length = 0
+        window.__mediaDone = null
+        await loadScreens()
+        await projectMedia(PROJECTS.find((p) => p.n === n), stillsOnly)
+        downloadZip('site-media.zip')
       }
       /** Branded Open Graph image (1200×630) downloaded as og.jpg → public/og.jpg */
       async function generateOg() {
@@ -404,6 +434,7 @@
       document.getElementById('run').onclick = () => generate(false)
       document.getElementById('runQuick').onclick = () => generate(true)
       window.__generate = generate
+      window.__generateProject = generateProject
       window.__generateOg = generateOg
       window.__generateHero = generateHero
       // preview the first reel scene while idle
