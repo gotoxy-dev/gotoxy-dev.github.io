@@ -224,6 +224,14 @@ ul {
     opacity var(--motion-duration-d400) linear;
 }
 
+/* reference phones: the numbers paragraph switches to `.h3-mobile`, 20px / 24px */
+@media (max-width: 767px) {
+  .t-lead {
+    font-size: 20px;
+    line-height: 24px;
+  }
+}
+
 /* reference ≤479px: h2 48px / 96%, h5/h6 captions 12px / 140% */
 @media (max-width: 479px) {
   .t-h2 {

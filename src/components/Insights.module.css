@@ -169,4 +169,8 @@
   .arrow {
     display: none;
   }
+  /* reference phones: only the first item is shown, then the full-width pill */
+  .list > li:nth-child(n + 2) {
+    display: none;
+  }
 }
