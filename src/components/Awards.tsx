@@ -24,7 +24,7 @@ export function Awards() {
   const [openId, setOpenId] = useState<string | null>(null)
 
   return (
-    <section ref={ref} className={styles.section} id="awards">
+    <section ref={ref} className={styles.section} id="numbers">
       <div
         className="container"
         data-reveal="y-fade"

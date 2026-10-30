@@ -1,12 +1,9 @@
 /**
  * SITE CONTENT — single source of truth for every section.
  *
- * Replace the placeholder copy, media paths and links here with your
- * company's data. Components only consume these objects; nothing is
- * hard-coded in the UI layer.
- *
- * Media paths point to generated placeholders in /public/assets
- * (run `npm run assets:generate` to rebuild them).
+ * Copy and case studies come from gotoxy.dev and the @gotoxy.dev Instagram
+ * account (reels and posts). Components only consume these objects; nothing is
+ * hard-coded in the UI layer. Media lives in /public/assets.
  */
 
 export type Tag = string
@@ -25,43 +22,6 @@ export interface Project {
   /** poster shown before the video is ready */
   poster: string
   href: string
-}
-
-export interface CaseTableRow {
-  label: string
-  value: string
-}
-
-export interface CasePage {
-  /** Small caps label above the heading (GOAL, RESULTS…) */
-  label: string
-  heading: string
-  paragraphs: string[]
-}
-
-export interface CaseStudy {
-  slug: string
-  /** Project this case belongs to (`projects[].id`) */
-  projectId: string
-  title: string
-  table: CaseTableRow[]
-  /** Link shown on the first page (app store, live site…) */
-  link: { label: string; href: string }
-  /** Second and third page copy */
-  pages: [CasePage, CasePage]
-  /** Visuals of the three left-hand sections */
-  media: {
-    /** page 1: full-bleed background + device mockup on top */
-    background: string
-    device: string
-    /** page 2: looping reel */
-    video: string
-    videoPoster: string
-    /** page 3: full-bleed image */
-    closing: string
-  }
-  /** Slug of the next case study */
-  next: string
 }
 
 export interface Testimonial {
@@ -87,7 +47,7 @@ export interface AwardEntry {
 export interface AwardGroup {
   id: string
   name: string
-  /** image shown on the left while the group is expanded (optional) */
+  /** image shown beside the row while it is hovered (optional) */
   image?: string
   entries: AwardEntry[]
 }
@@ -100,224 +60,283 @@ export interface Insight {
   href: string
 }
 
+export interface CaseTableRow {
+  label: string
+  value: string
+}
+
+export interface CasePage {
+  /** Small caps label above the heading (GOAL, RESULTS…) */
+  label: string
+  heading: string
+  paragraphs: string[]
+}
+
+export interface CaseStudy {
+  slug: string
+  /** Project this case belongs to (`projects[].id`) */
+  projectId: string
+  title: string
+  /** One-line summary used for SEO and structured data */
+  summary: string
+  table: CaseTableRow[]
+  /** Link shown on the first page (app store, live site…) */
+  link: { label: string; href: string }
+  /** Second and third page copy */
+  pages: [CasePage, CasePage]
+  /** Visuals of the three left-hand sections */
+  media: {
+    /** page 1: full-bleed background + device mockup on top */
+    background: string
+    device?: string
+    /** page 2: looping reel */
+    video: string
+    videoPoster: string
+    /** page 3: full-bleed image */
+    closing: string
+  }
+  /** Slug of the next case study */
+  next: string
+}
+
 export const brand = {
-  name: 'Studio',
-  /** second word drawn in the script font next to the wordmark */
-  tagline: 'Agency',
-  /** inline SVG wordmark lives in components/Logo.tsx — swap it there */
-  email: 'hello@yourstudio.com',
-  copyright: `${new Date().getFullYear()} STUDIO AGENCY. ALL RIGHTS RESERVED`,
+  name: 'gotoxy',
+  /** Short descriptor shown next to the wordmark */
+  tagline: 'Software & AI',
+  legalName: 'gotoxy',
+  domain: 'https://gotoxy.dev',
+  description:
+    'We design and implement custom software, integrations and AI automation around how your business actually works. We connect what you already use, build what is missing and leave the solution running.',
+  shortDescription: 'Custom software, integrations and AI automation. Rosario, Argentina.',
+  locality: 'Rosario',
+  region: 'Santa Fe',
+  country: 'Argentina',
+  countryCode: 'AR',
+  foundingYear: '2023',
+  /** Booking link used by every call to action */
+  bookingUrl: 'https://app.cal.com/gotoxy',
+  instagram: 'https://www.instagram.com/gotoxy.dev/',
+  services: ['Custom software', 'Integrations', 'Automation', 'AI agents'],
+  copyright: `${new Date().getFullYear()} GOTOXY. ROSARIO, ARGENTINA. ALL RIGHTS RESERVED`,
 }
 
 export const nav: { links: NavLink[]; cta: NavLink } = {
   links: [
-    { label: 'Our story', href: '/#story' },
-    { label: 'Product design', href: '/#projects' },
-    { label: 'Websites', href: '/#projects' },
-    { label: 'Brand identity', href: '/#projects' },
+    { label: 'Case studies', href: '/#projects' },
+    { label: 'How we work', href: '/#process' },
+    { label: 'What we do', href: '/#services' },
+    { label: 'In numbers', href: '/#numbers' },
   ],
-  cta: { label: "Let's talk", href: '/#contact' },
+  cta: { label: "Let's talk", href: brand.bookingUrl },
 }
 
 export const hero = {
   /** Each line is revealed independently; `align: 'right'` pushes the line to the right edge. */
   lines: [
-    { text: 'Design that', align: 'left' as const },
-    { text: 'Elevates', align: 'left' as const, trailing: 'Your' },
-    { text: 'Digital presence', align: 'right' as const },
+    { text: 'We connect what', align: 'left' as const },
+    { text: 'you use.', align: 'left' as const, trailing: 'We build' },
+    { text: 'what’s missing.', align: 'right' as const },
   ],
-  caption: ['User-centered,', 'Thoughtful, creative'],
+  caption: ['Software · Integrations · Automation · AI', 'Rosario, Argentina'],
   /** Image sequence drawn on the canvas behind the headline */
   sequence: {
     dir: '/assets/hero-seq',
     ext: 'webp',
-    frameCount: 39, // same count as the reference sequence
+    frameCount: 39,
     pad: 3, // frame_001.webp
   },
 }
 
 export const projects: Project[] = [
   {
-    id: 'orbit',
-    name: 'Orbit Tower',
-    tags: ['AR design', 'Mobile application'],
+    id: 'japon',
+    name: 'Japón in Box',
+    tags: ['Hospitality', 'E-commerce', 'Payments'],
     video: '/assets/videos/project-01.webm',
     poster: '/assets/videos/project-01.jpg',
-    href: '/projects/orbit-tower-mobile-app',
+    href: '/projects/japon-in-box',
   },
   {
-    id: 'lumen',
-    name: 'Lumen Home',
-    tags: ['Product design', 'TV application'],
+    id: 'cam',
+    name: 'Instituto CAM',
+    tags: ['Education', 'WhatsApp API', 'Automation'],
     video: '/assets/videos/project-02.webm',
     poster: '/assets/videos/project-02.jpg',
-    href: '/projects/lumen-home-tv-application',
+    href: '/projects/instituto-cam',
   },
   {
-    id: 'vector',
-    name: 'Vector Systems',
-    tags: ['3D animation', 'Enterprise website', 'Webflow'],
+    id: 'animageneris',
+    name: 'Animageneris',
+    tags: ['Content operation', 'AI', 'Mobile app'],
     video: '/assets/videos/project-03.webm',
     poster: '/assets/videos/project-03.jpg',
-    href: '/projects/vector-systems-enterprise-website',
+    href: '/projects/animageneris',
   },
   {
-    id: 'hopper',
-    name: 'Hopper Toys',
-    tags: ['AR design', 'Website', '3D animation'],
+    id: 'agents',
+    name: 'Tool-enabled AI agents',
+    tags: ['Operations', 'AI agents', 'Integrations'],
     video: '/assets/videos/project-04.webm',
     poster: '/assets/videos/project-04.jpg',
-    href: '/projects/hopper-toys-ar-website',
+    href: '/projects/ai-agents-operations',
   },
   {
-    id: 'atelier',
-    name: 'Atelier Bespoke',
-    tags: ['3D', 'E-commerce website'],
+    id: 'inspection',
+    name: 'Site inspection reports',
+    tags: ['Health & safety', 'Custom software', 'AI'],
     video: '/assets/videos/project-05.webm',
     poster: '/assets/videos/project-05.jpg',
-    href: '/projects/atelier-bespoke-ecommerce',
+    href: '/projects/site-inspection-reports',
+  },
+  {
+    id: 'speech',
+    name: 'Real-time English correction',
+    tags: ['iOS', 'Real-time speech', 'Low-latency AI'],
+    video: '/assets/videos/project-06.webm',
+    poster: '/assets/videos/project-06.jpg',
+    href: '/projects/english-conversation-app',
   },
 ]
 
+/** "How we work" section: the three stages, as an accordion, plus the stack we connect. */
 export const clients = {
-  title: ['What our', 'Clients say'],
-  seeMoreLabel: 'See more on',
+  title: ['How we', 'Work'],
+  seeMoreLabel: 'Book a call',
+  seeMoreHref: brand.bookingUrl,
   seeMoreLogo: '/assets/logos/review-platform.svg',
   readLabel: 'Read',
   closeLabel: 'Close',
   testimonials: [
     {
-      id: 't1',
-      author: 'Jordan Reyes',
-      role: 'Chief Marketing Officer',
-      company: 'Orbit Tower',
-      scope: 'Mobile app design',
+      id: 'understand',
+      author: '01 / Understand',
+      role: 'The first conversation',
+      company: 'Map the real process',
+      scope: 'Tasks · data · decisions /\nexceptions · controls',
       quote:
-        'The team started the new visitor app with hands-on research: usability sessions with real guests on site and a side-by-side review of several navigation models.\n\nThe redesigned experience lifted monthly active usage by roughly a fifth within the first weeks after launch.',
+        'We work with the person doing the task. We map data, decisions, exceptions and controls.\n\nYou do not need to arrive with a defined solution: show us how you work today and where the difficulty appears.',
     },
     {
-      id: 't2',
-      author: 'Priya Natarajan',
-      role: 'Executive Director',
-      company: 'Relief Network',
-      scope: 'UI UX design for web app / Mobile app /\nInteractive dashboard / Website design',
+      id: 'build',
+      author: '02 / Build and integrate',
+      role: 'Only what the process needs',
+      company: 'Connect and build',
+      scope: 'Existing tools · APIs /\ncustom software · AI',
       quote:
-        'They are not afraid of hard problems. The studio rebuilt our entire interface around requirements that most agencies would have pushed back on, and did it with care.',
+        'We connect the existing tools and build only what the process needs.\n\nWe use AI during analysis, development and testing to move faster. Architecture, security and critical decisions remain in the hands of our team.',
     },
     {
-      id: 't3',
-      author: 'Marcus Lindqvist',
-      role: 'Executive General Manager',
-      company: 'Northline Finance',
-      scope: 'Broker platform / Customer platform /\nCompany website / Marketing\nmaterials / Promo videos',
+      id: 'implement',
+      author: '03 / Implement',
+      role: 'Running with your team',
+      company: 'Install and adjust',
+      scope: 'Testing with the team /\ndaily-use adjustments · handover',
       quote:
-        'From product and website through promotional material, animated videos and branding, the studio has delivered consistently and gone beyond what we asked for.\n\nWe know we can rely on them for high-quality work, and we value the contribution they make to our product.',
+        'We test with the team, adjust around daily use and leave the system installed and running.\n\nEvery project started the same way: someone showed us how they worked. From there, we connected tools, built software and implemented a tailored solution.',
     },
   ] satisfies Testimonial[],
   logos: [
-    { id: 'l1', name: 'Cadence', src: '/assets/logos/client-01.svg' },
-    { id: 'l2', name: 'Orbit Tower', src: '/assets/logos/client-02.svg' },
-    { id: 'l3', name: 'Webflow', src: '/assets/logos/client-03.svg' },
-    { id: 'l4', name: 'Northline', src: '/assets/logos/client-04.svg' },
-    { id: 'l5', name: 'Relief Network', src: '/assets/logos/client-05.svg' },
-    { id: 'l6', name: 'Lumen', src: '/assets/logos/client-06.svg' },
+    { id: 'l1', name: 'Japón in Box', src: '/assets/logos/client-japon-in-box.svg' },
+    { id: 'l2', name: 'Instituto CAM', src: '/assets/logos/client-instituto-cam.svg' },
+    { id: 'l3', name: 'Animageneris', src: '/assets/logos/client-animageneris.svg' },
+    { id: 'l4', name: 'WhatsApp Business API', src: '/assets/logos/stack-whatsapp.svg' },
+    { id: 'l5', name: 'Cloudflare Workers', src: '/assets/logos/stack-cloudflare.svg' },
+    { id: 'l6', name: 'Mercado Libre', src: '/assets/logos/stack-mercado-libre.svg' },
+    { id: 'l7', name: 'Moodle', src: '/assets/logos/stack-moodle.svg' },
+    { id: 'l8', name: 'Mercado Pago', src: '/assets/logos/stack-mercado-pago.svg' },
   ] satisfies ClientLogo[],
 }
 
+/** "In numbers" section (reuses the awards layout): one expandable row per project. */
 export const awards = {
   intro:
-    'We are an award-winning design agency with a talented team of digital creatives, product designers, developers and problem solvers, ready to bring a fresh perspective to the solutions you need.',
-  moreLabel: ['+ 50 more', 'Awards'],
+    'Experienced engineers in software, automation and AI. We connect your systems, reduce manual work and leave the solution running with your team. Development accelerated by AI; architecture, security and critical decisions stay with people.',
+  moreLabel: ['Every system above is', 'running in production today'],
   groups: [
-    { id: 'reddot', name: 'RedDot', entries: [] },
     {
-      id: 'webby',
-      name: 'Webby',
-      image: '/assets/awards/award-webby.webp',
+      id: 'cam',
+      name: 'Instituto CAM',
+      image: '/assets/cases/instituto-cam/page-1.jpg',
       entries: [
-        { title: 'ITG Digital – Nomination, Web Services & Applications', year: '2020' },
-        { title: 'Northline – Winner, Financial Services / Banking', year: '2023' },
-      ],
-    },
-    { id: 'sfdw', name: 'San Francisco Design Week', entries: [] },
-    {
-      id: 'awwwards',
-      name: 'Awwwards',
-      image: '/assets/awards/award-awwwards.webp',
-      entries: [
-        { title: 'Northline Finance – Honorable mention', year: '2023' },
-        { title: 'Hopper Toys – Honorable mention', year: '2023' },
-        { title: 'Founder portfolio website – Site of the day', year: '2022' },
-        { title: 'Vector nominated for "Mobile website of the year"', year: '2021' },
-        { title: 'Vector – Website of the day', year: '2021' },
-        { title: 'Vector – Mobile website of the week', year: '2021' },
-        { title: 'Vector – Developer award', year: '2021' },
-        { title: 'MadDad – Honorable mention', year: '2020' },
-        { title: 'MadDad – Mobile design excellence', year: '2020' },
-        { title: 'Vector – Honorable mention', year: '2018' },
-        { title: 'Vector – Mobile design excellence', year: '2018' },
-        { title: 'Vector – Site of the day', year: '2018' },
+        { title: '2,300+ students registered and cross-checked', year: '2025' },
+        { title: '11 days from the signature to the first WhatsApp sent', year: '2025' },
+        { title: '100% automated, end to end, available 24/7', year: '2025' },
+        { title: '3 weeks, 97 pull requests, 2,000+ automated tests', year: '2025' },
+        { title: '14 screens in the institute’s own control panel', year: '2025' },
       ],
     },
     {
-      id: 'cssda',
-      name: 'CSS Design Award',
-      image: '/assets/awards/award-cssda.webp',
+      id: 'japon',
+      name: 'Japón in Box',
+      image: '/assets/cases/japon-in-box/website.webp',
       entries: [
-        { title: 'Hopper Toys – Website of the day', year: '2023' },
-        { title: 'Founder personal website – Website of the day', year: '2023' },
+        { title: '3 locations in Rosario and Funes on one platform', year: '2025' },
+        { title: '10 weeks from kickoff to production', year: '2025' },
+        { title: '0 delivery-app commissions on their own channel', year: '2025' },
       ],
     },
-    { id: 'adc-eu', name: 'ADC Europe', entries: [] },
-    { id: 'adc-ua', name: 'ADC UA', entries: [] },
+    {
+      id: 'animageneris',
+      name: 'Animageneris',
+      image: '/assets/cases/animageneris/page-1.jpg',
+      entries: [
+        { title: '20 channels researched, produced and published by one system', year: '2025' },
+        { title: '40.4K followers and 2.1M likes on TikTok', year: '2025' },
+        { title: 'YouTube and TikTok scheduling and publishing from a phone', year: '2025' },
+      ],
+    },
+    { id: 'agents', name: 'Tool-enabled AI agents', entries: [] },
+    { id: 'inspection', name: 'Site inspection reports', entries: [] },
+    { id: 'speech', name: 'Real-time English correction', entries: [] },
   ] satisfies AwardGroup[],
 }
 
 export const cta = {
-  eyebrow: ['Building', 'Relationships'],
+  eyebrow: ['Show us how', 'you work today'],
   /** One entry per animated line (the reference reveals five fixed lines). */
   headline: [
-    "But we're here not to talk",
-    "about ourselves - we're",
-    'here to talk about you,',
-    'your company, your',
-    'product, and your goals.',
+    'The first conversation',
+    'is to understand the process.',
+    'Then we define whether',
+    'to integrate, automate',
+    'or build.',
   ],
-  button: { label: "Let's talk", href: `mailto:${brand.email}` },
+  button: { label: "Let's talk", href: brand.bookingUrl },
 }
 
+/** "What we do" section (reuses the insights layout). */
 export const insights = {
-  title: 'Our insights',
-  moreLabel: 'More insights',
-  moreHref: '#',
+  title: 'What we do',
+  moreLabel: 'Book a call',
+  moreHref: brand.bookingUrl,
   items: [
     {
-      id: 'i1',
-      title: 'How to effectively implement 3D animation on a website.',
-      category: 'Interactive design',
+      id: 'integrations',
+      title: 'Integrations: connect the tools your team already uses.',
+      category: 'Integrations',
       image: '/assets/insights/insight-01.webp',
-      href: '#',
+      href: brand.bookingUrl,
     },
     {
-      id: 'i2',
-      title: 'How to create an immersive website with AR and 3D.',
-      category: 'Interactive design',
+      id: 'software',
+      title: 'Custom software built around a specific operation.',
+      category: 'Custom software',
       image: '/assets/insights/insight-02.webp',
-      href: '#',
+      href: brand.bookingUrl,
     },
     {
-      id: 'i3',
-      title: 'Essential branding strategies for Web3: what you need to know.',
-      category: 'Branding',
+      id: 'automation',
+      title: 'Automation that removes manual work from daily tasks.',
+      category: 'Automation',
       image: '/assets/insights/insight-03.webp',
-      href: '#',
+      href: brand.bookingUrl,
     },
     {
-      id: 'i4',
-      title: 'What does it take to create interactive storytelling for a corporate website?',
-      category: 'Interactive design',
+      id: 'ai',
+      title: 'AI agents connected to your data, rules and permissions, with human approval.',
+      category: 'AI agents',
       image: '/assets/insights/insight-04.webp',
-      href: '#',
+      href: brand.bookingUrl,
     },
   ] satisfies Insight[],
 }
@@ -325,191 +344,255 @@ export const insights = {
 export const footer = {
   backToTop: 'Back to top',
   socials: [
-    { label: 'Dribbble', href: '#' },
-    { label: 'LinkedIn', href: '#' },
-    { label: 'Insights', href: '#' },
+    { label: 'Instagram', href: brand.instagram },
+    { label: 'Book a call', href: brand.bookingUrl },
+    { label: 'gotoxy.dev', href: brand.domain },
   ] satisfies NavLink[],
-  headline: 'Get in touch',
-  email: brand.email,
+  headline: "Let's talk",
+  headlineHref: brand.bookingUrl,
+  /** Secondary line under the headline */
+  contact: 'Show us how you work today',
+  contactHref: brand.bookingUrl,
   copyright: brand.copyright,
 }
 
-const caseMedia = (slug: string) => ({
+const caseMedia = (slug: string, overrides: Partial<CaseStudy['media']> = {}) => ({
   background: `/assets/cases/${slug}/page-1.jpg`,
   device: `/assets/cases/${slug}/device.png`,
   video: `/assets/cases/${slug}/reel.webm`,
   videoPoster: `/assets/cases/${slug}/reel.jpg`,
   closing: `/assets/cases/${slug}/page-3.jpg`,
+  ...overrides,
 })
 
 /** Case-study pages (`/projects/:slug`). One per project; the order sets the "next project" chain. */
 export const caseStudies: CaseStudy[] = [
   {
-    slug: 'orbit-tower-mobile-app',
-    projectId: 'orbit',
-    title: 'Upgrading the Orbit Tower visit',
+    slug: 'japon-in-box',
+    projectId: 'japon',
+    title: 'Their own sales channel, from menu to payment',
+    summary:
+      'Online ordering platform for Japón in Box: menu, cart, orders and integrated payments for three locations in Rosario and Funes, built end to end in ten weeks.',
     table: [
-      { label: 'Client', value: 'Orbit Tower' },
-      { label: 'Involvement', value: 'Graphic designer, UI/UX designer, Motion designer' },
-      { label: 'Scope', value: 'Mobile app' },
+      { label: 'Client', value: 'Japón in Box · Sushi boutique and signature cuisine, nine years in Rosario · Three locations: Norte, Centro and Funes' },
+      { label: 'Involvement', value: 'Product design, end-to-end development, payments, deployment' },
+      { label: 'Scope', value: 'Online ordering platform: menu, cart, orders, payments, three locations' },
       {
         label: 'Results',
         value:
-          'Visitors now access their photos and videos within seconds instead of a 10-15 minute wait. Satisfaction went up, and app usage grew by a fifth in the first month.',
+          'Customers choose a location, build the order and pay by card without leaving the page, then follow the courier on the map. No delivery-app commissions. Ten weeks, three locations, running in production.',
       },
     ],
-    link: { label: 'Download the app', href: '#' },
+    link: { label: 'Visit japoninbox.com', href: 'https://japoninbox.com/' },
     pages: [
       {
         label: 'Goal',
-        heading: 'Seamless access to all experiences via mobile app.',
+        heading: 'A sales channel of their own, with the restaurant’s identity throughout.',
         paragraphs: [
-          'We partnered with Orbit Tower to rethink the visitor experience with a mobile app that brings every attraction together and removes paper tickets and queues at kiosks.',
-          'The work started with a broad exploration of design paradigms and on-site interviews with real visitors. That research shaped every decision in the app.',
-          'Guided features such as the observation deck camera, AR views and roaming photos turned the app into an interactive guide with step-by-step explanations of each experience.',
+          'We designed and built Japón in Box’s online ordering platform end to end: menu, shopping cart, orders and integrated payments for its three locations in Rosario and Funes.',
+          'From their phone, customers choose a location, put their order together and pay online. We delivered the complete purchasing journey, with the restaurant’s identity throughout and the system running in production.',
         ],
       },
       {
         label: 'Results',
-        heading: 'Transformed the traditional photo and experience process',
+        heading: 'Orders, payments and deliveries in a single panel',
         paragraphs: [
-          'The trust placed in us by the Orbit Tower team let us push the design beyond expectations. Since launch, adoption grew by a fifth within the first month.',
-          'Visitors launch every experience from the app and get their photos in seconds. The days of waiting in line at kiosks are gone.',
-          'We are grateful for the collaboration and look forward to the next steps together.',
+          'The restaurant manages every order from its own panel: payment status, delivery state and courier assignment, with the customer following the delivery on the map.',
+          'Card payments happen without leaving the page, and the channel carries no delivery-app commissions. Ten weeks from kickoff to production, three locations on one platform.',
         ],
       },
     ],
-    media: caseMedia('orbit-tower-mobile-app'),
-    next: 'lumen-home-tv-application',
+    media: caseMedia('japon-in-box', {
+      background: '/assets/cases/japon-in-box/website.webp',
+      device: undefined,
+      closing: '/assets/cases/japon-in-box/locations.webp',
+    }),
+    next: 'instituto-cam',
   },
   {
-    slug: 'lumen-home-tv-application',
-    projectId: 'lumen',
-    title: 'A calmer TV experience for every room',
+    slug: 'instituto-cam',
+    projectId: 'cam',
+    title: 'From the signature to the first WhatsApp in eleven days',
+    summary:
+      'Student registration and messaging for Instituto CAM: on-site enrolment validated against the university, mail replaced by WhatsApp through Meta’s official API, and a control panel the institute runs on its own.',
     table: [
-      { label: 'Client', value: 'Lumen Home' },
-      { label: 'Involvement', value: 'Product designer, UI/UX designer, Motion designer' },
-      { label: 'Scope', value: 'TV application' },
+      { label: 'Client', value: 'Instituto CAM · Education · 15+ years, 100+ programs, campuses in Rosario and Ciudad del Este · 3,000+ students' },
+      { label: 'Involvement', value: 'Process mapping, custom software, WhatsApp Business API, Moodle integration' },
+      { label: 'Scope', value: 'Registration, document validation, messaging, campaigns, audit, control panel' },
       {
         label: 'Results',
-        value: 'Guests order services from the TV in two clicks. Requests handled per hour doubled after the rollout.',
+        value:
+          '2,300+ students registered and cross-checked, 100% automated, available 24/7. Eleven days from the signature to the first WhatsApp sent; three weeks, 97 pull requests and 2,000+ automated tests for the full panel.',
       },
     ],
-    link: { label: 'Visit the website', href: '#' },
+    link: { label: 'Visit caminstituto.com', href: 'https://www.caminstituto.com/' },
     pages: [
       {
         label: 'Goal',
-        heading: 'One screen for every request, from towels to late checkout.',
+        heading: 'From a mail nobody opened to a process that sustains itself.',
         paragraphs: [
-          'Lumen Home needed a TV interface that works from across the room, with a remote, for guests of every age.',
-          'We designed a large-type grid, a persistent request tray and a clear focus state so navigation never gets lost.',
-          'Motion was kept slow and deliberate, matching the pace of a living room rather than a phone.',
+          'Instituto CAM needed to register and notify more than 3,000 students before classes started. By mail, the messages never arrived on time.',
+          'We built the whole process end to end: on-site registration with document validation and a cross-check against the university’s list, and mail fully replaced by WhatsApp, with the user, password and Zoom link sent through Meta’s official API.',
         ],
       },
       {
         label: 'Results',
-        heading: 'Fewer calls to the front desk, happier guests',
+        heading: 'Built to carry real volume from day one, not a demo',
         paragraphs: [
-          'The request flow replaced most front-desk calls, and staff now see every order on a single dashboard.',
-          'Guest reviews mention the TV app as a highlight of the stay.',
+          'Infrastructure on Cloudflare Workers and D1, with no servers to maintain and no personal number that can be banned. Automatic cross-checking against the university list, with manual review only for the differences.',
+          'Afterwards we extended it into the institute’s own panel, fourteen screens: automatic Moodle enrolment, campaigns, resends, security and audit. The institute controls everything without depending on us.',
         ],
       },
     ],
-    media: caseMedia('lumen-home-tv-application'),
-    next: 'vector-systems-enterprise-website',
+    media: caseMedia('instituto-cam'),
+    next: 'animageneris',
   },
   {
-    slug: 'vector-systems-enterprise-website',
-    projectId: 'vector',
-    title: 'An enterprise website that moves',
+    slug: 'animageneris',
+    projectId: 'animageneris',
+    title: 'From posting by hand to running twenty channels',
+    summary:
+      'A content operation for Animageneris: a system that researches, writes, produces and publishes across twenty YouTube and TikTok channels, managed from a phone with the creator’s editorial control.',
     table: [
-      { label: 'Client', value: 'Vector Systems' },
-      { label: 'Involvement', value: '3D artist, UI/UX designer, Webflow developer' },
-      { label: 'Scope', value: 'Enterprise website' },
-      { label: 'Results', value: 'Time on page tripled on the product tour, and demo requests grew by a third.' },
+      { label: 'Client', value: 'Animageneris · Content operation' },
+      { label: 'Involvement', value: 'Process mapping, AI pipeline, publishing integrations, mobile app' },
+      { label: 'Scope', value: 'Research, scripts, voice, video, captions, scheduling, publishing, metrics' },
+      {
+        label: 'Results',
+        value: 'Twenty channels run by one system. 40.4K followers and 2.1M likes on TikTok. The creator keeps editorial control.',
+      },
     ],
-    link: { label: 'Visit the website', href: '#' },
+    link: { label: 'Book a call', href: brand.bookingUrl },
     pages: [
       {
         label: 'Goal',
-        heading: 'Explain a complex product with 3D instead of paragraphs.',
+        heading: 'Publish more without adding hours of work to every piece.',
         paragraphs: [
-          'Vector sells design automation for electronics. Their old site described it; the new one shows it, with a 3D board that assembles as you scroll.',
-          'We built the scenes in 3D, rendered them as sequences and wired them to scroll progress in Webflow.',
+          'Animageneris needed to publish more without adding hours of work to every piece. We started with its TikTok channel: we mapped how topics were chosen, written, produced and published, then built a system around that editorial judgment.',
+          'The platform researches, prepares scripts, generates voice, video and captions, schedules and publishes to YouTube and TikTok.',
         ],
       },
       {
         label: 'Results',
-        heading: 'A product tour people actually finish',
+        heading: 'Twenty channels, one operation, managed from a phone',
         paragraphs: [
-          'Visitors scroll through the whole tour, and the demo form at the end converts far better than the previous contact page.',
-          'The system of sequences is reusable for every new product launch.',
+          'The Animageneris app brings channels, publications and metrics together to manage the entire operation from a phone. The creator retains editorial control over every piece.',
+          'The system extended from one channel to twenty, with 40.4K followers and 2.1M likes on TikTok.',
         ],
       },
     ],
-    media: caseMedia('vector-systems-enterprise-website'),
-    next: 'hopper-toys-ar-website',
+    media: caseMedia('animageneris'),
+    next: 'ai-agents-operations',
   },
   {
-    slug: 'hopper-toys-ar-website',
-    projectId: 'hopper',
-    title: 'Bringing a toy to life with AR',
+    slug: 'ai-agents-operations',
+    projectId: 'agents',
+    title: 'An AI agent connected to each company’s daily work',
+    summary:
+      'An agent core adapted to each operation’s data, rules and permissions: it reads email and documents, retrieves banking information and prepares complete Mercado Libre purchases, with sensitive actions waiting for human approval.',
     table: [
-      { label: 'Client', value: 'Hopper Toys' },
-      { label: 'Involvement', value: '3D artist, AR designer, Web developer' },
-      { label: 'Scope', value: 'AR experience and website' },
-      { label: 'Results', value: 'Two design awards and a sold-out first production run.' },
+      { label: 'Client', value: 'Operations teams in several companies · Finance, purchasing and back office' },
+      { label: 'Involvement', value: 'Agent core, tool integrations, permissions model, approval flows' },
+      { label: 'Scope', value: 'Email · documents · banking · Mercado Libre · internal systems' },
+      {
+        label: 'Results',
+        value: 'One agent core reused across operations. Context plus tools produce an action ready to approve; sensitive actions never run without a person.',
+      },
     ],
-    link: { label: 'Visit the website', href: '#' },
+    link: { label: 'Book a call', href: brand.bookingUrl },
     pages: [
       {
         label: 'Goal',
-        heading: 'Let families meet the character before it ships.',
+        heading: 'Where AI helps: context, tools and a person who approves.',
         paragraphs: [
-          'Hopper wanted buyers to see the toy in their own living room. We built a web AR experience that places the character on any surface, no app required.',
-          'The website wraps the AR scene in a playful story with 3D animation on every section.',
+          'An AI agent is useful when it knows the context of the work and can connect to the right tools. For several operations we implemented an agent core adapted to their data, rules and permissions.',
+          'It can read email and documents, retrieve banking information and prepare a complete Mercado Libre purchase.',
         ],
       },
       {
         label: 'Results',
-        heading: 'Recognised by the design community',
+        heading: 'Actions ready to approve, controls that stay with people',
         paragraphs: [
-          'The site collected honourable mentions and a site of the day, and the AR try-out became the main driver of pre-orders.',
+          'Sensitive actions wait for approval. The agent prepares the purchase, the transfer or the reply; the person confirms it.',
+          'AI participates where it adds value; the controls and critical decisions remain defined by people.',
         ],
       },
     ],
-    media: caseMedia('hopper-toys-ar-website'),
-    next: 'atelier-bespoke-ecommerce',
+    media: caseMedia('ai-agents-operations'),
+    next: 'site-inspection-reports',
   },
   {
-    slug: 'atelier-bespoke-ecommerce',
-    projectId: 'atelier',
-    title: 'E-commerce that feels made to measure',
+    slug: 'site-inspection-reports',
+    projectId: 'inspection',
+    title: 'From a site inspection to a report ready for review',
+    summary:
+      'Custom software for a health-and-safety consulting firm: site photos become organized observations, recommendations and reports in Word, PDF and web, validated by the specialist before delivery.',
     table: [
-      { label: 'Client', value: 'Atelier Bespoke' },
-      { label: 'Involvement', value: '3D artist, UI/UX designer, Front-end developer' },
-      { label: 'Scope', value: 'E-commerce website' },
-      { label: 'Results', value: 'Average order value grew by a quarter after the configurator launched.' },
+      { label: 'Client', value: 'Health-and-safety consulting firm · Site inspections for construction and industry' },
+      { label: 'Involvement', value: 'Custom software, image pipeline, AI-assisted analysis, document generation' },
+      { label: 'Scope', value: 'Images · specialist review · Word · PDF · web' },
+      {
+        label: 'Results',
+        value: 'Inspection photographs turned into a report ready for review. The professional validates the analysis before delivering the document.',
+      },
     ],
-    link: { label: 'Visit the website', href: '#' },
+    link: { label: 'Book a call', href: brand.bookingUrl },
     pages: [
       {
         label: 'Goal',
-        heading: 'Configure a product in 3D, then buy it in one step.',
+        heading: 'Receive the photos, organize them and prepare the report.',
         paragraphs: [
-          'Atelier sells made-to-order goods. We designed a configurator where every option updates a 3D model in real time, and the checkout keeps the chosen configuration visible.',
+          'For a consulting firm we built software that receives site photos, organizes them, flags points for the specialist to review and prepares observations, recommendations and reports.',
         ],
       },
       {
         label: 'Results',
-        heading: 'Bigger baskets, fewer returns',
+        heading: 'The specialist validates, the system does the rest',
         paragraphs: [
-          'Seeing the product before ordering reduced returns and increased the average order value. The configurator now powers the whole catalogue.',
+          'The professional reviews the flagged points and validates the analysis before the document goes out, in Word, PDF or on the web.',
+          'Hours of manual assembly become a review step.',
         ],
       },
     ],
-    media: caseMedia('atelier-bespoke-ecommerce'),
-    next: 'orbit-tower-mobile-app',
+    media: caseMedia('site-inspection-reports'),
+    next: 'english-conversation-app',
+  },
+  {
+    slug: 'english-conversation-app',
+    projectId: 'speech',
+    title: 'An English conversation, corrected as it happens',
+    summary:
+      'An iOS app that transcribes speech in real time, suggests a clearer version without interrupting the conversation and preserves the audio if the connection drops.',
+    table: [
+      { label: 'Client', value: 'Language-learning product · iOS' },
+      { label: 'Involvement', value: 'App design, infrastructure, audio flow, low-latency AI' },
+      { label: 'Scope', value: 'iOS · real-time speech · low-latency AI' },
+      {
+        label: 'Results',
+        value: 'Speak naturally and receive a corrected version without stopping. The audio is preserved when the connection fails.',
+      },
+    ],
+    link: { label: 'Book a call', href: brand.bookingUrl },
+    pages: [
+      {
+        label: 'Goal',
+        heading: 'Speak naturally and get a clearer version, live.',
+        paragraphs: [
+          'A client came to us with a specific idea: speak naturally and receive a corrected version without interrupting the conversation.',
+          'We designed the app, infrastructure and audio flow.',
+        ],
+      },
+      {
+        label: 'Results',
+        heading: 'Real-time transcription that survives a bad connection',
+        paragraphs: [
+          'It transcribes in real time, suggests a clearer version and preserves the audio if the connection drops.',
+          '"I think this process is more slow" becomes "I think this process is slower" while the conversation continues.',
+        ],
+      },
+    ],
+    media: caseMedia('english-conversation-app'),
+    next: 'japon-in-box',
   },
 ]
 

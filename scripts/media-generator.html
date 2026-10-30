@@ -35,13 +35,52 @@
       const log = (m) => { logEl.textContent += m + '\n'; logEl.scrollTop = 1e9 }
 
       // ---------------------------------------------------------------- projects
+      // `screens`: real website captures (1536×639 each, consecutive scroll offsets) stitched into one
+      // tall image and scrolled inside a laptop frame. Projects without screens use the mock UI.
       const PROJECTS = [
-        { n: 1, slug: 'orbit-tower-mobile-app', device: 'phone', theme: { bg: ['#07111a', '#0d1f2d', '#020406'], glow: '#2bb7a3', accent: '#67e8d5', ui: 'map' }, label: 'ORBIT TOWER' },
-        { n: 2, slug: 'lumen-home-tv-application', device: 'tv', theme: { bg: ['#3a2c1b', '#6e5a3c', '#1a1208'], glow: '#c9a56b', accent: '#e8d7b1', ui: 'tiles' }, label: 'LUMEN HOME' },
-        { n: 3, slug: 'vector-systems-enterprise-website', device: 'laptop', theme: { bg: ['#120812', '#3a0f3d', '#050205'], glow: '#d6336c', accent: '#ff7a59', ui: 'site' }, label: 'VECTOR SYSTEMS' },
-        { n: 4, slug: 'hopper-toys-ar-website', device: 'phone', theme: { bg: ['#2a1e14', '#8a6a4a', '#1a120a'], glow: '#f0b35c', accent: '#ffe08a', ui: 'ar' }, label: 'HOPPER TOYS' },
-        { n: 5, slug: 'atelier-bespoke-ecommerce', device: 'tablet', theme: { bg: ['#0a0a0a', '#1d1d1d', '#000'], glow: '#b8e02a', accent: '#d9ff5c', ui: 'shop' }, label: 'ATELIER BESPOKE' },
+        { n: 1, slug: 'japon-in-box', device: 'laptop', theme: { bg: ['#120606', '#2a0c0e', '#050202'], glow: '#b5282b', accent: '#e8c9a8', ui: 'shop' }, label: 'JAPÓN IN BOX',
+          screens: [1, 2, 3, 4, 5].map((i) => `/assets/cases/japon-in-box/screens/japon-web-0${i}.jpg`), captureHeight: 639 },
+        { n: 2, slug: 'instituto-cam', device: 'laptop', theme: { bg: ['#06101f', '#0f2a5c', '#020510'], glow: '#1c4fb8', accent: '#9fc0ff', ui: 'tiles' }, label: 'INSTITUTO CAM',
+          screens: [1, 2, 3, 4].map((i) => `/assets/cases/instituto-cam/screens/cam-web-0${i}.jpg`), headerCut: 80 },
+        { n: 3, slug: 'animageneris', device: 'phone', theme: { bg: ['#120812', '#3a0f3d', '#050205'], glow: '#d6336c', accent: '#ff7a59', ui: 'tiles' }, label: 'ANIMAGENERIS' },
+        { n: 4, slug: 'ai-agents-operations', device: 'laptop', theme: { bg: ['#07111a', '#0d1f2d', '#020406'], glow: '#2bb7a3', accent: '#67e8d5', ui: 'site' }, label: 'AI AGENTS' },
+        { n: 5, slug: 'site-inspection-reports', device: 'tablet', theme: { bg: ['#1a1408', '#4a3a14', '#0a0803'], glow: '#f0b35c', accent: '#ffe08a', ui: 'map' }, label: 'INSPECTION REPORTS' },
+        { n: 6, slug: 'english-conversation-app', device: 'phone', theme: { bg: ['#0a0a0a', '#1d1d1d', '#000'], glow: '#b8e02a', accent: '#d9ff5c', ui: 'site' }, label: 'ENGLISH CORRECTION' },
       ]
+
+      /** Loads and stitches the real captures of a project into `theme.screen` (an offscreen canvas). */
+      async function loadScreens() {
+        for (const p of PROJECTS) {
+          if (!p.screens || p.theme.screen) continue
+          const imgs = await Promise.all(p.screens.map((src) => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src })))
+          // `headerCut`: height of a sticky header to crop from every capture after the first
+          const cut = p.headerCut || 0
+          // `captureHeight`: scroll step used while capturing; taller captures are cropped so seams line up
+          const useH = (i) => Math.min(i.naturalHeight, p.captureHeight || i.naturalHeight)
+          const w = imgs[0].naturalWidth
+          const h = imgs.reduce((s, i, idx) => s + useH(i) - (idx ? cut : 0), 0)
+          const off = document.createElement('canvas'); off.width = w; off.height = h
+          const c = off.getContext('2d'); let y = 0
+          imgs.forEach((i, idx) => { const top = idx ? cut : 0; const hh = useH(i) - top; c.drawImage(i, 0, top, i.naturalWidth, hh, 0, y, i.naturalWidth, hh); y += hh })
+          p.theme.screen = off
+          log(`${p.slug}: stitched ${imgs.length} captures → ${w}×${h}`)
+        }
+      }
+
+      /** Real website capture scrolling slowly inside a screen rect. */
+      function screenImage(x, y, w, h, screen, t) {
+        const scale = w / screen.width
+        const viewH = h / scale
+        const maxScroll = Math.max(0, screen.height - viewH)
+        const cycle = 9
+        const phase = (t % cycle) / cycle
+        const eased = phase < 0.5 ? phase * 2 : 2 - phase * 2 // down then back up
+        const sy = Math.round(eased * maxScroll)
+        ctx.save(); rr(x, y, w, h, 0); ctx.clip()
+        ctx.fillStyle = '#0b0b0d'; ctx.fillRect(x, y, w, h)
+        ctx.drawImage(screen, 0, sy, screen.width, viewH, x, y, w, h)
+        ctx.restore()
+      }
 
       // ---------------------------------------------------------------- helpers
       const rr = (x, y, w, h, r) => { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); }
@@ -131,7 +170,8 @@
         // screen
         const sx = -w / 2 + bezel, sy = -h / 2 + bezel, sw = w - bezel * 2, sh = h - bezel * 2
         ctx.save(); rr(sx, sy, sw, sh, Math.max(0, r - bezel)); ctx.clip()
-        screenUI(sx, sy, sw, sh, theme, t, seed)
+        if (theme.screen && kind !== 'phone') screenImage(sx, sy, sw, sh, theme.screen, t)
+        else screenUI(sx, sy, sw, sh, theme, t, seed)
         // glass reflection
         const gl = ctx.createLinearGradient(sx, sy, sx + sw, sy + sh)
         gl.addColorStop(0, '#ffffff10'); gl.addColorStop(0.45, '#ffffff00'); gl.addColorStop(1, '#ffffff08')
@@ -151,11 +191,17 @@
       function scene(p, w, h, t, variant = 'reel') {
         background(w, h, p.theme, t)
         const bob = Math.sin(t * 0.8) * h * 0.012
-        if (variant === 'reel') {
+        if (variant === 'reel' && p.theme.screen) {
+          // real website in a laptop, brand-coloured phone in front
+          device('laptop', w * 0.56, h * 0.5 + bob, h * 0.62, -0.35, p.theme, t, p.n)
+          device('phone', w * 0.18, h * 0.62 - bob * 0.5, h * 0.62, 0.5, p.theme, t + 2, p.n + 5)
+        } else if (variant === 'reel') {
           const size = p.device === 'phone' ? h * 0.78 : p.device === 'tablet' ? h * 0.74 : h * 0.6
           device(p.device, w * 0.5, h * 0.52 + bob, size, -0.6, p.theme, t, p.n)
           if (p.device === 'phone') device('phone', w * 0.2, h * 0.75 + bob * 0.6, size * 0.75, 0.9, p.theme, t + 3, p.n + 7)
           if (p.device === 'phone') device('phone', w * 0.82, h * 0.3 - bob * 0.6, size * 0.6, 0.4, p.theme, t + 6, p.n + 11)
+        } else if (variant === 'page1' && p.theme.screen) {
+          device('laptop', w * 0.5, h * 0.5, w * 0.62, 0.3, p.theme, t, p.n)
         } else if (variant === 'page1') {
           // portrait backdrop: fog, a soft skyline fading into the dark, horizon glow
           const horizon = h * 0.62
@@ -177,7 +223,7 @@
             ctx.restore()
           }
         } else if (variant === 'page3') {
-          device(p.device, w * 0.5, h * 0.55, p.device === 'phone' ? h * 0.7 : h * 0.5, 0.5, p.theme, t, p.n + 3)
+          device(p.device === 'laptop' && !p.theme.screen ? 'tablet' : p.device, w * 0.5, h * 0.55, p.device === 'phone' ? h * 0.7 : w * 0.6, 0.5, p.theme, t + 4, p.n + 3)
         }
       }
 
@@ -278,6 +324,8 @@
 
       async function generate(stillsOnly) {
         files.length = 0
+        status.textContent = 'loading captures…'
+        await loadScreens()
         status.textContent = 'hero frames…'
         const FRAMES = 39
         for (let i = 0; i < FRAMES; i++) {
@@ -305,11 +353,32 @@
         log(status.textContent)
         window.__mediaDone = { files: files.length, bytes: zip.size }
       }
+      /** Branded Open Graph image (1200×630) downloaded as og.jpg → public/og.jpg */
+      async function generateOg() {
+        const w = 1200, h = 630
+        setSize(w, h)
+        background(w, h, { bg: ['#000000', '#101214', '#000000'], glow: '#2f4f3f' }, 0)
+        // G mark
+        ctx.save(); ctx.translate(96, 90); ctx.scale(0.9, 0.9); ctx.fillStyle = '#f5f5f2'
+        const g1 = new Path2D('M61 18H49C26 18 14 32 14 55V75C14 98 29 112 52 112H73C98 112 111 98 111 75V61H66V82H87C85 89 80 92 72 92H54C41 92 35 86 35 73V57C35 44 40 39 53 39H61Z')
+        const g2 = new Path2D('M80 14H99Q111 14 111 26V44H80Q70 44 70 34V24Q70 14 80 14Z')
+        ctx.fill(g1); ctx.fill(g2); ctx.restore()
+        ctx.fillStyle = '#f5f5f2'; ctx.font = '400 54px Archivo, Helvetica, Arial, sans-serif'; ctx.fillText('gotoxy', 215, 170)
+        ctx.font = '300 50px Archivo, Helvetica, Arial, sans-serif'; ctx.fillStyle = '#d2cfcf'
+        ctx.fillText('WE CONNECT WHAT YOU ALREADY USE.', 96, 330)
+        ctx.fillText('WE BUILD WHAT’S MISSING.', 96, 400)
+        ctx.font = '400 22px Archivo, Helvetica, Arial, sans-serif'; ctx.fillStyle = '#969494'; ctx.letterSpacing = '0.08em'
+        ctx.fillText('SOFTWARE · INTEGRATIONS · AUTOMATION · AI   —   ROSARIO, ARGENTINA   —   GOTOXY.DEV', 96, 540)
+        const blob = await toBlob('image/jpeg', 0.9)
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'og.jpg'; document.body.appendChild(a); a.click()
+        status.textContent = 'og.jpg downloaded'
+      }
       document.getElementById('run').onclick = () => generate(false)
       document.getElementById('runQuick').onclick = () => generate(true)
       window.__generate = generate
+      window.__generateOg = generateOg
       // preview the first reel scene while idle
-      scene(PROJECTS[0], 1400, 849, 0)
+      loadScreens().then(() => scene(PROJECTS[0], 1400, 849, 1.5)).catch((e) => log('capture load failed: ' + e))
     </script>
   </body>
 </html>

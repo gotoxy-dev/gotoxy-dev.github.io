@@ -52,7 +52,7 @@ export function Cta() {
           ))}
         </h2>
         {/* "hp-lets-talk-hoverIN": arrow rotates 0 → -90deg in 300ms ease, back in 200ms */}
-        <a href={cta.button.href} className={styles.button}>
+        <a href={cta.button.href} target="_blank" rel="noreferrer" className={styles.button}>
           {cta.button.label}
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M4 4l16 16M20 8v12H8" />

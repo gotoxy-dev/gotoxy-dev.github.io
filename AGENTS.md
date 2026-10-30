@@ -1,13 +1,17 @@
 # AGENTS.md — guía para agentes de código
 
 ## Qué es este repo
-Réplica de una landing de agencia interactiva (estructura + animaciones) en **React 19 + Vite 6 + TanStack Router (file-based) + TypeScript strict**. Todos los recursos y textos son placeholders que el dueño reemplazará por los de su empresa.
+Landing de **gotoxy** (software a medida, integraciones y automatización con IA, Rosario) construida sobre la estructura y animaciones de una landing de agencia de referencia, en **React 19 + Vite 6 + TanStack Router (file-based) + TypeScript strict**. El copy y los casos vienen de gotoxy.dev e Instagram (@gotoxy.dev); las imágenes de proyecto se generan en el navegador (ver `scripts/media-generator.html`).
 
 ## Comandos
 - `npm install`
 - `npm run dev` → http://localhost:5173
 - `npm run build` → `tsc -b && vite build` (debe pasar sin errores antes de dar por terminada cualquier tarea)
-- `npm run assets:generate` → regenera placeholders (python3 + Pillow + numpy + ffmpeg)
+- Medios: abrir `http://localhost:5173/scripts/media-generator.html` con el dev server, "Generate all" descarga `site-media.zip` → descomprimir en `public/assets/`. `__generateOg()` descarga `og.jpg` → `public/og.jpg`. (`scripts/generate-assets.py` es la versión antigua en Python y requiere ffmpeg.)
+
+## SEO
+- Metadatos estáticos en `index.html`; por ruta, `src/seo.ts` (`useSeo`) actualiza title/description/canonical/OG/Twitter e inyecta JSON-LD (Organization, WebSite, ItemList en home; Article + BreadcrumbList en cada caso).
+- `public/robots.txt`, `public/sitemap.xml` y `public/llms.txt` (resumen para LLM). Al añadir un caso: `caseStudies` en `site.ts` + entrada en `sitemap.xml` y `llms.txt`.
 
 ## Reglas de arquitectura (no romper)
 1. **Tokens centralizados**: `src/theme/tokens.ts` es la única fuente de colores, tipografías, escala, spacing, easings, duraciones, z-index y breakpoints. `applyTheme()` los inyecta como CSS vars (`--color-text`, `--type-h2-size`, `--motion-ease-expo`…). **Nunca** hardcodear colores/tamaños en componentes o CSS; agregar el token y usar la var.
@@ -21,7 +25,8 @@ Réplica de una landing de agencia interactiva (estructura + animaciones) en **R
 `Navbar` · `Hero` (+ `ImageSequence` canvas: intro + mouse-X) · `Projects` (video autoplay solo en viewport) · `Clients` (acordeones + marquee) · `Awards` (acordeones + imagen sticky) · `Cta` · `Insights` (hover expande thumbnail) · `Footer` · `Logo`.
 
 ## Pendiente / ideas de continuación
-- Reemplazar `public/assets/**` y `site.ts` con recursos y copy reales.
-- Páginas internas (`/our-story`, `/projects/$slug`, `/insights/$slug`) como nuevas rutas en `src/routes/`.
+- Versión en español (gotoxy.dev es bilingüe EN/ES; esta landing es EN).
+- Reemplazar los reels generados por grabaciones reales de cada producto; convertir WebM → MP4 cuando haya ffmpeg (Safari < 17).
+- Página `/our-story` si hace falta.
 - Opcional: smooth scroll (Lenis), preloader, formulario de contacto.
 - Verificar visualmente en desktop 1536px y mobile 390px tras cada cambio.

@@ -1,0 +1,36 @@
+# gotoxy
+
+> Custom software, integrations and AI automation studio based in Rosario, Argentina. We connect what a business already uses, build what is missing and leave the solution running with the team. Work in Spanish and English; projects delivered across Argentina and remotely.
+
+Book a call: https://app.cal.com/gotoxy
+Instagram: https://www.instagram.com/gotoxy.dev/
+
+## What we do
+
+- Integrations: connect the tools a team already uses (WhatsApp Business API, Mercado Libre, Mercado Pago, Moodle, email, banking, internal systems).
+- Custom software: web, mobile (iOS) and internal panels built around a specific operation.
+- Automation: remove manual work from daily tasks, with the controls the business needs.
+- AI agents: agent cores adapted to each company's data, rules and permissions; sensitive actions wait for human approval.
+
+## How we work
+
+1. Understand: we work with the person doing the task and map data, decisions, exceptions and controls.
+2. Build and integrate: we connect existing tools and build only what the process needs. AI accelerates analysis, development and testing; architecture, security and critical decisions stay with our engineers.
+3. Implement: we test with the team, adjust around daily use and leave the system installed and running.
+
+## Case studies
+
+- [Japón in Box](https://gotoxy.dev/projects/japon-in-box): online ordering platform for a sushi boutique (japoninbox.com, nine years in Rosario) with three locations: Japón Norte, Japón Centro and Japón Funes. Menu, cart, orders, card payments without leaving the page, courier tracking on the map, no delivery-app commissions. Ten weeks to production.
+- [Instituto CAM](https://gotoxy.dev/projects/instituto-cam): registration and messaging for 3,000+ students of CAM Instituto (caminstituto.com: university support for Medicine at UNR, languages and vocational courses; 15+ years; campuses in Rosario and Ciudad del Este). On-site enrolment validated against the university list, mail replaced by WhatsApp through Meta's official API, Cloudflare Workers + D1, fourteen-screen control panel with automatic Moodle enrolment, campaigns, resends and audit. Eleven days from signature to the first WhatsApp; 2,300+ students registered; 97 pull requests and 2,000+ automated tests.
+- [Animageneris](https://gotoxy.dev/projects/animageneris): a content operation that researches, writes, produces (voice, video, captions), schedules and publishes to YouTube and TikTok across twenty channels, managed from a phone. 40.4K followers and 2.1M likes on TikTok.
+- [Tool-enabled AI agents](https://gotoxy.dev/projects/ai-agents-operations): an agent core connected to email, documents, banking and Mercado Libre, preparing complete actions that a person approves.
+- [Site inspection reports](https://gotoxy.dev/projects/site-inspection-reports): health-and-safety software that turns site photos into organized observations, recommendations and reports (Word, PDF, web) validated by the specialist.
+- [Real-time English correction](https://gotoxy.dev/projects/english-conversation-app): iOS app that transcribes speech live, suggests a clearer version without interrupting the conversation and preserves audio when the connection drops.
+
+## Facts
+
+- Name: gotoxy (from the Turbo Pascal `gotoxy()` call that moves the cursor to an exact coordinate).
+- Location: Rosario, Santa Fe, Argentina.
+- Languages: Spanish, English.
+- Website: https://gotoxy.dev
+- Sitemap: https://gotoxy.dev/sitemap.xml

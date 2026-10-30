@@ -1,18 +1,18 @@
 .logo {
   display: inline-flex;
-  align-items: flex-end;
-  gap: 4px;
+  align-items: center;
+  gap: 8px;
   color: var(--color-textStrong);
   line-height: 1;
 }
 .mark {
-  height: 24px;
-  width: auto;
+  height: 26px;
+  width: 26px;
 }
-.script {
-  font-family: var(--font-script);
-  font-size: 15px;
-  line-height: 1;
-  transform: translateY(2px) rotate(-6deg);
-  letter-spacing: 0.02em;
+.word {
+  font-family: var(--font-sans);
+  font-size: 22px;
+  font-weight: var(--font-weight-regular);
+  letter-spacing: -0.02em;
+  text-transform: lowercase;
 }

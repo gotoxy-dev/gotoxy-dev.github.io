@@ -9,7 +9,7 @@ export function Insights() {
   const ref = useReveal<HTMLElement>({ offset: 25 })
 
   return (
-    <section ref={ref} className={styles.section} id="insights">
+    <section ref={ref} className={styles.section} id="services">
       <div
         className="container"
         data-reveal="y-fade"
@@ -19,7 +19,7 @@ export function Insights() {
       >
         <div className={styles.head}>
           <h2 className={styles.title}>{insights.title}</h2>
-          <a href={insights.moreHref} className={`${styles.more} alink`}>
+          <a href={insights.moreHref} target="_blank" rel="noreferrer" className={`${styles.more} alink`}>
             {insights.moreLabel}
             <span className="alink-arrow">
               <svg viewBox="0 0 14 14" aria-hidden="true">
@@ -37,7 +37,7 @@ export function Insights() {
         <ul className={styles.list}>
           {insights.items.map((item) => (
             <li key={item.id}>
-              <a href={item.href} className={styles.item}>
+              <a href={item.href} target="_blank" rel="noreferrer" className={styles.item}>
                 <div className={styles.thumb}>
                   <img src={item.image} alt="" loading="lazy" />
                 </div>

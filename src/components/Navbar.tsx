@@ -26,7 +26,12 @@ export function Navbar() {
 
           <nav className={styles.menu} aria-label="Primary">
             {items.map((l) => (
-              <a key={l.label} href={l.href} className={`${styles.link} ulink`}>
+              <a
+                key={l.label}
+                href={l.href}
+                className={`${styles.link} ulink`}
+                {...(l.href.startsWith('http') ? { target: '_blank', rel: 'noreferrer' } : {})}
+              >
                 {l.label}
               </a>
             ))}

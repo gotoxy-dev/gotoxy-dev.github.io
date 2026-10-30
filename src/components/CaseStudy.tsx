@@ -179,7 +179,7 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
       <div className={styles.sections} {...fade}>
         <section className={styles.section}>
           <div className={styles.bg} style={{ backgroundImage: `url(${study.media.background})` }}>
-            <img className={styles.device} src={study.media.device} alt="" />
+            {study.media.device && <img className={styles.device} src={study.media.device} alt="" />}
           </div>
         </section>
         <section className={styles.section}>

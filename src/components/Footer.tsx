@@ -17,6 +17,8 @@ const ArrowUp = () => (
   </svg>
 )
 
+const external = (href: string) => (href.startsWith('http') ? { target: '_blank', rel: 'noreferrer' } : {})
+
 export function Footer() {
   // "p-scroll-in": text blocks move y 2vw → 0 in 600ms outCirc once 50% in view
   const ref = useReveal<HTMLElement>({ offset: 50 })
@@ -40,7 +42,7 @@ export function Footer() {
           <ul className={styles.socials}>
             {footer.socials.map((s) => (
               <li key={s.label}>
-                <a href={s.href} className="alink">
+                <a href={s.href} className="alink" {...external(s.href)}>
                   {s.label}
                   <span className="alink-arrow">
                     <ArrowUpRight />
@@ -64,15 +66,15 @@ export function Footer() {
         </div>
 
         <div className={styles.touchWrap} {...textReveal}>
-          <a href={`mailto:${footer.email}`} className={`${styles.touch} t-h2`}>
+          <a href={footer.headlineHref} className={`${styles.touch} t-h2`} {...external(footer.headlineHref)}>
             {footer.headline}
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M4 20L20 4M8 4h12v12" />
             </svg>
           </a>
           <br />
-          <a href={`mailto:${footer.email}`} className={`${styles.email} ulink`}>
-            {footer.email}
+          <a href={footer.contactHref} className={`${styles.email} ulink`} {...external(footer.contactHref)}>
+            {footer.contact}
           </a>
         </div>
       </div>

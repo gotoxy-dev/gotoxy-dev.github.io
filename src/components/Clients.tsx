@@ -15,7 +15,7 @@ export function Clients() {
   const [openId, setOpenId] = useState<string | null>(null)
 
   return (
-    <section ref={sectionRef} className={styles.section} id="story">
+    <section ref={sectionRef} className={styles.section} id="process">
       <div className="container">
         <div
           className={styles.head}
@@ -39,14 +39,15 @@ export function Clients() {
             ))}
           </h2>
           <a
-            href="#"
+            href={clients.seeMoreHref}
+            target="_blank"
+            rel="noreferrer"
             className={`${styles.seeMore} t-caption alink`}
             data-reveal="fade"
             data-reveal-fade-dur={duration.d300}
             data-reveal-fade-delay={SEE_MORE_DELAY}
           >
             {clients.seeMoreLabel}
-            <img src={clients.seeMoreLogo} alt="" />
             <span className="alink-arrow">
               <ArrowUpRight />
             </span>

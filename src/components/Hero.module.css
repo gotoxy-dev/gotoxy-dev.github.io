@@ -38,6 +38,7 @@
 }
 .row > span {
   display: block;
+  white-space: nowrap;
   will-change: transform;
 }
 .row.right {
@@ -67,6 +68,9 @@
   }
   .row {
     flex-direction: column;
+  }
+  .row > span {
+    white-space: normal;
   }
   .row.right {
     align-items: flex-start;
