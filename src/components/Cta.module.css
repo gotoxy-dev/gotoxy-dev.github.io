@@ -1,25 +1,36 @@
+/* Reference `.here-to-talk-sec`: no top padding (awards bottom padding sets the gap), margin-bottom 17.7vw */
+.section {
+  position: relative;
+  margin-bottom: var(--layout-cta-sectionBottom);
+}
 .eyebrow {
   color: var(--color-textMuted);
-  margin-bottom: clamp(48px, 7vh, 96px);
+  margin-bottom: var(--layout-cta-eyebrowBottom);
 }
 .line {
   display: block;
   will-change: transform;
 }
+/* The reference wrapper is 80.35vw wide with five fixed lines; the stand-in font is
+   wider than Polysans, so each line stays on one row and the wrapper grows to fit. */
 .headline {
   display: flex;
   flex-direction: column;
-  max-width: 80vw;
-  font-size: clamp(36px, 5.2vw, 84px);
+  align-items: flex-start;
+  min-width: var(--layout-cta-wrapWidth);
+  max-width: 100%;
+  margin-bottom: var(--layout-cta-wrapBottom);
   overflow: hidden;
+}
+.headline .line {
+  white-space: nowrap;
 }
 .button {
   display: inline-flex;
   align-items: center;
   gap: 0.25em;
-  margin-top: clamp(48px, 8vh, 110px);
-  font-size: clamp(36px, 5.2vw, 84px);
-  line-height: 1;
+  font-size: var(--type-h2-size);
+  line-height: var(--type-h2-lineHeight);
   text-transform: uppercase;
   font-weight: var(--font-weight-light);
 }
@@ -35,4 +46,21 @@
 .button:hover svg {
   transform: rotate(-90deg);
   transition-duration: var(--motion-duration-d300);
+}
+
+@media (max-width: 767px) {
+  .section {
+    margin-bottom: 11.1vw;
+  }
+  .eyebrow {
+    margin-bottom: 40px;
+  }
+  .headline {
+    min-width: 0;
+    width: 100%;
+    margin-bottom: 40px;
+  }
+  .headline .line {
+    white-space: normal;
+  }
 }

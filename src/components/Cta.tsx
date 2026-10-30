@@ -12,7 +12,7 @@ export function Cta() {
   const headlineRef = useReveal<HTMLHeadingElement>({ offset: 33 })
 
   return (
-    <section ref={sectionRef} className="section" id="contact">
+    <section ref={sectionRef} className={styles.section} id="contact">
       <div
         className="container"
         data-reveal="y-fade"

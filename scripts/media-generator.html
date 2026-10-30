@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Media generator</title>
+    <style>
+      body { margin: 0; background: #111; color: #ddd; font: 14px/1.4 system-ui, sans-serif; }
+      #ui { position: fixed; inset: 0 0 auto 0; padding: 12px 16px; background: #000c; z-index: 2; }
+      #ui button { font: inherit; padding: 6px 14px; margin-right: 8px; }
+      #log { white-space: pre-wrap; margin-top: 8px; max-height: 40vh; overflow: auto; }
+      canvas { display: block; margin: 120px auto 40px; background: #000; max-width: 90vw; height: auto; }
+    </style>
+  </head>
+  <body>
+    <div id="ui">
+      <button id="run">Generate all</button>
+      <button id="runQuick">Generate stills only</button>
+      <span id="status">idle</span>
+      <div id="log"></div>
+    </div>
+    <canvas id="c" width="1400" height="849"></canvas>
+
+    <script type="module">
+      /*
+       * Generates every placeholder media asset of the site in the browser:
+       *   hero-seq/frame_001..039.webp   dark 3D cross spinning (hero canvas sequence)
+       *   videos/project-0N.webm + .jpg  5 looping reels (device mockups with scrolling UI)
+       *   cases/<slug>/page-1.jpg, device.png, reel.webm, reel.jpg, page-3.jpg
+       * and downloads them as one zip (store method) to unpack into public/assets.
+       */
+      const canvas = document.getElementById('c')
+      const ctx = canvas.getContext('2d')
+      const status = document.getElementById('status')
+      const logEl = document.getElementById('log')
+      const log = (m) => { logEl.textContent += m + '\n'; logEl.scrollTop = 1e9 }
+
+      // ---------------------------------------------------------------- projects
+      const PROJECTS = [
+        { n: 1, slug: 'orbit-tower-mobile-app', device: 'phone', theme: { bg: ['#07111a', '#0d1f2d', '#020406'], glow: '#2bb7a3', accent: '#67e8d5', ui: 'map' }, label: 'ORBIT TOWER' },
+        { n: 2, slug: 'lumen-home-tv-application', device: 'tv', theme: { bg: ['#3a2c1b', '#6e5a3c', '#1a1208'], glow: '#c9a56b', accent: '#e8d7b1', ui: 'tiles' }, label: 'LUMEN HOME' },
+        { n: 3, slug: 'vector-systems-enterprise-website', device: 'laptop', theme: { bg: ['#120812', '#3a0f3d', '#050205'], glow: '#d6336c', accent: '#ff7a59', ui: 'site' }, label: 'VECTOR SYSTEMS' },
+        { n: 4, slug: 'hopper-toys-ar-website', device: 'phone', theme: { bg: ['#2a1e14', '#8a6a4a', '#1a120a'], glow: '#f0b35c', accent: '#ffe08a', ui: 'ar' }, label: 'HOPPER TOYS' },
+        { n: 5, slug: 'atelier-bespoke-ecommerce', device: 'tablet', theme: { bg: ['#0a0a0a', '#1d1d1d', '#000'], glow: '#b8e02a', accent: '#d9ff5c', ui: 'shop' }, label: 'ATELIER BESPOKE' },
+      ]
+
+      // ---------------------------------------------------------------- helpers
+      const rr = (x, y, w, h, r) => { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); }
+      const seeded = (seed) => { let s = seed; return () => { s = (s * 1664525 + 1013904223) % 4294967296; return s / 4294967296 } }
+
+      function background(w, h, theme, t) {
+        const g = ctx.createLinearGradient(0, 0, w, h)
+        g.addColorStop(0, theme.bg[0]); g.addColorStop(0.55, theme.bg[1]); g.addColorStop(1, theme.bg[2])
+        ctx.fillStyle = g; ctx.fillRect(0, 0, w, h)
+        // soft glow blobs drifting slowly
+        for (let i = 0; i < 3; i++) {
+          const cx = w * (0.2 + 0.3 * i) + Math.sin(t * 0.4 + i) * w * 0.05
+          const cy = h * (0.3 + 0.2 * ((i + 1) % 3)) + Math.cos(t * 0.3 + i * 2) * h * 0.06
+          const rad = Math.max(w, h) * (0.18 + 0.08 * i)
+          const rg = ctx.createRadialGradient(cx, cy, 0, cx, cy, rad)
+          rg.addColorStop(0, theme.glow + '55'); rg.addColorStop(1, theme.glow + '00')
+          ctx.fillStyle = rg; ctx.fillRect(0, 0, w, h)
+        }
+        // vignette
+        const v = ctx.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.3, w / 2, h / 2, Math.max(w, h) * 0.8)
+        v.addColorStop(0, '#0000'); v.addColorStop(1, '#000c')
+        ctx.fillStyle = v; ctx.fillRect(0, 0, w, h)
+      }
+
+      /** Mock UI drawn inside a screen rect, scrolling with time. */
+      function screenUI(x, y, w, h, theme, t, seed) {
+        const rnd = seeded(seed)
+        ctx.save(); rr(x, y, w, h, 0); ctx.clip()
+        ctx.fillStyle = '#0b0b0d'; ctx.fillRect(x, y, w, h)
+        const unit = w / 10
+        const scroll = (t * unit * 0.9) % (unit * 12)
+        // header bar
+        ctx.fillStyle = '#15161a'; ctx.fillRect(x, y, w, unit * 1.2)
+        ctx.fillStyle = theme.accent; rr(x + unit * 0.5, y + unit * 0.4, unit * 1.6, unit * 0.35, unit * 0.2); ctx.fill()
+        ctx.fillStyle = '#3a3b40'; rr(x + w - unit * 2.2, y + unit * 0.4, unit * 1.7, unit * 0.35, unit * 0.2); ctx.fill()
+        // content rows
+        for (let i = 0; i < 16; i++) {
+          const ry = y + unit * 1.6 + i * unit * 1.5 - scroll
+          if (ry > y + h || ry + unit * 1.3 < y) continue
+          const kind = (i + seed) % 4
+          if (theme.ui === 'tiles' || kind === 0) {
+            // image card
+            const g = ctx.createLinearGradient(x, ry, x + w, ry + unit)
+            g.addColorStop(0, theme.glow + '66'); g.addColorStop(1, '#2a2a2e')
+            ctx.fillStyle = g; rr(x + unit * 0.5, ry, w - unit, unit * 1.2, unit * 0.15); ctx.fill()
+            ctx.fillStyle = '#ffffffcc'; rr(x + unit * 0.9, ry + unit * 0.8, unit * 2.5 + rnd() * unit * 2, unit * 0.14, unit * 0.07); ctx.fill()
+          } else if (kind === 1) {
+            // two small tiles
+            for (let k = 0; k < 2; k++) {
+              ctx.fillStyle = '#1c1d22'; rr(x + unit * (0.5 + k * 4.7), ry, unit * 4.3, unit * 1.2, unit * 0.15); ctx.fill()
+              ctx.fillStyle = theme.accent; ctx.beginPath(); ctx.arc(x + unit * (1.2 + k * 4.7), ry + unit * 0.5, unit * 0.28, 0, 7); ctx.fill()
+              ctx.fillStyle = '#9a9ba2'; rr(x + unit * (1.8 + k * 4.7), ry + unit * 0.38, unit * 2 * (0.6 + rnd() * 0.4), unit * 0.12, unit * 0.06); ctx.fill()
+              ctx.fillStyle = '#5a5b62'; rr(x + unit * (1.8 + k * 4.7), ry + unit * 0.7, unit * 1.3, unit * 0.1, unit * 0.05); ctx.fill()
+            }
+          } else {
+            // text lines
+            ctx.fillStyle = '#d2cfcf'; rr(x + unit * 0.5, ry + unit * 0.1, unit * (3 + rnd() * 4), unit * 0.2, unit * 0.1); ctx.fill()
+            ctx.fillStyle = '#6a6b72'; rr(x + unit * 0.5, ry + unit * 0.5, unit * (5 + rnd() * 3), unit * 0.12, unit * 0.06); ctx.fill()
+            ctx.fillStyle = '#6a6b72'; rr(x + unit * 0.5, ry + unit * 0.8, unit * (4 + rnd() * 3), unit * 0.12, unit * 0.06); ctx.fill()
+          }
+        }
+        // bottom nav
+        ctx.fillStyle = '#15161a'; ctx.fillRect(x, y + h - unit * 1.1, w, unit * 1.1)
+        for (let i = 0; i < 5; i++) { ctx.fillStyle = i === 0 ? theme.accent : '#3a3b40'; ctx.beginPath(); ctx.arc(x + unit * (1 + i * 2), y + h - unit * 0.55, unit * 0.22, 0, 7); ctx.fill() }
+        ctx.restore()
+      }
+
+      /** Device frame with a tilt, screen UI inside. kind: phone | tv | laptop | tablet */
+      function device(kind, cx, cy, size, tilt, theme, t, seed) {
+        ctx.save()
+        ctx.translate(cx, cy)
+        ctx.transform(1, tilt * 0.12, -tilt * 0.35, 1, 0, 0)
+        ctx.rotate(tilt * 0.08)
+        let w, h, r, bezel
+        if (kind === 'phone') { w = size * 0.46; h = size; r = size * 0.11; bezel = size * 0.025 }
+        else if (kind === 'tablet') { w = size * 0.74; h = size; r = size * 0.07; bezel = size * 0.03 }
+        else if (kind === 'laptop') { w = size * 1.5; h = size * 0.95; r = size * 0.04; bezel = size * 0.035 }
+        else { w = size * 1.7; h = size * 0.96; r = size * 0.015; bezel = size * 0.02 }
+        // shadow
+        ctx.shadowColor = '#000c'; ctx.shadowBlur = size * 0.25; ctx.shadowOffsetY = size * 0.08
+        const fg = ctx.createLinearGradient(-w / 2, -h / 2, w / 2, h / 2)
+        fg.addColorStop(0, '#2b2b2f'); fg.addColorStop(0.5, '#101013'); fg.addColorStop(1, '#2a2a2e')
+        ctx.fillStyle = fg; rr(-w / 2, -h / 2, w, h, r); ctx.fill()
+        ctx.shadowColor = 'transparent'
+        // edge highlight
+        ctx.strokeStyle = '#ffffff22'; ctx.lineWidth = Math.max(1, size * 0.004); rr(-w / 2, -h / 2, w, h, r); ctx.stroke()
+        // screen
+        const sx = -w / 2 + bezel, sy = -h / 2 + bezel, sw = w - bezel * 2, sh = h - bezel * 2
+        ctx.save(); rr(sx, sy, sw, sh, Math.max(0, r - bezel)); ctx.clip()
+        screenUI(sx, sy, sw, sh, theme, t, seed)
+        // glass reflection
+        const gl = ctx.createLinearGradient(sx, sy, sx + sw, sy + sh)
+        gl.addColorStop(0, '#ffffff10'); gl.addColorStop(0.45, '#ffffff00'); gl.addColorStop(1, '#ffffff08')
+        ctx.fillStyle = gl; ctx.fillRect(sx, sy, sw, sh)
+        ctx.restore()
+        if (kind === 'phone') { ctx.fillStyle = '#000'; rr(-w * 0.18, -h / 2 + bezel * 0.6, w * 0.36, bezel * 1.1, bezel); ctx.fill() }
+        if (kind === 'laptop') { ctx.fillStyle = '#1a1a1e'; rr(-w * 0.62, h / 2, w * 1.24, size * 0.06, size * 0.02); ctx.fill(); ctx.fillStyle = '#0d0d10'; rr(-w * 0.12, h / 2, w * 0.24, size * 0.02, size * 0.01); ctx.fill() }
+        if (kind === 'tv') { ctx.fillStyle = '#1a1a1e'; rr(-w * 0.08, h / 2, w * 0.16, size * 0.05, size * 0.01); ctx.fill(); ctx.fillStyle = '#1a1a1e'; rr(-w * 0.22, h / 2 + size * 0.045, w * 0.44, size * 0.012, size * 0.005); ctx.fill() }
+        ctx.restore()
+      }
+
+      function label(text, x, y, size) {
+        ctx.save(); ctx.fillStyle = '#d2cfcf'; ctx.font = `300 ${size}px Archivo, Helvetica, Arial, sans-serif`; ctx.letterSpacing = '0.08em'; ctx.fillText(text, x, y); ctx.restore()
+      }
+
+      /** Full scene for a reel / still. */
+      function scene(p, w, h, t, variant = 'reel') {
+        background(w, h, p.theme, t)
+        const bob = Math.sin(t * 0.8) * h * 0.012
+        if (variant === 'reel') {
+          const size = p.device === 'phone' ? h * 0.78 : p.device === 'tablet' ? h * 0.74 : h * 0.6
+          device(p.device, w * 0.5, h * 0.52 + bob, size, -0.6, p.theme, t, p.n)
+          if (p.device === 'phone') device('phone', w * 0.2, h * 0.75 + bob * 0.6, size * 0.75, 0.9, p.theme, t + 3, p.n + 7)
+          if (p.device === 'phone') device('phone', w * 0.82, h * 0.3 - bob * 0.6, size * 0.6, 0.4, p.theme, t + 6, p.n + 11)
+        } else if (variant === 'page1') {
+          // portrait backdrop: fog, a soft skyline fading into the dark, horizon glow
+          const horizon = h * 0.62
+          const hz = ctx.createLinearGradient(0, horizon - h * 0.25, 0, h)
+          hz.addColorStop(0, p.theme.glow + '00'); hz.addColorStop(0.5, p.theme.glow + '33'); hz.addColorStop(1, '#000000cc')
+          ctx.fillStyle = hz; ctx.fillRect(0, horizon - h * 0.25, w, h)
+          const rnd = seeded(p.n * 13)
+          for (let layer = 0; layer < 3; layer++) {
+            ctx.save(); ctx.globalAlpha = 0.12 + layer * 0.1; ctx.filter = `blur(${(2 - layer) * 6}px)`
+            const g = ctx.createLinearGradient(0, horizon - h * 0.3, 0, h)
+            g.addColorStop(0, '#1a1f24'); g.addColorStop(1, '#05070a')
+            ctx.fillStyle = g
+            let x = -w * 0.1
+            while (x < w * 1.1) {
+              const bw = w * (0.04 + rnd() * 0.08), bh = h * (0.08 + rnd() * 0.3) * (0.6 + layer * 0.3)
+              rr(x, h - bh - layer * h * 0.04, bw, bh + h, Math.min(bw * 0.2, 14)); ctx.fill()
+              x += bw + w * (0.01 + rnd() * 0.04)
+            }
+            ctx.restore()
+          }
+        } else if (variant === 'page3') {
+          device(p.device, w * 0.5, h * 0.55, p.device === 'phone' ? h * 0.7 : h * 0.5, 0.5, p.theme, t, p.n + 3)
+        }
+      }
+
+      // ---------------------------------------------------------------- hero: tiny software 3D renderer
+      function heroFrame(size, angle) {
+        const cx = size / 2, cy = size / 2, f = size * 1.6
+        const quads = []
+        const box = (sx, sy, sz, rot) => {
+          const v = []
+          for (let i = 0; i < 8; i++) v.push([(i & 1 ? 1 : -1) * sx / 2, (i & 2 ? 1 : -1) * sy / 2, (i & 4 ? 1 : -1) * sz / 2])
+          const faces = [[0, 1, 3, 2], [4, 6, 7, 5], [0, 4, 5, 1], [2, 3, 7, 6], [1, 5, 7, 3], [0, 2, 6, 4]]
+          return faces.map((fc) => fc.map((i) => rot(v[i])))
+        }
+        const rotZ = (a) => ([x, y, z]) => [x * Math.cos(a) - y * Math.sin(a), x * Math.sin(a) + y * Math.cos(a), z]
+        const rotY = (a) => ([x, y, z]) => [x * Math.cos(a) + z * Math.sin(a), y, -x * Math.sin(a) + z * Math.cos(a)]
+        const rotX = (a) => ([x, y, z]) => [x, y * Math.cos(a) - z * Math.sin(a), y * Math.sin(a) + z * Math.cos(a)]
+        const compose = (...fs) => (p) => fs.reduce((q, fn) => fn(q), p)
+        // three-quarter view: spin around Y, slight tilt so the top faces catch the light
+        const world = compose(rotY(angle), rotX(0.22))
+        const bar = size * 0.15, len = size * 0.92
+        box(bar, len, bar, compose(rotZ(Math.PI / 4), world)).forEach((q) => quads.push(q))
+        box(bar, len, bar, compose(rotZ(-Math.PI / 4), world)).forEach((q) => quads.push(q))
+        // cylinder (disc on top-left arm)
+        const n = 28, cr = size * 0.16, ch = size * 0.07
+        const off = [-size * 0.33, -size * 0.33, 0]
+        const ring = (yy) => Array.from({ length: n }, (_, i) => { const a = (i / n) * Math.PI * 2; return world(rotZ(Math.PI / 4)([off[0] + Math.cos(a) * cr, off[1] + yy, off[2] + Math.sin(a) * cr])) })
+        const top = ring(-ch), bot = ring(ch)
+        quads.push(top); quads.push([...bot].reverse())
+        for (let i = 0; i < n; i++) quads.push([top[i], top[(i + 1) % n], bot[(i + 1) % n], bot[i]])
+        // shade + sort
+        const light = [-0.4, -0.7, -0.6]
+        const proj = ([x, y, z]) => { const s = f / (f + z + size * 0.4); return [cx + x * s, cy + y * s] }
+        const shaded = quads.map((q) => {
+          const a = q[0], b = q[1], c = q[2]
+          const u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]], v = [c[0] - a[0], c[1] - a[1], c[2] - a[2]]
+          const nrm = [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]]
+          const l = Math.hypot(...nrm) || 1
+          const d = (nrm[0] * light[0] + nrm[1] * light[1] + nrm[2] * light[2]) / l
+          const depth = q.reduce((s, p) => s + p[2], 0) / q.length
+          return { q, d, depth }
+        }).sort((p, r) => r.depth - p.depth)
+        ctx.fillStyle = '#000'; ctx.fillRect(0, 0, size, size)
+        shaded.forEach(({ q, d }) => {
+          const k = 0.06 + Math.max(0, d) * 0.22
+          ctx.fillStyle = `rgb(${Math.round(k * 255)},${Math.round(k * 255)},${Math.round(k * 258)})`
+          ctx.beginPath(); q.forEach((p, i) => { const [x, y] = proj(p); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y) }); ctx.closePath(); ctx.fill()
+          ctx.strokeStyle = '#ffffff10'; ctx.lineWidth = 1; ctx.stroke()
+        })
+      }
+
+      // ---------------------------------------------------------------- zip (store only)
+      const crcTable = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0 } return t })()
+      const crc32 = (buf) => { let c = 0xffffffff; for (let i = 0; i < buf.length; i++) c = crcTable[(c ^ buf[i]) & 0xff] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0 }
+      function makeZip(files) {
+        const enc = new TextEncoder(); const parts = []; const central = []; let offset = 0
+        const u16 = (n) => [n & 255, (n >> 8) & 255]; const u32 = (n) => [n & 255, (n >> 8) & 255, (n >> 16) & 255, (n >>> 24) & 255]
+        for (const { name, data } of files) {
+          const nm = enc.encode(name); const crc = crc32(data)
+          const local = new Uint8Array([...u32(0x04034b50), ...u16(20), ...u16(0), ...u16(0), ...u16(0), ...u16(0), ...u32(crc), ...u32(data.length), ...u32(data.length), ...u16(nm.length), ...u16(0), ...nm])
+          parts.push(local, data)
+          central.push(new Uint8Array([...u32(0x02014b50), ...u16(20), ...u16(20), ...u16(0), ...u16(0), ...u16(0), ...u16(0), ...u32(crc), ...u32(data.length), ...u32(data.length), ...u16(nm.length), ...u16(0), ...u16(0), ...u16(0), ...u16(0), ...u32(0), ...u32(offset), ...nm]))
+          offset += local.length + data.length
+        }
+        const cdSize = central.reduce((s, c) => s + c.length, 0)
+        const end = new Uint8Array([...u32(0x06054b50), ...u16(0), ...u16(0), ...u16(files.length), ...u16(files.length), ...u32(cdSize), ...u32(offset), ...u16(0)])
+        return new Blob([...parts, ...central, end], { type: 'application/zip' })
+      }
+
+      // ---------------------------------------------------------------- capture
+      const files = []
+      const addBlob = async (name, blob) => { files.push({ name, data: new Uint8Array(await blob.arrayBuffer()) }); log(`${name}  ${(blob.size / 1024).toFixed(0)} KB`) }
+      const toBlob = (type, q) => new Promise((r) => canvas.toBlob(r, type, q))
+      const setSize = (w, h) => { canvas.width = w; canvas.height = h }
+
+      async function still(name, w, h, draw, type = 'image/jpeg', q = 0.86) {
+        setSize(w, h); draw(); await addBlob(name, await toBlob(type, q))
+      }
+
+      async function record(name, w, h, seconds, draw, posterName) {
+        setSize(w, h)
+        draw(0)
+        if (posterName) await addBlob(posterName, await toBlob('image/jpeg', 0.86))
+        const stream = canvas.captureStream(30)
+        const mime = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm'
+        const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 6_000_000 })
+        const chunks = []
+        rec.ondataavailable = (e) => e.data.size && chunks.push(e.data)
+        const done = new Promise((r) => (rec.onstop = r))
+        rec.start(250)
+        const t0 = performance.now()
+        await new Promise((resolve) => {
+          const tick = () => { const t = (performance.now() - t0) / 1000; draw(t); if (t < seconds) requestAnimationFrame(tick); else resolve() }
+          requestAnimationFrame(tick)
+        })
+        rec.stop(); await done
+        await addBlob(name, new Blob(chunks, { type: 'video/webm' }))
+      }
+
+      async function generate(stillsOnly) {
+        files.length = 0
+        status.textContent = 'hero frames…'
+        const FRAMES = 39
+        for (let i = 0; i < FRAMES; i++) {
+          await still(`hero-seq/frame_${String(i + 1).padStart(3, '0')}.webp`, 1080, 1080, () => heroFrame(1080, (i / FRAMES) * Math.PI * 2), 'image/webp', 0.9)
+        }
+        for (const p of PROJECTS) {
+          status.textContent = `project ${p.n}…`
+          const dir = `cases/${p.slug}`
+          await still(`${dir}/page-1.jpg`, 900, 1100, () => scene(p, 900, 1100, 0, 'page1'))
+          // transparent device mockup for the first page
+          await still(`${dir}/device.png`, 440, 900, () => { ctx.clearRect(0, 0, 440, 900); device('phone', 220, 450, 860, 0, p.theme, 0.5, p.n) }, 'image/png')
+          await still(`${dir}/page-3.jpg`, 900, 1100, () => scene(p, 900, 1100, 1.2, 'page3'))
+          if (stillsOnly) {
+            await still(`videos/project-0${p.n}.jpg`, 1400, 849, () => scene(p, 1400, 849, 0))
+            await still(`${dir}/reel.jpg`, 1280, 720, () => scene(p, 1280, 720, 0))
+          } else {
+            await record(`videos/project-0${p.n}.webm`, 1400, 849, 6, (t) => scene(p, 1400, 849, t), `videos/project-0${p.n}.jpg`)
+            await record(`${dir}/reel.webm`, 1280, 720, 6, (t) => scene(p, 1280, 720, t + 2), `${dir}/reel.jpg`)
+          }
+        }
+        status.textContent = 'zipping…'
+        const zip = makeZip(files)
+        const a = document.createElement('a'); a.href = URL.createObjectURL(zip); a.download = 'site-media.zip'; document.body.appendChild(a); a.click()
+        status.textContent = `done: ${files.length} files, ${(zip.size / 1048576).toFixed(1)} MB`
+        log(status.textContent)
+        window.__mediaDone = { files: files.length, bytes: zip.size }
+      }
+      document.getElementById('run').onclick = () => generate(false)
+      document.getElementById('runQuick').onclick = () => generate(true)
+      window.__generate = generate
+      // preview the first reel scene while idle
+      scene(PROJECTS[0], 1400, 849, 0)
+    </script>
+  </body>
+</html>

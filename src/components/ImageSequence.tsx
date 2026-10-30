@@ -42,8 +42,9 @@ export function ImageSequence({ dir, ext, frameCount, pad = 3, className, onRead
       const img = images[Math.max(0, Math.min(frameCount - 1, index))]
       if (!img || !img.complete || !img.naturalWidth) return
       const { width, height } = canvas.getBoundingClientRect()
-      // "cover" fit
-      const scale = Math.max(width / img.naturalWidth, height / img.naturalHeight)
+      // "contain" fit: the reference canvas is a 2:1 box drawn behind the headline;
+      // the frame keeps its aspect ratio and is centered inside it.
+      const scale = Math.min(width / img.naturalWidth, height / img.naturalHeight)
       const w = img.naturalWidth * scale
       const h = img.naturalHeight * scale
       ctx.clearRect(0, 0, width, height)

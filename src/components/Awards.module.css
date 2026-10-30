@@ -1,45 +1,21 @@
+/* Reference `.awards-section`: padding 6.46vw 0 11.11vw; list offset 31vw with the preview floating at its left */
+.section {
+  position: relative;
+  padding-top: var(--layout-awards-padTop);
+  padding-bottom: var(--layout-awards-padBottom);
+}
 .intro {
-  max-width: 50%;
-  margin-bottom: 110px;
-  text-transform: uppercase;
-}
-.grid {
-  display: grid;
-  grid-template-columns: 1fr 1.6fr;
-  gap: 40px;
-  align-items: start;
-}
-.visual {
-  position: sticky;
-  top: 25vh;
-  height: 50vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-/* "reddot-out" (rest): opacity 0, translateY(-8px). Out transitions: opacity 100ms, move 100ms outSine */
-.visualImg {
-  position: absolute;
-  width: 60%;
-  max-width: 320px;
-  opacity: 0;
-  transform: translateY(var(--motion-distance-awardPreview));
-  transition:
-    opacity var(--motion-duration-d100) linear,
-    transform var(--motion-duration-d100) var(--motion-ease-outSine);
-}
-/* "reddot-in": opacity 400ms linear, move 500ms outSine */
-.visualImg.active {
-  opacity: 1;
-  transform: translateY(0);
-  transition:
-    opacity var(--motion-duration-d400) linear,
-    transform var(--motion-duration-d500) var(--motion-ease-outSine);
+  width: var(--layout-awards-textWidth);
 }
 .rows {
+  position: relative;
+  margin-left: var(--layout-awards-listOffset);
+  margin-top: var(--layout-awards-listTop);
+  margin-bottom: var(--layout-awards-listBottom);
   border-top: 1px solid var(--color-lineStrong);
 }
 .row {
+  position: relative;
   border-bottom: 1px solid var(--color-lineStrong);
   transition: border-color var(--motion-duration-d200) linear;
 }
@@ -47,23 +23,46 @@
   border-color: var(--color-lineHover);
   transition-duration: var(--motion-duration-d500);
 }
+/* "reddot-out" (rest): opacity 0, translateY(-8px); out: opacity 100ms, move 100ms outSine */
+.preview {
+  position: absolute;
+  top: 0;
+  left: var(--layout-awards-previewLeft);
+  width: var(--layout-awards-previewWidth);
+  height: var(--layout-awards-previewHeight);
+  object-fit: cover;
+  opacity: 0;
+  transform: translateY(var(--motion-distance-awardPreview));
+  pointer-events: none;
+  transition:
+    opacity var(--motion-duration-d100) linear,
+    transform var(--motion-duration-d100) var(--motion-ease-outSine);
+}
+/* "reddot-in": opacity 400ms linear, move 500ms outSine */
+.row:hover .preview {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity var(--motion-duration-d400) linear,
+    transform var(--motion-duration-d500) var(--motion-ease-outSine);
+}
 .summary {
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 26px 0;
+  min-height: var(--layout-awards-rowHeight);
 }
 .name {
   display: flex;
   align-items: baseline;
   gap: 12px;
-  font-size: var(--type-body-size);
+  font-size: 16px;
   font-weight: var(--font-weight-light);
 }
 .count {
   color: var(--color-textMuted);
-  font-size: 12px;
+  font-size: 11px;
   letter-spacing: 0.05em;
 }
 .toggle {
@@ -109,7 +108,7 @@
 }
 .entry {
   position: relative;
-  padding-left: 28%;
+  padding-left: 29%;
 }
 /* each entry line draws 0 → 100% in 500ms outSine; collapses in 300ms outExpo */
 .entryLine {
@@ -130,8 +129,9 @@
   display: flex;
   justify-content: space-between;
   gap: 24px;
-  padding: 11px 0;
+  padding: 1vw 0;
   font-size: 14px;
+  color: var(--color-textMuted);
   opacity: 0;
   transform: translateY(var(--motion-distance-awardEntry));
   transition:
@@ -146,22 +146,31 @@
     transform var(--motion-duration-d500) var(--motion-ease-outSine) var(--entry-delay);
 }
 .more {
-  margin-top: 40px;
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column;
+  align-items: flex-end;
   text-align: right;
   text-transform: uppercase;
-  font-size: var(--type-body-size);
-  line-height: 1.1;
-  font-weight: var(--font-weight-light);
+  color: var(--color-text);
 }
 .moreLine {
   display: block;
 }
 
 @media (max-width: 991px) {
-  .intro { max-width: 100%; margin-bottom: 64px; }
-  .grid { grid-template-columns: 1fr; }
-  .visual { display: none; }
-  .entry { padding-left: 0; }
+  .section {
+    padding: 40px 0 100px;
+  }
+  .intro {
+    width: 100%;
+  }
+  .rows {
+    margin: 40px 0 0;
+  }
+  .preview {
+    display: none;
+  }
+  .entry {
+    padding-left: 0;
+  }
 }

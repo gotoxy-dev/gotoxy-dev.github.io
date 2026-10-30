@@ -9,7 +9,7 @@ export function Insights() {
   const ref = useReveal<HTMLElement>({ offset: 25 })
 
   return (
-    <section ref={ref} className="section" id="insights">
+    <section ref={ref} className={styles.section} id="insights">
       <div
         className="container"
         data-reveal="y-fade"

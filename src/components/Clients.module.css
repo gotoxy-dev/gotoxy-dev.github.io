@@ -1,8 +1,13 @@
+/* Reference `.what-our-clients-sec`: padding 6.94vw 60px 0 */
+.section {
+  position: relative;
+  padding-top: var(--layout-clients-padTop);
+}
 .head {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  margin-bottom: 60px;
+  margin-bottom: var(--layout-clients-titleBottom);
 }
 .title {
   display: flex;
@@ -32,7 +37,8 @@
   grid-template-columns: 34% 1fr auto;
   align-items: center;
   width: 100%;
-  padding: 18px 0;
+  min-height: var(--layout-clients-rowHeight);
+  padding: 0;
   text-align: left;
   gap: 24px;
 }
@@ -86,7 +92,7 @@
 
 /* logo marquee */
 .marquee {
-  margin-top: 150px;
+  padding-block: var(--layout-clients-marqueePad);
   overflow: hidden;
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
   mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
@@ -139,7 +145,10 @@
   .quote {
     grid-column: 1 / -1;
   }
+  .section {
+    padding-top: 70px;
+  }
   .marquee {
-    margin-top: 80px;
+    padding-block: 60px;
   }
 }

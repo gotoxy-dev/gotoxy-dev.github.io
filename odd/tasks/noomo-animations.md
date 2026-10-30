@@ -16,6 +16,9 @@ Branch: `master` (repository has no commits yet; work-unit commits are skipped u
 - S9 Footer: text reveal (`a-32`, offset 50%) y 2vw → 0 in 600 ms `outCirc`. Back-to-top hover (`a-39/40`): arrow 1 y 0 → -30px and arrow 2 y 30px → 0 in 300 ms `outCirc`; out reset in 300 ms.
 - S10 Easings and durations live in `src/theme/tokens.ts` only; components read CSS vars or the token object. Webflow names map to: outSine `0.39,0.575,0.565,1`; outQuart `0.165,0.84,0.44,1`; outCirc `0.075,0.82,0.165,1`; outExpo `0.19,1,0.22,1`; ease `0.25,0.1,0.25,1`.
 - S11 `prefers-reduced-motion` keeps all content visible with no motion. `npm run build` passes.
+- S12 Layout matches the reference at 1536px: 60px gutters, full-width sections, spacing per section measured in vw (see `tokens.layout`).
+- S13 Case-study pages (`/projects/:slug`) replicate the reference case page: fixed right panel 50vw with three pages cross-fading on scroll (33%→66%, 75%→100%), content moving ±60px, pager "01 — 03" with a dash filling 0→50→100% and a label swap, close button top-right, everything fading in 500ms on load; left column of sticky 100vh visuals (image + device, video, image). Navbar and Footer are not rendered on these pages.
+- S14 Project media is generated locally without ffmpeg/Python: `scripts/media-generator.html` served by the dev server produces hero frames (39 webp), reels (6s WebM 1400×849 + jpg poster), and per-case stills/reel, packed into `site-media.zip` to unzip into `public/assets`.
 
 ## Tasks
 
@@ -26,6 +29,9 @@ Branch: `master` (repository has no commits yet; work-unit commits are skipped u
 - T5 (S5) Awards reveal, hover preview, accordion — route: inline — done (hover: preview op 1 / y 0, row border #fff; open: entry lines and rows stagger)
 - T6 (S6, S7, S8, S9) CTA, Insights, Footer, Navbar hovers — route: inline — done (insights rest: image -414.72px = 27vw, text -476.16px = 31vw; hover both 0; CTA 5 lines + eyebrow at 0; footer blocks at 0)
 - T7 (S11) build + visual check — route: inline — done (`npm run build` passes; desktop 1536 and mobile 375 checked, no horizontal overflow)
+- T8 (S12) layout fidelity pass: full-width 60px container, per-section spacing tokens, hero canvas geometry, awards/insights sizes — route: inline — done
+- T9 (S13) case-study route `/projects/$slug` with the reference "SN-case-scroll" cross-fade, sticky left sections, pager, close, load fade; Navbar/Footer hidden on it — route: inline — done (src/routes/projects.$slug.tsx, src/components/CaseStudy.*, content `caseStudies` in site.ts)
+- T10 (S14) browser media generator `scripts/media-generator.html` (canvas + MediaRecorder → zip): 39 hero frames, 5 project reels (WebM + poster), per-case page-1/device/reel/page-3 — route: inline — done (installed under public/assets)
 
 ## Log
 
@@ -35,3 +41,7 @@ Branch: `master` (repository has no commits yet; work-unit commits are skipped u
 - L4 (2026-10-29) GSAP `CustomEase.create` rejects the CSS `cubic-bezier()` wrapper ("malformed path"); `ease()` in src/theme/motion.ts strips it and passes the four numbers.
 - L5 (2026-10-29) `cta.headline` in src/content/site.ts became an array of five lines so each line can animate like the reference `h2.h2-1…5`. Engram mirror: pending (saved as an observation, not as the `odd/noomo-animations/tasks` topic).
 - L6 Risk: none (tokens renamed and every consumer in src/ updated; no external contract).
+- L7 (2026-10-29) User: "continua con la comparacion web … faltan rutas de proyectos, tenemos inconsistencias de disenio y tambien falta que crees las imagens/frames/videos de los proyectos con la experiencia de usuario y animaciones de nuestro objetivo".
+- L8 Vite rewrites inline `<script type="module">` in served HTML into a proxy module, so checking the DOM for the script text does not tell which version ran; after editing the generator restart the dev server or hard-reload. The built-in browser overwrites `~/Downloads/site-media.zip` on each run.
+- L9 Project reels are WebM (VP9); Safari older than 17 does not play them. Re-encode to MP4 when ffmpeg is available (the generator keeps the scene code).
+- L10 Risk: none for T8–T10 (new route, new assets, CSS tokens; no shared contract changed).

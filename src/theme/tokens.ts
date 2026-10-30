@@ -21,6 +21,8 @@ export const tokens = {
     line: '#333333', // rgb(51,51,51) — list hairlines
     lineStrong: '#575757',
     lineHover: '#ffffff', // award rows on hover
+    pager: '#484848', // case-study pager dash / inactive label
+    caseVideoBg: '#161616',
     accent: '#d2cfcf',
     pill: '#969494', // outline of tag pills
     pillHover: 'rgba(255,255,255,0.2)', // READ / CLOSE button background on hover
@@ -41,27 +43,99 @@ export const tokens = {
   /** Fluid type scale. Measured px at 1536px wide → vw. */
   type: {
     display: { size: 'clamp(56px, 7.64vw, 128px)', lineHeight: 1, letterSpacing: '-0.01em' }, // 117px hero h1
-    h2: { size: 'clamp(40px, 5.5vw, 92px)', lineHeight: 1, letterSpacing: '-0.01em' }, // 84px section titles
-    h3: { size: 'clamp(26px, 2.8vw, 46px)', lineHeight: 1.05, letterSpacing: '-0.005em' }, // insights titles
-    body: { size: 'clamp(16px, 1.3vw, 22px)', lineHeight: 1.25 }, // awards paragraph, testimonials
+    h2: { size: 'clamp(40px, 5.5vw, 92px)', lineHeight: 1, letterSpacing: '-0.01em' }, // 84px section titles, CTA, footer
+    h3: { size: 'clamp(26px, 3.333vw, 56px)', lineHeight: 1, letterSpacing: '-0.005em' }, // 51px insights titles
+    lead: { size: 'clamp(20px, 2.222vw, 36px)', lineHeight: 1.1 }, // 34px awards paragraph
+    body: { size: 'clamp(16px, 1.3vw, 22px)', lineHeight: 1.25 }, // testimonials
     nav: { size: '14px', lineHeight: '0.9', letterSpacing: '0.04em' },
     small: { size: '14px', lineHeight: '20px', letterSpacing: '0' },
-    caption: { size: '12.75px', lineHeight: '17.85px', letterSpacing: '0.02em' },
-    tag: { size: '11px', lineHeight: '1', letterSpacing: '0.04em' },
+    caption: { size: '14px', lineHeight: '1.6', letterSpacing: '0.02em' }, // hero caption, CTA eyebrow, "+50 more"
+    tag: { size: '11px', lineHeight: '1.5', letterSpacing: '0.04em' },
   },
 
+  /** Layout measured on the reference at 1536px (60px side gutter, full-width containers). */
   layout: {
-    containerMax: '1400px',
-    gutter: 'clamp(20px, 4vw, 60px)',
+    containerMax: 'none',
+    gutter: 'clamp(20px, 3.906vw, 60px)',
     navHeight: '88px',
-    sectionGap: 'clamp(96px, 10vw, 160px)',
-    projectGap: '64px',
     /** Trailing arrow of small links (reference `.footer-arrow`) */
     linkArrow: '11px',
-    /** Insights: image column width and the text offset while an item is at rest */
-    insightImageWidth: '26.39vw',
-    insightImageShift: '-27vw',
-    insightTextShift: '-31vw',
+    hero: {
+      padTop: '14.03vw',
+      padBottom: '19.44vw',
+      canvasWidth: '127.7vw',
+      canvasHeight: '63.9vw',
+      canvasLeft: '-36.7vw',
+      canvasTop: '3.75vw',
+    },
+    project: {
+      gap: '4.167vw', // margin between cards
+      inner: '0.833vw', // line → title row → media
+    },
+    clients: {
+      padTop: '6.944vw',
+      titleBottom: '4.167vw',
+      rowHeight: '74px',
+      marqueePad: '8.5vw',
+    },
+    awards: {
+      padTop: '6.458vw',
+      padBottom: '11.111vw',
+      textWidth: '50%',
+      listOffset: '31vw', // list margin-left
+      listTop: '7.222vw',
+      listBottom: '2.778vw',
+      rowHeight: '50px',
+      previewWidth: '13.889vw',
+      previewHeight: '8.194vw',
+      previewLeft: '-53%',
+    },
+    cta: {
+      eyebrowBottom: '4.167vw',
+      wrapWidth: '80.35vw',
+      wrapBottom: '5.556vw',
+      sectionBottom: '17.708vw',
+    },
+    insights: {
+      headHeight: '5.37vw',
+      itemPadTop: '2.222vw',
+      textHeight: '14.236vw',
+      textBottom: '2.778vw',
+      textWidth: '55.5vw',
+      imageWidth: '26.389vw',
+      imageHeight: '14.792vw',
+      /** rest offsets of the hover interaction */
+      imageShift: '-27vw',
+      textShift: '-31vw',
+    },
+    footer: {
+      padTop: '2.6vw',
+      touchTop: '3.6vw',
+      bottomTop: '5.9vw',
+    },
+    /** Case-study page (reference `.case-wrapper` / `.project-section`) */
+    caseStudy: {
+      panelPadTop: '5.556vw',
+      panelPadSide: '4.167vw',
+      panelPadBottom: '4.167vw',
+      titleSize: '3.194vw',
+      headingSize: '2.2vw',
+      paragraphSize: '1.111vw',
+      valueSize: '0.972vw',
+      labelSize: '0.83vw',
+      rowGap: '0.833vw',
+      rowPadBottom: '0.972vw',
+      space: '1.389vw',
+      spaceSmall: '0.694vw',
+      labelWidth: '46.6%',
+      deviceWidth: '38.8%',
+      closeSize: '1.389vw',
+      closeOffset: '1.389vw',
+      pagerOffset: '2.083vw',
+      dashWidth: '2.083vw',
+      /** Scroll keyframes of the three pages (progress 0..1) */
+      scrubSmoothing: 1.7,
+    },
   },
 
   radius: {

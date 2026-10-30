@@ -15,7 +15,7 @@ export function Clients() {
   const [openId, setOpenId] = useState<string | null>(null)
 
   return (
-    <section ref={sectionRef} className="section" id="story">
+    <section ref={sectionRef} className={styles.section} id="story">
       <div className="container">
         <div
           className={styles.head}

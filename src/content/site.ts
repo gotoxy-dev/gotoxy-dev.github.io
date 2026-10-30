@@ -27,6 +27,43 @@ export interface Project {
   href: string
 }
 
+export interface CaseTableRow {
+  label: string
+  value: string
+}
+
+export interface CasePage {
+  /** Small caps label above the heading (GOAL, RESULTS…) */
+  label: string
+  heading: string
+  paragraphs: string[]
+}
+
+export interface CaseStudy {
+  slug: string
+  /** Project this case belongs to (`projects[].id`) */
+  projectId: string
+  title: string
+  table: CaseTableRow[]
+  /** Link shown on the first page (app store, live site…) */
+  link: { label: string; href: string }
+  /** Second and third page copy */
+  pages: [CasePage, CasePage]
+  /** Visuals of the three left-hand sections */
+  media: {
+    /** page 1: full-bleed background + device mockup on top */
+    background: string
+    device: string
+    /** page 2: looping reel */
+    video: string
+    videoPoster: string
+    /** page 3: full-bleed image */
+    closing: string
+  }
+  /** Slug of the next case study */
+  next: string
+}
+
 export interface Testimonial {
   id: string
   author: string
@@ -94,7 +131,7 @@ export const hero = {
   sequence: {
     dir: '/assets/hero-seq',
     ext: 'webp',
-    frameCount: 60,
+    frameCount: 39, // same count as the reference sequence
     pad: 3, // frame_001.webp
   },
 }
@@ -104,41 +141,41 @@ export const projects: Project[] = [
     id: 'orbit',
     name: 'Orbit Tower',
     tags: ['AR design', 'Mobile application'],
-    video: '/assets/videos/project-01.mp4',
+    video: '/assets/videos/project-01.webm',
     poster: '/assets/videos/project-01.jpg',
-    href: '#',
+    href: '/projects/orbit-tower-mobile-app',
   },
   {
     id: 'lumen',
     name: 'Lumen Home',
     tags: ['Product design', 'TV application'],
-    video: '/assets/videos/project-02.mp4',
+    video: '/assets/videos/project-02.webm',
     poster: '/assets/videos/project-02.jpg',
-    href: '#',
+    href: '/projects/lumen-home-tv-application',
   },
   {
     id: 'vector',
     name: 'Vector Systems',
     tags: ['3D animation', 'Enterprise website', 'Webflow'],
-    video: '/assets/videos/project-03.mp4',
+    video: '/assets/videos/project-03.webm',
     poster: '/assets/videos/project-03.jpg',
-    href: '#',
+    href: '/projects/vector-systems-enterprise-website',
   },
   {
     id: 'hopper',
     name: 'Hopper Toys',
     tags: ['AR design', 'Website', '3D animation'],
-    video: '/assets/videos/project-04.mp4',
+    video: '/assets/videos/project-04.webm',
     poster: '/assets/videos/project-04.jpg',
-    href: '#',
+    href: '/projects/hopper-toys-ar-website',
   },
   {
     id: 'atelier',
     name: 'Atelier Bespoke',
     tags: ['3D', 'E-commerce website'],
-    video: '/assets/videos/project-05.mp4',
+    video: '/assets/videos/project-05.webm',
     poster: '/assets/videos/project-05.jpg',
-    href: '#',
+    href: '/projects/atelier-bespoke-ecommerce',
   },
 ]
 
@@ -297,5 +334,184 @@ export const footer = {
   copyright: brand.copyright,
 }
 
-export const site = { brand, nav, hero, projects, clients, awards, cta, insights, footer }
+const caseMedia = (slug: string) => ({
+  background: `/assets/cases/${slug}/page-1.jpg`,
+  device: `/assets/cases/${slug}/device.png`,
+  video: `/assets/cases/${slug}/reel.webm`,
+  videoPoster: `/assets/cases/${slug}/reel.jpg`,
+  closing: `/assets/cases/${slug}/page-3.jpg`,
+})
+
+/** Case-study pages (`/projects/:slug`). One per project; the order sets the "next project" chain. */
+export const caseStudies: CaseStudy[] = [
+  {
+    slug: 'orbit-tower-mobile-app',
+    projectId: 'orbit',
+    title: 'Upgrading the Orbit Tower visit',
+    table: [
+      { label: 'Client', value: 'Orbit Tower' },
+      { label: 'Involvement', value: 'Graphic designer, UI/UX designer, Motion designer' },
+      { label: 'Scope', value: 'Mobile app' },
+      {
+        label: 'Results',
+        value:
+          'Visitors now access their photos and videos within seconds instead of a 10-15 minute wait. Satisfaction went up, and app usage grew by a fifth in the first month.',
+      },
+    ],
+    link: { label: 'Download the app', href: '#' },
+    pages: [
+      {
+        label: 'Goal',
+        heading: 'Seamless access to all experiences via mobile app.',
+        paragraphs: [
+          'We partnered with Orbit Tower to rethink the visitor experience with a mobile app that brings every attraction together and removes paper tickets and queues at kiosks.',
+          'The work started with a broad exploration of design paradigms and on-site interviews with real visitors. That research shaped every decision in the app.',
+          'Guided features such as the observation deck camera, AR views and roaming photos turned the app into an interactive guide with step-by-step explanations of each experience.',
+        ],
+      },
+      {
+        label: 'Results',
+        heading: 'Transformed the traditional photo and experience process',
+        paragraphs: [
+          'The trust placed in us by the Orbit Tower team let us push the design beyond expectations. Since launch, adoption grew by a fifth within the first month.',
+          'Visitors launch every experience from the app and get their photos in seconds. The days of waiting in line at kiosks are gone.',
+          'We are grateful for the collaboration and look forward to the next steps together.',
+        ],
+      },
+    ],
+    media: caseMedia('orbit-tower-mobile-app'),
+    next: 'lumen-home-tv-application',
+  },
+  {
+    slug: 'lumen-home-tv-application',
+    projectId: 'lumen',
+    title: 'A calmer TV experience for every room',
+    table: [
+      { label: 'Client', value: 'Lumen Home' },
+      { label: 'Involvement', value: 'Product designer, UI/UX designer, Motion designer' },
+      { label: 'Scope', value: 'TV application' },
+      {
+        label: 'Results',
+        value: 'Guests order services from the TV in two clicks. Requests handled per hour doubled after the rollout.',
+      },
+    ],
+    link: { label: 'Visit the website', href: '#' },
+    pages: [
+      {
+        label: 'Goal',
+        heading: 'One screen for every request, from towels to late checkout.',
+        paragraphs: [
+          'Lumen Home needed a TV interface that works from across the room, with a remote, for guests of every age.',
+          'We designed a large-type grid, a persistent request tray and a clear focus state so navigation never gets lost.',
+          'Motion was kept slow and deliberate, matching the pace of a living room rather than a phone.',
+        ],
+      },
+      {
+        label: 'Results',
+        heading: 'Fewer calls to the front desk, happier guests',
+        paragraphs: [
+          'The request flow replaced most front-desk calls, and staff now see every order on a single dashboard.',
+          'Guest reviews mention the TV app as a highlight of the stay.',
+        ],
+      },
+    ],
+    media: caseMedia('lumen-home-tv-application'),
+    next: 'vector-systems-enterprise-website',
+  },
+  {
+    slug: 'vector-systems-enterprise-website',
+    projectId: 'vector',
+    title: 'An enterprise website that moves',
+    table: [
+      { label: 'Client', value: 'Vector Systems' },
+      { label: 'Involvement', value: '3D artist, UI/UX designer, Webflow developer' },
+      { label: 'Scope', value: 'Enterprise website' },
+      { label: 'Results', value: 'Time on page tripled on the product tour, and demo requests grew by a third.' },
+    ],
+    link: { label: 'Visit the website', href: '#' },
+    pages: [
+      {
+        label: 'Goal',
+        heading: 'Explain a complex product with 3D instead of paragraphs.',
+        paragraphs: [
+          'Vector sells design automation for electronics. Their old site described it; the new one shows it, with a 3D board that assembles as you scroll.',
+          'We built the scenes in 3D, rendered them as sequences and wired them to scroll progress in Webflow.',
+        ],
+      },
+      {
+        label: 'Results',
+        heading: 'A product tour people actually finish',
+        paragraphs: [
+          'Visitors scroll through the whole tour, and the demo form at the end converts far better than the previous contact page.',
+          'The system of sequences is reusable for every new product launch.',
+        ],
+      },
+    ],
+    media: caseMedia('vector-systems-enterprise-website'),
+    next: 'hopper-toys-ar-website',
+  },
+  {
+    slug: 'hopper-toys-ar-website',
+    projectId: 'hopper',
+    title: 'Bringing a toy to life with AR',
+    table: [
+      { label: 'Client', value: 'Hopper Toys' },
+      { label: 'Involvement', value: '3D artist, AR designer, Web developer' },
+      { label: 'Scope', value: 'AR experience and website' },
+      { label: 'Results', value: 'Two design awards and a sold-out first production run.' },
+    ],
+    link: { label: 'Visit the website', href: '#' },
+    pages: [
+      {
+        label: 'Goal',
+        heading: 'Let families meet the character before it ships.',
+        paragraphs: [
+          'Hopper wanted buyers to see the toy in their own living room. We built a web AR experience that places the character on any surface, no app required.',
+          'The website wraps the AR scene in a playful story with 3D animation on every section.',
+        ],
+      },
+      {
+        label: 'Results',
+        heading: 'Recognised by the design community',
+        paragraphs: [
+          'The site collected honourable mentions and a site of the day, and the AR try-out became the main driver of pre-orders.',
+        ],
+      },
+    ],
+    media: caseMedia('hopper-toys-ar-website'),
+    next: 'atelier-bespoke-ecommerce',
+  },
+  {
+    slug: 'atelier-bespoke-ecommerce',
+    projectId: 'atelier',
+    title: 'E-commerce that feels made to measure',
+    table: [
+      { label: 'Client', value: 'Atelier Bespoke' },
+      { label: 'Involvement', value: '3D artist, UI/UX designer, Front-end developer' },
+      { label: 'Scope', value: 'E-commerce website' },
+      { label: 'Results', value: 'Average order value grew by a quarter after the configurator launched.' },
+    ],
+    link: { label: 'Visit the website', href: '#' },
+    pages: [
+      {
+        label: 'Goal',
+        heading: 'Configure a product in 3D, then buy it in one step.',
+        paragraphs: [
+          'Atelier sells made-to-order goods. We designed a configurator where every option updates a 3D model in real time, and the checkout keeps the chosen configuration visible.',
+        ],
+      },
+      {
+        label: 'Results',
+        heading: 'Bigger baskets, fewer returns',
+        paragraphs: [
+          'Seeing the product before ordering reduced returns and increased the average order value. The configurator now powers the whole catalogue.',
+        ],
+      },
+    ],
+    media: caseMedia('atelier-bespoke-ecommerce'),
+    next: 'orbit-tower-mobile-app',
+  },
+]
+
+export const site = { brand, nav, hero, projects, clients, awards, cta, insights, footer, caseStudies }
 export default site

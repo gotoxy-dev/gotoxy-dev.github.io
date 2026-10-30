@@ -60,7 +60,6 @@ ul {
 
 .section {
   position: relative;
-  padding-block: var(--layout-sectionGap);
 }
 
 /* ---- typography primitives ---- */
@@ -98,6 +97,13 @@ ul {
   font-weight: var(--font-weight-light);
 }
 
+.t-lead {
+  font-size: var(--type-lead-size);
+  line-height: var(--type-lead-lineHeight);
+  font-weight: var(--font-weight-light);
+  text-transform: uppercase;
+}
+
 .t-caption {
   font-size: var(--type-caption-size);
   line-height: var(--type-caption-lineHeight);
@@ -130,6 +136,7 @@ ul {
   border-radius: var(--radius-pill);
   color: var(--color-textMuted);
   font-size: var(--type-tag-size);
+  line-height: var(--type-tag-lineHeight);
   letter-spacing: var(--type-tag-letterSpacing);
   text-transform: uppercase;
   white-space: nowrap;

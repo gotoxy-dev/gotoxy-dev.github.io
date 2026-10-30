@@ -1,6 +1,6 @@
 .footer {
   border-top: 1px solid var(--color-line);
-  padding-top: 40px;
+  padding-top: var(--layout-footer-padTop);
   overflow: hidden;
 }
 .top {
@@ -53,14 +53,13 @@
   transition-timing-function: var(--motion-ease-outCirc);
 }
 .touchWrap {
-  margin-top: 56px;
+  margin-top: var(--layout-footer-touchTop);
   will-change: transform;
 }
 .touch {
   display: inline-flex;
   align-items: center;
   gap: 0.2em;
-  font-size: clamp(40px, 5.2vw, 84px);
 }
 .touch svg {
   width: 0.7em;
@@ -76,7 +75,7 @@
   text-transform: uppercase;
 }
 .bottom {
-  margin-top: 90px;
+  margin-top: var(--layout-footer-bottomTop);
   padding: 18px 0;
   border-top: 1px solid var(--color-line);
   font-size: 10px;

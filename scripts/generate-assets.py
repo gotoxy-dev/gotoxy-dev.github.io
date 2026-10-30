@@ -3,7 +3,7 @@
 Generates every placeholder asset used by the site into /public/assets.
 
   - hero-seq/frame_###.webp   60-frame image sequence of a dark 3D object (replaces the reference canvas sequence)
-  - videos/project-0N.mp4+jpg 5 looping abstract videos + posters (replace with your project reels)
+  - videos/project-0N.webm+jpg 5 looping reels + posters (replace with your project reels)
   - insights/insight-0N.webp  4 article thumbnails
   - awards/award-*.webp       3 award plaques
   - logos/*.svg               6 client wordmarks + review platform badge
