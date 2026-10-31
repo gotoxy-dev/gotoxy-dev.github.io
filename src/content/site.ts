@@ -74,6 +74,28 @@ export interface CasePage {
   paragraphs: string[]
 }
 
+/** A point on a 390px-wide app screen, in CSS px from its top-left corner. */
+export type ScreenPoint = [x: number, y: number]
+
+export interface CaseJourneyStep {
+  title: string
+  text: string
+  /** Still capture of the screen (stacked mobile layout, and the phone when there is no `app`) */
+  screen: string
+  /** Live HTML of the screen, 390px wide, shown inside the phone and scrolled while the step plays */
+  app?: string
+  /** Full height of the screen at 390px wide */
+  height: number
+  /** Buttons the user taps during this step, in order (the last one leads to the next step) */
+  taps: ScreenPoint[]
+}
+
+export interface CaseJourney {
+  /** Eyebrow above each step (e.g. "The order, step by step") */
+  label: string
+  steps: CaseJourneyStep[]
+}
+
 export interface CaseStudy {
   slug: string
   /** Project this case belongs to (`projects[].id`) */
@@ -86,6 +108,11 @@ export interface CaseStudy {
   link: { label: string; href: string }
   /** Second and third page copy */
   pages: [CasePage, CasePage]
+  /**
+   * Optional customer journey, shown between the goal and the results: one section per
+   * step, a phone on the left that swaps to that step's screen (390×844 capture).
+   */
+  journey?: CaseJourney
   /** Visuals of the three left-hand sections */
   media: {
     /** page 1: full-bleed background + device mockup on top */
@@ -408,6 +435,74 @@ export const caseStudies: CaseStudy[] = [
         ],
       },
     ],
+    journey: {
+      label: 'The order, step by step',
+      steps: [
+        {
+          title: 'Lands on the site',
+          text: 'The landing introduces the restaurant and keeps “Place an order” one tap away.',
+          screen: '/assets/cases/japon-in-box/screens-mobile/japon-mob-01.jpg',
+          height: 845,
+          taps: [[327, 43]],
+        },
+        {
+          title: 'Picks a location',
+          text: 'Norte, Centro or Funes. The menu on screen is the chosen location’s.',
+          screen: '/assets/cases/japon-in-box/journey/02-location.jpg',
+          app: '/assets/cases/japon-in-box/journey/app/02-location.html',
+          height: 900,
+          taps: [[195, 622]],
+        },
+        {
+          title: 'Builds the order',
+          text: 'Browses the menu by category and adds boxes to the cart.',
+          screen: '/assets/cases/japon-in-box/journey/03-menu.jpg',
+          app: '/assets/cases/japon-in-box/journey/app/03-menu.html',
+          height: 3020,
+          taps: [[182, 1134], [195, 2375]],
+        },
+        {
+          title: 'Pickup or delivery',
+          text: 'No account needed. For delivery, the address is checked against the location’s coverage area.',
+          screen: '/assets/cases/japon-in-box/journey/04-delivery.jpg',
+          app: '/assets/cases/japon-in-box/journey/app/04-delivery.html',
+          height: 1900,
+          taps: [[195, 1733]],
+        },
+        {
+          title: 'Adds extras',
+          text: 'Before finishing, it suggests the extras available at that location.',
+          screen: '/assets/cases/japon-in-box/journey/05-extras.jpg',
+          app: '/assets/cases/japon-in-box/journey/app/05-extras.html',
+          height: 2200,
+          taps: [[302, 412], [247, 1076]],
+        },
+        {
+          title: 'Pays',
+          text: 'Cash, bank transfer or card. Card details go straight to Payway, without leaving the page.',
+          screen: '/assets/cases/japon-in-box/journey/06-payment.jpg',
+          app: '/assets/cases/japon-in-box/journey/app/06-payment.html',
+          height: 2290,
+          taps: [[195, 2123]],
+        },
+        {
+          title: 'Order received',
+          text: 'A confirmation with the order details, while the order lands in the restaurant’s panel.',
+          screen: '/assets/cases/japon-in-box/journey/07-confirmation.jpg',
+          app: '/assets/cases/japon-in-box/journey/app/07-confirmation.html',
+          height: 1140,
+          taps: [[190, 941]],
+        },
+        {
+          title: 'Follows the courier',
+          text: 'Tracks the delivery on the map until it reaches the door.',
+          screen: '/assets/cases/japon-in-box/journey/08-tracking.jpg',
+          app: '/assets/cases/japon-in-box/journey/app/08-tracking.html',
+          height: 955,
+          taps: [],
+        },
+      ],
+    },
     media: caseMedia('japon-in-box', {
       background: '/assets/cases/japon-in-box/website.webp',
       device: undefined,

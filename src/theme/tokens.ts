@@ -23,6 +23,18 @@ export const tokens = {
     lineHover: '#ffffff', // award rows on hover
     pager: '#484848', // case-study pager dash / inactive label
     caseVideoBg: '#161616',
+    /* SVG phone: brushed titanium rail, black glass bezel */
+    phoneMetalLight: '#c9cacd',
+    phoneMetalMid: '#7d7f84',
+    phoneMetalDark: '#2e3034',
+    phoneBezel: '#050505',
+    phoneButton: '#5c5e63',
+    phoneGlare: 'rgba(255,255,255,0.07)',
+    phoneShadow: 'rgba(0,0,0,0.55)',
+    /* tap ring reads on light and dark screens: dark ring, white halo */
+    tapRing: 'rgba(17,17,16,0.7)',
+    tapHalo: 'rgba(255,255,255,0.95)',
+    tapFill: 'rgba(17,17,16,0.18)',
     accent: '#d2cfcf',
     pill: '#969494', // outline of tag pills
     pillHover: 'rgba(255,255,255,0.2)', // READ / CLOSE button background on hover
@@ -118,10 +130,11 @@ export const tokens = {
     },
     /** Case-study page (reference `.case-wrapper` / `.project-section`) */
     caseStudy: {
-      panelPadTop: '5.556vw',
+      /* the vh caps only bite on short screens (they equal the vw values at 1536×864) */
+      panelPadTop: 'min(5.556vw, 9.8vh)',
       panelPadSide: '4.167vw',
-      panelPadBottom: '4.167vw',
-      titleSize: '3.194vw',
+      panelPadBottom: 'min(4.167vw, 7.4vh)',
+      titleSize: 'min(3.194vw, 5.7vh)',
       headingSize: '2.2vw',
       paragraphSize: '1.111vw',
       valueSize: '0.972vw',
@@ -136,8 +149,22 @@ export const tokens = {
       closeOffset: '1.389vw',
       pagerOffset: '2.083vw',
       dashWidth: '2.083vw',
-      /** Scroll keyframes of the three pages (progress 0..1) */
-      scrubSmoothing: 1.7,
+      /** Journey phone (SVG frame 440×900), bounded by column width and by viewport height */
+      phoneWidth: 'min(20vw, 40vh)',
+      /** Scroll length given to each journey step */
+      journeyStep: '80vh',
+      stepCounterSize: '12px',
+      stepGap: '1.1vw',
+      stepTitleSize: '1.36vw',
+      /** The opening step waits for the closing one before it unfolds */
+      stepRevealDelay: '150ms',
+      railWidth: '1px',
+      /** App screens are laid out 390px wide; the phone shows a 54px status bar and 790px of page */
+      appWidth: '390px',
+      appStatusBar: '54px',
+      appView: '790px',
+      tapSize: '44px',
+      stackPhoneWidth: 'min(260px, 70vw)',
     },
   },
 
@@ -189,6 +216,30 @@ export const tokens = {
     },
     marquee: {
       durationSec: 28,
+    },
+    /**
+     * Case-study page. Scrolling snaps natively (CSS scroll-snap, one section per gesture);
+     * when the visible section changes, one short tween swaps the panel page, pager and phone screen.
+     */
+    caseStudy: {
+      /** Panel page / pager swap: the old page leaves first, the new one follows */
+      swapSec: 0.6,
+      swapOutSec: 0.35,
+      swapInDelaySec: 0.25,
+      swapEase: 'power2.out',
+      /** Vertical travel of the incoming / outgoing panel page (follows scroll direction) */
+      pageLiftPx: 60,
+      fadeInSec: 0.5,
+      /** Journey step playback inside the phone: slide in, pause, scroll to the button, tap */
+      journey: {
+        /** Wait for the snap scroll to settle before the phone plays the step */
+        startDelaySec: 0.45,
+        slideSec: 0.6,
+        holdSec: 0.3,
+        scrollSec: 0.9,
+        tapSec: 0.6,
+        ease: 'power2.out',
+      },
     },
   },
 
