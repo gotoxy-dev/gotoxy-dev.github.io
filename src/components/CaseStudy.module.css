@@ -151,6 +151,11 @@
   line-height: 1.4;
   color: var(--color-text);
 }
+/* the journey page sits in the middle of the panel, next to the phone */
+.pageJourney > .content {
+  margin-block: auto;
+}
+
 /* Journey page: every step stays listed; only the highlight, its line of text and the rail move */
 .journey {
   display: grid;
@@ -310,8 +315,68 @@
   object-fit: cover;
 }
 .bgVideo,
-.bgJourney {
+.bgJourney,
+.bgFramed {
   background: var(--color-caseVideoBg);
+}
+/* blurred copy of the visual: colour and depth behind a framed screenshot or the phone */
+.ambient {
+  position: absolute;
+  inset: -10%;
+  width: 120%;
+  height: 120%;
+  object-fit: cover;
+  filter: blur(var(--layout-caseStudy-ambientBlur)) saturate(1.2);
+  opacity: var(--layout-caseStudy-ambientOpacity);
+  pointer-events: none;
+}
+.bgJourney > :not(.ambient),
+.bgFramed > :not(.ambient) {
+  position: relative;
+}
+.splitPhone {
+  --layout-caseStudy-phoneWidth: var(--layout-caseStudy-splitPhoneWidth);
+}
+
+/* website capture shown whole in a minimal browser window */
+.browser {
+  width: var(--layout-caseStudy-browserWidth);
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-browserEdge);
+  border-radius: var(--layout-caseStudy-browserRadius);
+  background: var(--color-browserBar);
+  box-shadow: 0 2.4vw 4vw var(--color-phoneShadow);
+}
+.browserBar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  height: var(--layout-caseStudy-browserBar);
+  padding: 0 14px;
+}
+.browserDots {
+  display: flex;
+  gap: 7px;
+}
+.browserDots i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-browserDot);
+}
+.browserUrl {
+  padding: 4px 18px;
+  border-radius: 6px;
+  background: var(--color-browserUrl);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: var(--color-textMuted);
+}
+.browserShot {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 .device {
   position: relative;
@@ -451,33 +516,70 @@
     display: flex;
     flex-direction: column;
   }
-  .stackSteps {
+  /* Mobile journey: the phone stays pinned while the step captions scroll up over it. The
+     stage is tall enough for every caption to pass; each caption plays its step on the phone. */
+  .mJourney {
+    position: relative;
+    height: calc(var(--steps) * var(--layout-caseStudy-mobileStep) + 100svh);
+    margin: 16px -20px 0;
+  }
+  .mPhoneLayer {
+    position: sticky;
+    top: 0;
     display: flex;
-    flex-direction: column;
-    gap: 40px;
+    align-items: flex-start;
+    justify-content: center;
+    height: 100svh;
+    padding-top: 6svh;
+    overflow: hidden;
+  }
+  .mPhone {
+    --layout-caseStudy-phoneWidth: var(--layout-caseStudy-mobilePhoneWidth);
+  }
+  /* reading spot under the phone: captions rise into it, hold, and leave upwards */
+  .mCaptions {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 4svh;
+    height: 0;
     margin: 0;
     padding: 0;
     list-style: none;
+    pointer-events: none;
   }
-  .stackStep {
+  .mCaption {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    visibility: hidden;
     display: flex;
     flex-direction: column;
+    gap: 6px;
+    width: var(--layout-caseStudy-captionWidth);
+    margin: 0 auto;
+    padding: 16px 18px 18px;
+    border: 1px solid var(--color-captionEdge);
+    border-radius: 16px;
+    background: var(--color-captionBg);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
   }
-  .stackStep .stepNumber {
-    margin-bottom: 8px;
+  .mCaption .stepNumber {
     color: var(--color-textMuted);
   }
-  .stackPhone {
-    --layout-caseStudy-phoneWidth: var(--layout-caseStudy-stackPhoneWidth);
-    align-self: center;
-    margin-top: 16px;
+  .mCaptionTitle {
+    font-size: 20px;
+    line-height: 1.15;
+    font-weight: var(--font-weight-light);
+    text-transform: uppercase;
+    color: var(--color-textStrong);
   }
-  .stackScreen {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: top center;
+  .mCaptionText {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--color-text);
   }
   .button {
     align-self: flex-start;

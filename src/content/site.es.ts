@@ -260,7 +260,7 @@ export const caseStudies: SiteContent['caseStudies'] = [
           text: 'Recorre el menú por categoría y suma boxes al carrito.',
           screen: '/assets/cases/japon-in-box/journey/03-menu.jpg',
           app: '/assets/cases/japon-in-box/journey/app/03-menu.html',
-          height: 3020,
+          height: 2400,
           taps: [[182, 1134], [195, 2375]],
         },
         {
@@ -276,7 +276,7 @@ export const caseStudies: SiteContent['caseStudies'] = [
           text: 'Antes de finalizar, le sugiere los extras disponibles en esa sucursal.',
           screen: '/assets/cases/japon-in-box/journey/05-extras.jpg',
           app: '/assets/cases/japon-in-box/journey/app/05-extras.html',
-          height: 2200,
+          height: 1300,
           taps: [[302, 412], [247, 1076]],
         },
         {
@@ -309,6 +309,7 @@ export const caseStudies: SiteContent['caseStudies'] = [
       background: '/assets/cases/japon-in-box/website.webp',
       device: undefined,
       closing: '/assets/cases/japon-in-box/locations.webp',
+      screenshot: true,
     }),
     next: 'instituto-cam',
   },

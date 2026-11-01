@@ -35,6 +35,14 @@ export const tokens = {
     tapRing: 'rgba(17,17,16,0.7)',
     tapHalo: 'rgba(255,255,255,0.95)',
     tapFill: 'rgba(17,17,16,0.18)',
+    /* mobile journey captions floating over the phone */
+    captionBg: 'rgba(12,12,12,0.78)',
+    captionEdge: 'rgba(255,255,255,0.1)',
+    /* browser window around website captures */
+    browserBar: '#1c1c1e',
+    browserDot: '#3a3a3d',
+    browserUrl: '#2a2a2d',
+    browserEdge: 'rgba(255,255,255,0.08)',
     accent: '#d2cfcf',
     pill: '#969494', // outline of tag pills
     pillHover: 'rgba(255,255,255,0.2)', // READ / CLOSE button background on hover
@@ -151,11 +159,19 @@ export const tokens = {
       dashWidth: '2.083vw',
       /** Journey phone (SVG frame 440×900), bounded by column width and by viewport height */
       phoneWidth: 'min(20vw, 40vh)',
+      splitPhoneWidth: 'min(24vw, 41vh)',
+      /** Website captures in a browser window (cover, results) */
+      browserWidth: '84%',
+      browserRadius: '12px',
+      browserBar: '34px',
+      /** Blurred copy of the visual behind it, for colour and depth */
+      ambientBlur: '80px',
+      ambientOpacity: '0.35',
       /** Scroll length given to each journey step */
       journeyStep: '80vh',
       stepCounterSize: '12px',
-      stepGap: '1.1vw',
-      stepTitleSize: '1.36vw',
+      stepGap: '1.25vw',
+      stepTitleSize: '1.6vw',
       /** The opening step waits for the closing one before it unfolds */
       stepRevealDelay: '150ms',
       railWidth: '1px',
@@ -164,7 +180,10 @@ export const tokens = {
       appStatusBar: '54px',
       appView: '790px',
       tapSize: '44px',
-      stackPhoneWidth: 'min(260px, 70vw)',
+      /** Mobile journey: pinned phone, captions one `mobileStep` of scroll apart */
+      mobilePhoneWidth: 'min(62vw, 33svh)',
+      mobileStep: '85svh',
+      captionWidth: 'min(340px, calc(100vw - 48px))',
     },
   },
 
@@ -231,6 +250,13 @@ export const tokens = {
       pageLiftPx: 60,
       fadeInSec: 0.5,
       /** Journey step playback inside the phone: slide in, pause, scroll to the button, tap */
+      /** Mobile captions: share of a step's scroll spent rising in / leaving */
+      caption: {
+        rise: 0.25,
+        leave: 0.22,
+        /** How much the leaving and the rising caption overlap */
+        overlap: 0.05,
+      },
       journey: {
         /** Wait for the snap scroll to settle before the phone plays the step */
         startDelaySec: 0.45,

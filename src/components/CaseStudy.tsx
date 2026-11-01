@@ -22,6 +22,65 @@ const CloseIcon = () => (
   </svg>
 )
 
+/** A landscape website capture shown whole inside a minimal browser window. */
+function BrowserFrame({ src, host, priority }: { src: string; host: string; priority?: boolean }) {
+  return (
+    <figure className={styles.browser}>
+      <div className={styles.browserBar} aria-hidden="true">
+        <span className={styles.browserDots}>
+          <i />
+          <i />
+          <i />
+        </span>
+        {host && <span className={styles.browserUrl}>{host}</span>}
+      </div>
+      <img
+        className={styles.browserShot}
+        src={src}
+        alt=""
+        decoding="async"
+        {...(priority ? { fetchPriority: 'high' as const } : { loading: 'lazy' as const })}
+      />
+    </figure>
+  )
+}
+
+/**
+ * Phone with the journey's app screens side by side (live HTML, or a still for steps without
+ * one), a status bar and the tap ring. A player drives it through its `data-case` hooks.
+ */
+function JourneyPhone({ steps, className }: { steps: CaseJourneyStep[]; className?: string }) {
+  return (
+    <DeviceFrame className={className}>
+      <div className={styles.appScreen} data-case="app-screen">
+        <div className={styles.appViewport}>
+          <StatusBar />
+          <div className={styles.appTrack} data-case="app-track" style={cssVars({ '--steps': steps.length })}>
+            {steps.map((step, i) => (
+              <div key={step.title} className={styles.appPanel}>
+                {step.app ? (
+                  <iframe
+                    className={styles.appContent}
+                    data-case={`app-${i}`}
+                    data-src={step.app}
+                    title={step.title}
+                    tabIndex={-1}
+                    aria-hidden="true"
+                    style={cssVars({ height: `${step.height}px` })}
+                  />
+                ) : (
+                  <img className={styles.appContent} data-case={`app-${i}`} src={step.screen} alt={step.title} decoding="async" />
+                )}
+              </div>
+            ))}
+          </div>
+          <span className={styles.tap} data-case="tap" aria-hidden="true" />
+        </div>
+      </div>
+    </DeviceFrame>
+  )
+}
+
 /** Split layout (fixed panel + sticky visuals) from the lg breakpoint up. */
 const SPLIT = `(min-width: ${tokens.breakpoints.lg}px)`
 const MOTION_OK = '(prefers-reduced-motion: no-preference)'
@@ -179,23 +238,31 @@ function setupChapterSwaps(root: HTMLElement, count: number, animate: boolean) {
 }
 
 /**
- * The journey, played inside the phone. Every step is a snap stop; when a step becomes the
- * current one, the phone plays it: the new screen slides in from the right like app
- * navigation, scrolls to the button the user taps, and a tap ring pulses on it. It only moves
- * forward: scrolling back up leaves it on the last step played. On the right, the step list
- * only moves its highlight and rail.
+ * Plays the journey inside one phone (`scope` holds its screen, track and tap ring). When a
+ * step is shown, the new screen slides in from the right like app navigation, scrolls to the
+ * button the user taps, and a tap ring pulses on it. It only moves forward: asking for an
+ * earlier step leaves the phone on the last step played. `onStep` runs when a step starts.
  */
-function setupJourney(root: HTMLElement, steps: CaseJourneyStep[], animate: boolean) {
-  const area = root.querySelector<HTMLElement>('[data-case="area-2"]')
-  const screen = root.querySelector<HTMLElement>('[data-case="app-screen"]')
-  const track = root.querySelector<HTMLElement>('[data-case="app-track"]')
-  const tap = root.querySelector<HTMLElement>('[data-case="tap"]')
-  const rail = root.querySelector<HTMLElement>('[data-case="rail"]')
-  const items = steps.map((_, i) => root.querySelector<HTMLElement>(`[data-case="step-${i}"]`))
-  const contents = steps.map((_, i) => root.querySelector<HTMLElement>(`[data-case="app-${i}"]`))
-  const stops = steps.map((_, i) => (i === 0 ? area : root.querySelector<HTMLElement>(`[data-case="stop-${i}"]`)))
-  if (!area || !screen || !track || !tap || !rail) return
-  const k = steps.length
+function createPhonePlayer(
+  scope: HTMLElement,
+  steps: CaseJourneyStep[],
+  animate: boolean,
+  {
+    delaySec,
+    onStep,
+    back = 'hold',
+  }: {
+    delaySec: number
+    onStep?: (index: number) => void
+    /** Going back: `hold` stays on the last step played; `rest` shows the earlier step's end state, without animating */
+    back?: 'hold' | 'rest'
+  },
+) {
+  const screen = scope.querySelector<HTMLElement>('[data-case="app-screen"]')
+  const track = scope.querySelector<HTMLElement>('[data-case="app-track"]')
+  const tap = scope.querySelector<HTMLElement>('[data-case="tap"]')
+  const contents = steps.map((_, i) => scope.querySelector<HTMLElement>(`[data-case="app-${i}"]`))
+  if (!screen || !track || !tap) return null
   const { journey: cfg } = tokens.motion.caseStudy
 
   // Scale the 390px-wide screens to the phone.
@@ -222,10 +289,24 @@ function setupJourney(root: HTMLElement, steps: CaseJourneyStep[], animate: bool
   let current = -1
   let play: gsap.core.Timeline | null = null
 
+  /** Earlier step, shown at once in the state it ends in (never played in reverse). */
+  const rest = (index: number) => {
+    play?.kill()
+    current = index
+    gsap.set(tap, { autoAlpha: 0 })
+    gsap.set(track, { x: -index * APP_WIDTH })
+    contents.forEach((c, j) => j <= index && gsap.set(c, { y: -restingScroll(steps[j]) }))
+    onStep?.(index)
+  }
+
   const show = (index: number) => {
-    // Only forward: scrolling back up keeps the phone (and the list) on the last step played;
-    // scrolling down again resumes once the scroll passes that step.
-    if (index <= current) return
+    // Never animates backwards. `hold` keeps the phone on the last step played until the scroll
+    // passes it again; `rest` jumps to the earlier step's end state so text and screen match.
+    if (index === current) return
+    if (index < current) {
+      if (back === 'rest') rest(index)
+      return
+    }
     const from = current
     current = index
     play?.kill()
@@ -241,11 +322,10 @@ function setupJourney(root: HTMLElement, steps: CaseJourneyStep[], animate: bool
     // Earlier screens rest where they were left, so the slide shows the tapped state.
     contents.forEach((c, j) => j < index && gsap.set(c, { y: -restingScroll(steps[j]) }))
 
-    // Everything waits for the snap scroll to settle (not on first load or a deep link).
-    const delay = animate && from >= 0 ? cfg.startDelaySec : 0
+    // Waits a beat (the snap settling on desktop), except on first load or a deep link.
+    const delay = animate && from >= 0 ? delaySec : 0
     const tl = gsap.timeline({ delay, defaults: { ease: cfg.ease } })
-    tl.call(() => items.forEach((item, j) => item?.toggleAttribute('data-active', j === index)), undefined, 0)
-    tl.to(rail, { scaleY: k > 1 ? index / (k - 1) : 1, duration: cfg.slideSec }, 0)
+    if (onStep) tl.call(() => onStep(index), undefined, 0)
     if (!animate) {
       tl.set(track, { x: -index * APP_WIDTH }, 0).set(content, { y: -restingScroll(step) }, 0)
       play = tl
@@ -272,41 +352,125 @@ function setupJourney(root: HTMLElement, steps: CaseJourneyStep[], animate: bool
     play = tl
   }
 
+  load(0)
+  load(1)
+
+  return {
+    show,
+    destroy: () => {
+      play?.kill()
+      resize.disconnect()
+    },
+  }
+}
+
+/**
+ * Desktop journey: every step is a snap stop; the phone in the left column plays the step the
+ * scroll lands on, and the step list on the right only moves its highlight and rail.
+ */
+function setupJourney(root: HTMLElement, steps: CaseJourneyStep[], animate: boolean) {
+  const area = root.querySelector<HTMLElement>('[data-case="area-2"]')
+  const phone = root.querySelector<HTMLElement>('[data-case="phone-split"]')
+  const rail = root.querySelector<HTMLElement>('[data-case="rail"]')
+  const items = steps.map((_, i) => root.querySelector<HTMLElement>(`[data-case="step-${i}"]`))
+  const stops = steps.map((_, i) => (i === 0 ? area : root.querySelector<HTMLElement>(`[data-case="stop-${i}"]`)))
+  if (!area || !phone || !rail) return
+  const k = steps.length
+  const { journey: cfg } = tokens.motion.caseStudy
+
+  const highlight = (index: number) => {
+    items.forEach((item, j) => item?.toggleAttribute('data-active', j === index))
+    gsap.to(rail, { scaleY: k > 1 ? index / (k - 1) : 1, duration: cfg.slideSec, ease: cfg.ease })
+  }
+  const player = createPhonePlayer(phone, steps, animate, { delaySec: cfg.startDelaySec, onStep: highlight })
+  if (!player) return
+
   /** Current step: the last stop the scroll has reached, counting half a step early. */
   const stepAt = (y: number) => {
     const gap = stops[1] && stops[0] ? stops[1].offsetTop - stops[0].offsetTop : window.innerHeight
-    const half = gap / 2
     let index = 0
     stops.forEach((stop, i) => {
-      if (stop && stop.offsetTop - half <= y) index = i
+      if (stop && stop.offsetTop - gap / 2 <= y) index = i
     })
     return index
+  }
+  const sync = (y: number) => {
+    if (y >= area.offsetTop - window.innerHeight * 0.5) player.show(stepAt(y))
   }
 
   const st = ScrollTrigger.create({
     trigger: root,
     start: 'top top',
     end: 'bottom bottom',
-    onUpdate: (self) => {
-      const y = self.scroll() - self.start
-      if (y >= area.offsetTop - window.innerHeight * 0.5) show(stepAt(y))
-    },
-    onRefresh: (self) => {
-      const y = self.scroll() - self.start
-      if (y >= area.offsetTop - window.innerHeight * 0.5) show(stepAt(y))
-    },
+    onUpdate: (self) => sync(self.scroll() - self.start),
+    onRefresh: (self) => sync(self.scroll() - self.start),
   })
-  const y0 = st.scroll() - st.start
-  if (y0 >= area.offsetTop - window.innerHeight * 0.5) show(stepAt(y0))
-  else {
-    items.forEach((item, j) => item?.toggleAttribute('data-active', j === 0))
-    load(0)
-    load(1)
-  }
+  items.forEach((item, j) => item?.toggleAttribute('data-active', j === 0))
+  sync(st.scroll() - st.start)
+
+  return () => player.destroy()
+}
+
+/**
+ * Mobile journey: the phone stays pinned on screen and plays the same steps. Each step's
+ * caption rises from the bottom into a reading spot just under the phone (it never covers
+ * the screen), holds there while that step plays, and leaves upwards as the next one rises,
+ * all scrubbed by the scroll, so the text on screen always matches the phone.
+ */
+function setupMobileJourney(root: HTMLElement, steps: CaseJourneyStep[], animate: boolean) {
+  const stage = root.querySelector<HTMLElement>('[data-case="stage-stack"]')
+  const phone = root.querySelector<HTMLElement>('[data-case="phone-stack"]')
+  const captions = steps.map((_, i) => root.querySelector<HTMLElement>(`[data-case="caption-${i}"]`))
+  if (!stage || !phone) return
+  const k = steps.length
+  const player = createPhonePlayer(phone, steps, animate, { delaySec: 0, back: 'rest' })
+  if (!player) return
+  const { rise, leave, overlap } = tokens.motion.caseStudy.caption
+
+  // One unit of scroll per step: caption i rises in during [i - rise, i] and holds; it leaves
+  // upwards just before caption i + 1 rises, the two overlapping only briefly.
+  const tl = gsap.timeline({ defaults: { ease: 'none' } })
+  captions.forEach((caption, i) => {
+    if (!caption) return
+    if (i === 0) gsap.set(caption, { autoAlpha: 1, yPercent: 0 })
+    else tl.fromTo(caption, { autoAlpha: 0, yPercent: 110 }, { autoAlpha: 1, yPercent: 0, duration: rise, ease: 'power2.out' }, i - rise)
+    if (i < k - 1) {
+      tl.to(caption, { autoAlpha: 0, yPercent: -70, duration: leave, ease: 'power1.in' }, i + 1 - rise - leave + overlap)
+    }
+  })
+  tl.set({}, {}, k)
+
+  const stepAt = (progress: number) => gsap.utils.clamp(0, k - 1, Math.floor(progress * k + 0.001))
+  ScrollTrigger.create({
+    trigger: stage,
+    start: 'top top',
+    end: 'bottom bottom',
+    animation: animate ? tl : undefined,
+    scrub: animate ? 0.35 : false,
+    onUpdate: (self) => {
+      const index = stepAt(self.progress)
+      player.show(index)
+      if (!animate) captions.forEach((c, j) => c && gsap.set(c, { autoAlpha: j === index ? 1 : 0, yPercent: 0 }))
+    },
+    onRefresh: (self) => player.show(stepAt(self.progress)),
+  })
+  player.show(0)
+
+  // Images and the reel above the stage load after this runs and push it down: re-measure
+  // whenever the stacked content changes height, or captions and phone drift out of sync.
+  let raf = 0
+  const content = stage.parentElement?.parentElement ?? root
+  const reflow = new ResizeObserver(() => {
+    cancelAnimationFrame(raf)
+    raf = requestAnimationFrame(() => ScrollTrigger.refresh())
+  })
+  reflow.observe(content)
 
   return () => {
-    play?.kill()
-    resize.disconnect()
+    cancelAnimationFrame(raf)
+    reflow.disconnect()
+    tl.kill()
+    player.destroy()
   }
 }
 
@@ -321,18 +485,25 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
   const [goal, results] = study.pages
   const { steps, hasJourney, count, k, areas, stops, totalHeight } = chapterLayout(study)
   const journeyLabel = study.journey?.label ?? ''
+  const host = (() => {
+    try {
+      return new URL(study.link.href).host.replace(/^www\./, '')
+    } catch {
+      return ''
+    }
+  })()
   const resultsIndex = count - 1
 
   useSnapScroll({ count, snapClass: SNAP_CLASS })
 
-  // Chapter swaps and the journey, on the split layout only.
+  // Split layout: chapter swaps and the snapped journey. Stacked layout: the pinned-phone journey.
   useEffect(() => {
     const root = rootRef.current
     if (!root) return
     const mm = gsap.matchMedia(root)
     mm.add({ split: SPLIT, motion: MOTION_OK }, (ctx) => {
-      if (!ctx.conditions?.split) return
-      const animate = Boolean(ctx.conditions.motion)
+      const animate = Boolean(ctx.conditions?.motion)
+      if (!ctx.conditions?.split) return hasJourney ? setupMobileJourney(root, steps, animate) : undefined
       const stopJourney = hasJourney ? setupJourney(root, steps, animate) : undefined
       const stopSwaps = setupChapterSwaps(root, count, animate)
       return () => {
@@ -449,7 +620,7 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
         </div>
 
         {hasJourney && (
-          <div className={styles.page} data-case="page-2">
+          <div className={`${styles.page} ${styles.pageJourney}`} data-case="page-2">
             <div className={styles.content} data-case="content-2">
               <span className={styles.caps}>{journeyLabel}</span>
               <div className={styles.spaceLarge} />
@@ -491,10 +662,17 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
       {/* left-hand sticky visuals: each one slides over the previous; the phone stays put through the journey */}
       <div className={styles.sections} {...fade}>
         <section className={styles.section} style={cssVars({ zIndex: 1 })}>
-          <div className={styles.bg}>
-            <img className={styles.bgImage} src={study.media.background} alt="" decoding="async" fetchPriority="high" />
-            {study.media.device && <img className={styles.device} src={study.media.device} alt="" decoding="async" />}
-          </div>
+          {study.media.screenshot ? (
+            <div className={`${styles.bg} ${styles.bgFramed}`}>
+              <img className={styles.ambient} src={study.media.background} alt="" aria-hidden="true" decoding="async" />
+              <BrowserFrame src={study.media.background} host={host} priority />
+            </div>
+          ) : (
+            <div className={styles.bg}>
+              <img className={styles.bgImage} src={study.media.background} alt="" decoding="async" fetchPriority="high" />
+              {study.media.device && <img className={styles.device} src={study.media.device} alt="" decoding="async" />}
+            </div>
+          )}
         </section>
         <section className={styles.section} style={cssVars({ zIndex: 2 })}>
           <div className={`${styles.bg} ${styles.bgVideo}`}>
@@ -513,43 +691,25 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
         {hasJourney && (
           <>
             <section className={styles.section} style={cssVars({ zIndex: 3 })}>
-              <div className={`${styles.bg} ${styles.bgJourney}`}>
-                <DeviceFrame>
-                  <div className={styles.appScreen} data-case="app-screen">
-                    <div className={styles.appViewport}>
-                      <StatusBar />
-                      <div className={styles.appTrack} data-case="app-track" style={cssVars({ '--steps': k })}>
-                        {steps.map((step, i) => (
-                          <div key={step.title} className={styles.appPanel}>
-                            {step.app ? (
-                              <iframe
-                                className={styles.appContent}
-                                data-case={`app-${i}`}
-                                data-src={step.app}
-                                title={step.title}
-                                tabIndex={-1}
-                                aria-hidden="true"
-                                style={cssVars({ height: `${step.height}px` })}
-                              />
-                            ) : (
-                              <img className={styles.appContent} data-case={`app-${i}`} src={step.screen} alt={step.title} decoding="async" />
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                      <span className={styles.tap} data-case="tap" aria-hidden="true" />
-                    </div>
-                  </div>
-                </DeviceFrame>
+              <div className={`${styles.bg} ${styles.bgJourney}`} data-case="phone-split">
+                <img className={styles.ambient} src={study.media.background} alt="" aria-hidden="true" decoding="async" />
+                <JourneyPhone steps={steps} className={styles.splitPhone} />
               </div>
             </section>
             <div className={styles.journeySpacer} data-case="journey-spacer" style={cssVars({ '--steps': k - 1 })} aria-hidden="true" />
           </>
         )}
         <section className={styles.section} style={cssVars({ zIndex: 4 })}>
-          <div className={styles.bg}>
-            <img className={styles.bgImage} src={study.media.closing} alt="" loading="lazy" decoding="async" />
-          </div>
+          {study.media.screenshot ? (
+            <div className={`${styles.bg} ${styles.bgFramed}`}>
+              <img className={styles.ambient} src={study.media.closing} alt="" aria-hidden="true" loading="lazy" decoding="async" />
+              <BrowserFrame src={study.media.closing} host={host} />
+            </div>
+          ) : (
+            <div className={styles.bg}>
+              <img className={styles.bgImage} src={study.media.closing} alt="" loading="lazy" decoding="async" />
+            </div>
+          )}
         </section>
       </div>
 
@@ -590,18 +750,21 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
         {hasJourney && (
           <div className={styles.stackBlock}>
             <span className={styles.caps}>{journeyLabel}</span>
-            <ol className={styles.stackSteps}>
-              {steps.map((step, i) => (
-                <li key={step.title} className={styles.stackStep}>
-                  <span className={styles.stepNumber}>{pad(i + 1)}</span>
-                  <h3 className={styles.heading}>{step.title}</h3>
-                  <p className={styles.paragraph}>{step.text}</p>
-                  <DeviceFrame className={styles.stackPhone}>
-                    <img className={styles.stackScreen} src={step.screen} alt={step.title} loading="lazy" decoding="async" />
-                  </DeviceFrame>
-                </li>
-              ))}
-            </ol>
+            {/* pinned phone with the step captions flowing up over it */}
+            <div className={styles.mJourney} data-case="stage-stack" style={cssVars({ '--steps': k })}>
+              <div className={styles.mPhoneLayer} data-case="phone-stack">
+                <JourneyPhone steps={steps} className={styles.mPhone} />
+                <ol className={styles.mCaptions}>
+                  {steps.map((step, i) => (
+                    <li key={step.title} className={styles.mCaption} data-case={`caption-${i}`}>
+                      <span className={styles.stepNumber}>{`${pad(i + 1)} / ${pad(k)}`}</span>
+                      <h3 className={styles.mCaptionTitle}>{step.title}</h3>
+                      <p className={styles.mCaptionText}>{step.text}</p>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            </div>
           </div>
         )}
         <div className={styles.stackBlock}>

@@ -123,6 +123,8 @@ export interface CaseStudy {
     videoPoster: string
     /** page 3: full-bleed image */
     closing: string
+    /** `background` and `closing` are landscape website captures: show them whole, in a browser window */
+    screenshot?: boolean
   }
   /** Slug of the next case study */
   next: string
@@ -458,7 +460,7 @@ export const caseStudies: CaseStudy[] = [
           text: 'Browses the menu by category and adds boxes to the cart.',
           screen: '/assets/cases/japon-in-box/journey/03-menu.jpg',
           app: '/assets/cases/japon-in-box/journey/app/03-menu.html',
-          height: 3020,
+          height: 2400,
           taps: [[182, 1134], [195, 2375]],
         },
         {
@@ -474,7 +476,7 @@ export const caseStudies: CaseStudy[] = [
           text: 'Before finishing, it suggests the extras available at that location.',
           screen: '/assets/cases/japon-in-box/journey/05-extras.jpg',
           app: '/assets/cases/japon-in-box/journey/app/05-extras.html',
-          height: 2200,
+          height: 1300,
           taps: [[302, 412], [247, 1076]],
         },
         {
@@ -507,6 +509,7 @@ export const caseStudies: CaseStudy[] = [
       background: '/assets/cases/japon-in-box/website.webp',
       device: undefined,
       closing: '/assets/cases/japon-in-box/locations.webp',
+      screenshot: true,
     }),
     next: 'instituto-cam',
   },
