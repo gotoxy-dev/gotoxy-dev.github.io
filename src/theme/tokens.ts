@@ -43,6 +43,8 @@ export const tokens = {
     browserUrl: '#2a2a2d',
     browserEdge: 'rgba(255,255,255,0.08)',
     accent: '#d2cfcf',
+    /** Hero particle "G" behind the headline */
+    heroParticle: '#e8e6e3',
     pill: '#969494', // outline of tag pills
     pillHover: 'rgba(255,255,255,0.2)', // READ / CLOSE button background on hover
     overlay: 'rgba(0,0,0,0.6)',
@@ -267,6 +269,61 @@ export const tokens = {
         ease: 'power2.out',
       },
     },
+  },
+
+  /**
+   * Hero particle "G": the logo mark extruded in 3D and sampled into points.
+   * Units: logo viewBox units (geometry), CSS px, seconds.
+   */
+  particles: {
+    /** Grid step between sampled points; lower = denser. Touch devices get the coarser one. */
+    step: 1.45,
+    stepTouch: 2.2,
+    /** Random offset of each point, as a fraction of the step (hides the grid when rotating). */
+    jitter: 0.7,
+    /** Extrusion depth of the mark. */
+    depth: 18,
+    /** Logo height / side of the square the canvas fits it in. */
+    fill: 0.82,
+    /** Forward tilt (rad) so the top faces catch the light. */
+    tilt: 0.22,
+    /** Dot side in CSS px at the focal plane. */
+    dotSize: 1.7,
+    /** Opacity range of a dot, from shadow to full light. */
+    alphaMin: 0.07,
+    alphaMax: 0.6,
+    /** Opacity factor for points whose face looks away from the camera. */
+    backFace: 0.35,
+    /** Extra opacity of a moving point, reached at `glowSpeed` px/s. */
+    glow: 0.35,
+    glowSpeed: 1400,
+    /** Spring that pulls every point to its place on the G (1/s²) and its damping (1/s). */
+    stiffness: 55,
+    damping: 5.5,
+    /** Air drag (1/s): points trail behind when the G spins fast. */
+    airDrag: 0.9,
+    /** Per-point mass range: heavier points move less and settle slower. */
+    massMin: 0.6,
+    massMax: 1.6,
+    /** Pointer influence radius, as a fraction of the square side. */
+    radius: 0.2,
+    /** Coupling (1/s) that drags points along with the pointer's velocity. */
+    flow: 7,
+    /** Radial push per px/s of pointer speed. */
+    push: 1.1,
+    /** Pointer speed clamp (px/s) and how fast it fades once the pointer stops (1/s). */
+    maxPointerSpeed: 4500,
+    pointerDecay: 14,
+    /** Max distance (fraction of the square side) a point can be pushed from its place. */
+    maxOffset: 0.45,
+    /** Rotation spring towards the pointer-driven angle (1/s²) and its damping (1/s). */
+    spin: 26,
+    spinDamping: 8,
+    /** Intro: points start scattered this far (fraction of the side) and the G turns in from this angle (rad). */
+    introScatter: 0.3,
+    introAngle: -1.3,
+    /** Auto-rotation on touch devices (rad/s). */
+    autoRotate: 0.35,
   },
 
   z: {

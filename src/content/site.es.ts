@@ -31,7 +31,6 @@ export const hero: SiteContent['hero'] = {
     { text: 'lo que falta.', align: 'right' },
   ],
   caption: ['Software · Integraciones · Automatización · IA', 'Rosario, Argentina'],
-  sequence: { dir: '/assets/hero-seq', ext: 'webp', frameCount: 39, pad: 3 },
 }
 
 const tagsEs: Record<string, string[]> = {

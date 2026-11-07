@@ -29,14 +29,14 @@ npm run assets:generate  # regenera placeholders (necesita python3 + Pillow + nu
 | **Contenido de todas las secciones** (nav, hero, proyectos, testimonios, logos, premios, CTA, insights, footer, marca) | `src/content/site.ts` |
 | Logo / wordmark | `src/components/Logo.tsx` (SVG inline) |
 | Fuentes | `index.html` (Google Fonts: Archivo + Homemade Apple) y `tokens.font` |
-| Secuencia del hero | `public/assets/hero-seq/frame_###.webp` + `hero.sequence` en `site.ts` (`frameCount`, `ext`, `pad`) |
+| G de partículas del hero | `src/components/ParticleMark.tsx` (muestrea `LOGO_MARK_PATHS` de `Logo.tsx`, física por partícula) + `particleRenderer.ts` (WebGL, respaldo 2D); densidad, look y física en `tokens.particles` |
 | Videos de proyectos | `public/assets/videos/project-0N.mp4` + poster `.jpg` (referenciados en `projects[]`) |
 | Imágenes de insights / premios / logos de clientes | `public/assets/insights`, `public/assets/awards`, `public/assets/logos` |
 
 ## Secciones y animaciones implementadas
 
 1. **Navbar** fija, transparente, links uppercase con underline on-hover, menú overlay en mobile.
-2. **Hero**: titular en 3 líneas con reveal "crop + slide-up" en carga (`useReveal` immediate), caption, y canvas de **secuencia de imágenes** (`ImageSequence.tsx`): precarga, reproduce la secuencia completa como intro y luego mapea la X del puntero a un frame con interpolación.
+2. **Hero**: titular en 3 líneas con reveal "crop + slide-up" en carga (`useReveal` immediate), caption, y canvas con la **G del logo en 3D hecha de partículas** (`ParticleMark.tsx`, WebGL): intro en la que las partículas se reúnen y la G gira hasta quedar de frente; la X del puntero la rota con inercia (una vuelta a lo ancho del viewport) y la velocidad del puntero arrastra y dispersa las partículas cercanas, que vuelven a su lugar con resortes. En táctil gira sola; con `prefers-reduced-motion` solo rota.
 3. **Proyectos**: por cada card, hairline que crece desde la izquierda al entrar en viewport, nombre con reveal, tags pill con fade, video full-width que **reproduce solo cuando está visible** (IntersectionObserver), ligero zoom on-hover.
 4. **What our clients say**: título con reveal, badge "see more on", **acordeones** de testimonios (READ ↔ CLOSE, `grid-template-rows` animado), y **marquee** infinito de logos (pausa on-hover).
 5. **Awards**: párrafo intro, **acordeones** con contador `/ 02`, flecha rotando, entradas con stagger y **imagen sticky** a la izquierda que aparece al expandir el grupo; "+50 more awards".

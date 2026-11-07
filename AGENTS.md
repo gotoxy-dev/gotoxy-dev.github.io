@@ -22,7 +22,7 @@ Landing de **gotoxy** (software a medida, integraciones y automatización con IA
 6. Alias `@/` → `src/`.
 
 ## Mapa de componentes
-`Navbar` · `Hero` (+ `ImageSequence` canvas: intro + mouse-X) · `Projects` (video autoplay solo en viewport) · `Clients` (acordeones + marquee) · `Awards` (acordeones + imagen sticky) · `Cta` · `Insights` (hover expande thumbnail) · `Footer` · `Logo`.
+`Navbar` · `Hero` (+ `ParticleMark` canvas: la G del logo en 3D hecha de partículas; mouse-X la gira con inercia y la velocidad del puntero empuja las partículas con física de resortes; parámetros en `tokens.particles`) · `Projects` (video autoplay solo en viewport) · `Clients` (acordeones + marquee) · `Awards` (acordeones + imagen sticky) · `Cta` · `Insights` (hover expande thumbnail) · `Footer` · `Logo`.
 
 ## Pendiente / ideas de continuación
 - Reemplazar los reels generados por grabaciones reales de cada producto; convertir WebM → MP4 cuando haya ffmpeg (Safari < 17).

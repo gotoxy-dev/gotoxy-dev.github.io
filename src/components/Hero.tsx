@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { useContent } from '@/i18n'
 import { useReveal } from '@/hooks/useReveal'
 import { tokens } from '@/theme/tokens'
-import { ImageSequence } from './ImageSequence'
+import { ParticleMark } from './ParticleMark'
 import styles from './Hero.module.css'
 
 const { duration, distance } = tokens.motion
@@ -44,11 +44,7 @@ export function Hero() {
   return (
     <section ref={ref} className={styles.hero} id="top">
       <div className={styles.canvasWrap} {...canvasReveal}>
-        <ImageSequence
-          dir={hero.sequence.dir}
-          ext={hero.sequence.ext}
-          frameCount={hero.sequence.frameCount}
-          pad={hero.sequence.pad}
+        <ParticleMark
           className={`${styles.canvas} ${ready ? styles.ready : ''}`}
           onReady={onReady}
         />

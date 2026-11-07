@@ -2,7 +2,6 @@
 """
 Generates every placeholder asset used by the site into /public/assets.
 
-  - hero-seq/frame_###.webp   60-frame image sequence of a dark 3D object (replaces the reference canvas sequence)
   - videos/project-0N.webm+jpg 5 looping reels + posters (replace with your project reels)
   - insights/insight-0N.webp  4 article thumbnails
   - awards/award-*.webp       3 award plaques
@@ -61,41 +60,6 @@ def box(cx, cy, cz, sx, sy, sz):
     return [v[f] for f in faces]
 
 
-def cylinder(cx, cy, cz, r, h, axis="y", n=28):
-    quads = []
-    ring = []
-    for i in range(n):
-        a = 2 * math.pi * i / n
-        ring.append((math.cos(a) * r, math.sin(a) * r))
-    for i in range(n):
-        a0 = ring[i]
-        a1 = ring[(i + 1) % n]
-        if axis == "y":
-            p = [
-                [cx + a0[0], cy - h / 2, cz + a0[1]],
-                [cx + a1[0], cy - h / 2, cz + a1[1]],
-                [cx + a1[0], cy + h / 2, cz + a1[1]],
-                [cx + a0[0], cy + h / 2, cz + a0[1]],
-            ]
-        else:  # axis z
-            p = [
-                [cx + a0[0], cy + a0[1], cz - h / 2],
-                [cx + a1[0], cy + a1[1], cz - h / 2],
-                [cx + a1[0], cy + a1[1], cz + h / 2],
-                [cx + a0[0], cy + a0[1], cz + h / 2],
-            ]
-        quads.append(np.array(p))
-    # caps
-    if axis == "y":
-        top = np.array([[cx + x, cy + h / 2, cz + z] for x, z in ring])
-        bot = np.array([[cx + x, cy - h / 2, cz + z] for x, z in ring][::-1])
-    else:
-        top = np.array([[cx + x, cy + y, cz + h / 2] for x, y in ring])
-        bot = np.array([[cx + x, cy + y, cz - h / 2] for x, y in ring][::-1])
-    quads += [top, bot]
-    return quads
-
-
 def rot_y(a):
     c, s = math.cos(a), math.sin(a)
     return np.array([[c, 0, s], [0, 1, 0], [-s, 0, c]])
@@ -141,21 +105,6 @@ def render_object(polys, size, angle_y, tilt=0.35, roll=0.6, base=(22, 22, 24), 
     for _, pts, col in items:
         draw.polygon(pts, fill=col)
     return img
-
-
-def hero_sequence(frames=60, size=1080):
-    out = ensure(os.path.join(OUT, "hero-seq"))
-    # abstract "x" mark: two crossed slabs + a short cylinder on one tip
-    polys = []
-    polys += [q @ rot_z(math.radians(28)).T for q in box(0, 0, 0, 3.2, 0.9, 0.9)]
-    polys += [q @ rot_z(math.radians(-62)).T for q in box(0, 0, 0, 3.2, 0.9, 0.9)]
-    polys += cylinder(-1.35, 0.95, 0, 0.62, 0.55, axis="z")
-    for i in range(frames):
-        a = 2 * math.pi * i / frames
-        img = render_object(polys, size, a)
-        img = img.filter(ImageFilter.GaussianBlur(0.6))
-        img.save(os.path.join(out, f"frame_{i + 1:03d}.webp"), quality=78, method=4)
-    print(f"hero sequence: {frames} frames -> {out}")
 
 
 # ---------------------------------------------------------------------------
@@ -293,9 +242,7 @@ def logos():
 
 
 if __name__ == "__main__":
-    only = sys.argv[1:] or ["hero", "insights", "awards", "videos", "logos"]
-    if "hero" in only:
-        hero_sequence()
+    only = sys.argv[1:] or ["insights", "awards", "videos", "logos"]
     if "insights" in only:
         insights_images()
     if "awards" in only:

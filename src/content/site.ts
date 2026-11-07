@@ -171,13 +171,6 @@ export const hero = {
     { text: 'what’s missing.', align: 'right' as const },
   ],
   caption: ['Software · Integrations · Automation · AI', 'Rosario, Argentina'],
-  /** Image sequence drawn on the canvas behind the headline */
-  sequence: {
-    dir: '/assets/hero-seq',
-    ext: 'webp',
-    frameCount: 39,
-    pad: 3, // frame_001.webp
-  },
 }
 
 export const projects: Project[] = [
