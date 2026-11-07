@@ -7,6 +7,7 @@ Landing de **gotoxy** (software a medida, integraciones y automatización con IA
 - `npm install`
 - `npm run dev` → http://localhost:5173
 - `npm run build` → `tsc -b && vite build` (debe pasar sin errores antes de dar por terminada cualquier tarea)
+- Deploy: cada push a `master` publica en https://gotoxy-dev.github.io/ (repo `gotoxy-dev/gotoxy-dev.github.io`, workflow `.github/workflows/deploy.yml`, pnpm + Node 24). El build copia `index.html` a `404.html` y a cada ruta del `sitemap.xml` (plugin `staticRoutes` en `vite.config.ts`): al añadir un caso, agregarlo al sitemap para que su URL responda 200.
 - Medios: abrir `http://localhost:5173/scripts/media-generator.html` con el dev server, "Generate all" descarga `site-media.zip` → descomprimir en `public/assets/`. `__generateOg()` descarga `og.jpg` → `public/og.jpg`. `__generateProject(n, stillsOnly)` regenera solo el proyecto `n` (1–6). Las capturas reales de los sitios de clientes viven en `public/assets/cases/<slug>/screens/` (desktop) y `screens-mobile/` (375px) y se muestran dentro del laptop y del teléfono. (`scripts/generate-assets.py` es la versión antigua en Python y requiere ffmpeg.)
 
 ## SEO
