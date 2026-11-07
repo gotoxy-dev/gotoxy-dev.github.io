@@ -95,6 +95,8 @@ export const tokens = {
     project: {
       gap: '4.167vw', // margin between cards
       inner: '0.833vw', // line → title row → media
+      /** Card media of a website case: its capture in a browser window, over a blurred copy */
+      browserWidth: '70%',
     },
     clients: {
       padTop: '6.944vw',
@@ -258,6 +260,25 @@ export const tokens = {
       closingZoomSec: 1.6,
       closingZoomDelaySec: 0.15,
       fadeInSec: 0.5,
+      /**
+       * Opening from a home card (view transition, see src/transitions.ts): the card's media
+       * shrinks into the left visual while the panel opens from the right edge towards it,
+       * then the panel lines rise in one after another.
+       */
+      open: {
+        duration: '1100ms',
+        ease: 'cubic-bezier(0.76, 0, 0.24, 1)',
+        /** The rest of the home fades out quickly so the moving card reads on black */
+        pageOut: '350ms',
+        panelDelay: '250ms',
+        panelDuration: '950ms',
+        /** Closing (X, Escape, back): the same move reversed; the panel folds back to the right edge */
+        panelClose: '700ms',
+        textDelaySec: 0.55,
+        textSec: 0.8,
+        textStaggerSec: 0.07,
+        textEase: 'power3.out',
+      },
       /** Journey step playback inside the phone: slide in, pause, scroll to the button, tap */
       journey: {
         /** Beat before each step; then the phone slides and the title opens together */

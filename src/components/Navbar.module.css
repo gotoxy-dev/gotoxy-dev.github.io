@@ -6,6 +6,8 @@
   display: flex;
   align-items: center;
   pointer-events: none; /* only children receive events */
+  /* own layer in the home ⇄ case view transitions: stays above the moving card (src/transitions.ts) */
+  view-transition-name: site-nav;
   /* Reference "HP LOADING": navbar fades in over 500ms, 500ms after page start. */
   animation: navIn var(--motion-duration-d500) linear var(--motion-duration-d500) both;
 }

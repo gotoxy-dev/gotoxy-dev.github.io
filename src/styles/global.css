@@ -252,3 +252,93 @@ ul {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ---------------------------------------------------------------- home card ⇄ case study
+   View transitions (src/transitions.ts). Opening: the card media shrinks into the case's left
+   visual, its browser window travels inside it and the text panel opens from the right edge.
+   Closing: the visual grows back into the card while the panel folds back to the right. */
+::view-transition-group(case-visual),
+::view-transition-group(case-browser),
+::view-transition-old(case-visual),
+::view-transition-new(case-visual),
+::view-transition-old(case-browser),
+::view-transition-new(case-browser) {
+  animation-duration: var(--motion-caseStudy-open-duration);
+  animation-timing-function: var(--motion-caseStudy-open-ease);
+}
+/* the window's bar keeps its height, so card and case windows differ a little in proportion and
+   a full cross-fade doubles them: one snapshot at a time. Opening keeps the card's (sharper while
+   shrinking) and swaps late, when both sizes nearly match; closing shows the card's from the start. */
+::view-transition-old(case-browser) {
+  animation-name: case-swap-out;
+}
+::view-transition-new(case-browser) {
+  animation-name: case-swap-in;
+}
+:root:active-view-transition-type(case-close)::view-transition-old(case-browser) {
+  animation: none;
+  opacity: 0;
+}
+:root:active-view-transition-type(case-close)::view-transition-new(case-browser) {
+  animation: none;
+  opacity: 1;
+}
+/* card and visual have different proportions: both snapshots fill the moving box */
+::view-transition-old(case-visual),
+::view-transition-new(case-visual) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+::view-transition-new(case-panel) {
+  animation: case-panel-open var(--motion-caseStudy-open-panelDuration) var(--motion-caseStudy-open-ease)
+    var(--motion-caseStudy-open-panelDelay) both;
+}
+::view-transition-old(case-panel) {
+  animation: case-panel-close var(--motion-caseStudy-open-panelClose) var(--motion-caseStudy-open-ease) both;
+}
+:root:active-view-transition-type(case-open, case-close)::view-transition-old(root),
+:root:active-view-transition-type(case-open, case-close)::view-transition-new(root) {
+  animation-duration: var(--motion-caseStudy-open-pageOut);
+}
+@keyframes case-swap-out {
+  0%,
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes case-swap-in {
+  0%,
+  70% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes case-panel-open {
+  from {
+    clip-path: inset(0 0 0 100%);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes case-panel-close {
+  from {
+    clip-path: inset(0 0 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 100%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}

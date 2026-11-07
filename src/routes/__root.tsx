@@ -10,7 +10,10 @@ export const Route = createRootRoute({
 const isChromeless = (pathname: string) => pathname.startsWith('/projects/')
 
 function RootLayout() {
-  const pathname = useRouterState({ select: (s) => s.location.pathname })
+  // The resolved location changes with the new page, inside the view transition (src/transitions.ts);
+  // `location` changes as soon as the navigation starts, which would drop or add the chrome in the
+  // "before" snapshot.
+  const pathname = useRouterState({ select: (s) => (s.resolvedLocation ?? s.location).pathname })
   const chromeless = isChromeless(pathname)
   return (
     <>

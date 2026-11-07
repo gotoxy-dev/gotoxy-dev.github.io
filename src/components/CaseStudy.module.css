@@ -378,45 +378,9 @@
   --layout-caseStudy-phoneWidth: var(--layout-caseStudy-splitPhoneWidth);
 }
 
-/* website capture shown whole in a minimal browser window */
+/* website capture in a browser window (BrowserFrame) */
 .browser {
   width: var(--layout-caseStudy-browserWidth);
-  margin: 0;
-  overflow: hidden;
-  border: 1px solid var(--color-browserEdge);
-  border-radius: var(--layout-caseStudy-browserRadius);
-  background: var(--color-browserBar);
-  box-shadow: 0 2.4vw 4vw var(--color-phoneShadow);
-}
-.browserBar {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  height: var(--layout-caseStudy-browserBar);
-  padding: 0 14px;
-}
-.browserDots {
-  display: flex;
-  gap: 7px;
-}
-.browserDots i {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--color-browserDot);
-}
-.browserUrl {
-  padding: 4px 18px;
-  border-radius: 6px;
-  background: var(--color-browserUrl);
-  font-size: 11px;
-  letter-spacing: 0.02em;
-  color: var(--color-textMuted);
-}
-.browserShot {
-  display: block;
-  width: 100%;
-  height: auto;
 }
 .device {
   position: relative;

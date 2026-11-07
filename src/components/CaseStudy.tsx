@@ -1,4 +1,4 @@
-import { useEffect, useRef, type CSSProperties } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import type { CaseJourneyStep, CaseStudy as CaseStudyContent } from '@/content/site'
 import { useLanguage } from '@/i18n'
@@ -6,6 +6,8 @@ import { useReveal } from '@/hooks/useReveal'
 import { useSnapScroll, writeSectionHash } from '@/hooks/useSnapScroll'
 import { gsap, ScrollTrigger } from '@/theme/motion'
 import { tokens } from '@/theme/tokens'
+import { caseOpen, clearCaseOpen, enteredFromCard, markCaseClose } from '@/transitions'
+import { BrowserFrame, hostOf } from './BrowserFrame'
 import { DeviceFrame } from './DeviceFrame'
 import styles from './CaseStudy.module.css'
 
@@ -21,43 +23,6 @@ const CloseIcon = () => (
     <path d="M1 1l20 20M21 1L1 21" />
   </svg>
 )
-
-/** A landscape website capture shown whole inside a minimal browser window. */
-function BrowserFrame({
-  src,
-  host,
-  priority,
-  zoom,
-}: {
-  src: string
-  host: string
-  priority?: boolean
-  /** Opens zoomed in on a point and pulls back when its chapter is entered (see setupChapterSwaps) */
-  zoom?: { scale: number; origin: string }
-}) {
-  return (
-    <figure
-      className={styles.browser}
-      {...(zoom ? { 'data-zoom-scale': zoom.scale, 'data-zoom-origin': zoom.origin } : {})}
-    >
-      <div className={styles.browserBar} aria-hidden="true">
-        <span className={styles.browserDots}>
-          <i />
-          <i />
-          <i />
-        </span>
-        {host && <span className={styles.browserUrl}>{host}</span>}
-      </div>
-      <img
-        className={styles.browserShot}
-        src={src}
-        alt=""
-        decoding="async"
-        {...(priority ? { fetchPriority: 'high' as const } : { loading: 'lazy' as const })}
-      />
-    </figure>
-  )
-}
 
 /**
  * Phone with the journey's app screens side by side (live HTML, or a still for steps without
@@ -633,13 +598,9 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
   const [goal, results] = study.pages
   const { steps, hasJourney, count, k, areas, totalHeight } = chapterLayout(study)
   const journeyLabel = study.journey?.label ?? ''
-  const host = (() => {
-    try {
-      return new URL(study.link.href).host.replace(/^www\./, '')
-    } catch {
-      return ''
-    }
-  })()
+  const host = hostOf(study.link.href)
+  // Opened from a home card: the view transition brings in the first visual and the panel.
+  const [viaCard] = useState(enteredFromCard)
   const resultsIndex = count - 1
 
   useSnapScroll({ count, snapClass: SNAP_CLASS })
@@ -676,10 +637,30 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
     return () => io.disconnect()
   }, [study.slug])
 
+  // Closing (X, Escape, back): the home's card for this case takes the visual back (src/transitions.ts).
+  // A layout cleanup, so it runs before the home's cards mount in the same commit.
+  useLayoutEffect(() => () => markCaseClose(study.slug), [study.slug])
+
+  // Opened from a home card: while the panel opens, its first page's lines rise in one after another.
+  useEffect(() => {
+    clearCaseOpen()
+    const root = rootRef.current
+    if (!viaCard || !root || !window.matchMedia(`${SPLIT} and ${MOTION_OK}`).matches) return
+    const { lineLiftPx, open } = tokens.motion.caseStudy
+    const tween = gsap.fromTo(
+      root.querySelectorAll('[data-case="page-0"] [data-case-line]'),
+      { y: lineLiftPx, autoAlpha: 0 },
+      { y: 0, autoAlpha: 1, duration: open.textSec, delay: open.textDelaySec, stagger: open.textStaggerSec, ease: open.textEase },
+    )
+    return () => {
+      tween.kill()
+    }
+  }, [viaCard])
+
   // Escape closes the case, like the X.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') navigate({ to: '/', hash: 'projects' })
+      if (e.key === 'Escape') navigate({ to: '/', resetScroll: false })
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
@@ -691,6 +672,8 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
   }
 
   const fade = { 'data-reveal': 'fade', 'data-reveal-fade-dur': `${tokens.motion.caseStudy.fadeInSec * 1000}ms` }
+  /** Panel and visuals: the card transition already brings them in. */
+  const enter = viaCard ? {} : fade
 
   const textPage = (index: number, eyebrow: string, heading: string, paragraphs: string[]) => (
     <div className={styles.content} data-case={`content-${index}`}>
@@ -710,7 +693,7 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
 
   return (
     <div ref={setRefs} className={styles.root} style={cssVars({ '--case-height': totalHeight })}>
-      <Link to="/" hash="projects" className={styles.close} aria-label={lang === 'es' ? 'Cerrar caso' : 'Close case study'} {...fade}>
+      <Link to="/" resetScroll={false} className={styles.close} aria-label={lang === 'es' ? 'Cerrar caso' : 'Close case study'} {...fade}>
         <CloseIcon />
       </Link>
 
@@ -740,21 +723,23 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
       </div>
 
       {/* right-hand fixed panel: one page per chapter, stacked in place */}
-      <div className={styles.panel} {...fade}>
+      <div className={styles.panel} style={{ viewTransitionName: caseOpen.panel }} {...enter}>
         <div className={`${styles.page} ${styles.pageFirst}`} data-case="page-0">
           <div className={styles.content} data-case="content-0">
-            <h1 className={styles.title}>{study.title}</h1>
+            <h1 className={styles.title} data-case-line>
+              {study.title}
+            </h1>
             <div className={styles.spaceLarge} />
             <dl className={styles.table}>
               {study.table.map((row) => (
-                <div key={row.label} className={styles.row}>
+                <div key={row.label} className={styles.row} data-case-line>
                   <dt className={styles.rowLabel}>{row.label}</dt>
                   <dd className={styles.rowValue}>{row.value}</dd>
                 </div>
               ))}
             </dl>
           </div>
-          <div className={styles.pageLink}>
+          <div className={styles.pageLink} data-case-line>
             <a href={study.link.href} target="_blank" rel="noreferrer" className={styles.caseLink}>
               {study.link.label}
               <ArrowIcon />
@@ -814,15 +799,21 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
       </div>
 
       {/* left-hand sticky visuals: each one slides over the previous, which recedes and dims */}
-      <div className={styles.sections} {...fade}>
+      <div className={styles.sections} {...enter}>
         <section className={styles.section} style={cssVars({ zIndex: 1 })}>
           {study.media.screenshot ? (
-            <div className={`${styles.bg} ${styles.bgFramed}`} data-visual="0">
+            <div className={`${styles.bg} ${styles.bgFramed}`} data-visual="0" style={{ viewTransitionName: caseOpen.visual }}>
               <img className={styles.ambient} src={study.media.background} alt="" aria-hidden="true" decoding="async" />
-              <BrowserFrame src={study.media.background} host={host} priority />
+              <BrowserFrame
+                src={study.media.background}
+                host={host}
+                priority
+                className={styles.browser}
+                transitionName={caseOpen.browser}
+              />
             </div>
           ) : (
-            <div className={styles.bg} data-visual="0">
+            <div className={styles.bg} data-visual="0" style={{ viewTransitionName: caseOpen.visual }}>
               <img className={styles.bgImage} src={study.media.background} alt="" decoding="async" fetchPriority="high" />
               {study.media.device && <img className={styles.device} src={study.media.device} alt="" decoding="async" />}
             </div>
@@ -855,7 +846,7 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
           {study.media.screenshot ? (
             <div className={`${styles.bg} ${styles.bgFramed} ${styles.bgSolid}`} data-visual="2">
               <img className={styles.ambient} src={study.media.closing} alt="" aria-hidden="true" loading="lazy" decoding="async" />
-              <BrowserFrame src={study.media.closing} host={host} zoom={study.media.closingZoom} />
+              <BrowserFrame src={study.media.closing} host={host} zoom={study.media.closingZoom} className={styles.browser} />
             </div>
           ) : (
             <div className={`${styles.bg} ${styles.bgSolid}`} data-visual="2">

@@ -4,6 +4,10 @@ import { CustomEase } from 'gsap/CustomEase'
 import { tokens, type EaseName } from './tokens'
 
 gsap.registerPlugin(ScrollTrigger, CustomEase)
+// The router restores scroll on back/forward (main.tsx). ScrollTrigger would otherwise put
+// `history.scrollRestoration` back to the "auto" it read at load on every refresh, and the
+// browser's own restore would then move the page after a view transition captured it.
+ScrollTrigger.clearScrollMemory('manual')
 
 const registered = new Set<string>()
 
