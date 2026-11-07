@@ -22,7 +22,6 @@ export const tokens = {
     lineStrong: '#575757',
     lineHover: '#ffffff', // award rows on hover
     pager: '#484848', // case-study pager dash / inactive label
-    caseVideoBg: '#161616',
     /* SVG phone: brushed titanium rail, black glass bezel */
     phoneMetalLight: '#c9cacd',
     phoneMetalMid: '#7d7f84',
@@ -166,23 +165,20 @@ export const tokens = {
       browserBar: '34px',
       /** Blurred copy of the visual behind it, for colour and depth */
       ambientBlur: '80px',
-      ambientOpacity: '0.35',
-      /** Scroll length given to each journey step */
-      journeyStep: '80vh',
+      ambientOpacity: '0.15',
       stepCounterSize: '12px',
       stepGap: '1.25vw',
       stepTitleSize: '1.6vw',
-      /** The opening step waits for the closing one before it unfolds */
-      stepRevealDelay: '150ms',
+      /** Extra wait of the opening step; 0 so the title opens with the phone's slide (both after journey.startDelaySec) */
+      stepRevealDelay: '0ms',
       railWidth: '1px',
       /** App screens are laid out 390px wide; the phone shows a 54px status bar and 790px of page */
       appWidth: '390px',
       appStatusBar: '54px',
       appView: '790px',
       tapSize: '44px',
-      /** Mobile journey: pinned phone, captions one `mobileStep` of scroll apart */
+      /** Mobile journey: one screen, phone width and caption width */
       mobilePhoneWidth: 'min(62vw, 33svh)',
-      mobileStep: '85svh',
       captionWidth: 'min(340px, calc(100vw - 48px))',
     },
   },
@@ -248,22 +244,26 @@ export const tokens = {
       swapEase: 'power2.out',
       /** Vertical travel of the incoming / outgoing panel page (follows scroll direction) */
       pageLiftPx: 60,
+      /** Incoming panel page: its lines rise in one after another */
+      lineLiftPx: 28,
+      lineStaggerSec: 0.07,
+      /** Left visuals, scrubbed by the scroll: the incoming one settles from a slight zoom, the
+          one it covers recedes (shrinks around its centre, so it stays centred) and dims behind it */
+      visualZoom: 1.08,
+      visualRecede: 0.88,
+      visualDim: 0.35,
+      /** Closing capture with a zoom: pull back to the whole view once its chapter is entered */
+      closingZoomSec: 1.6,
+      closingZoomDelaySec: 0.15,
       fadeInSec: 0.5,
       /** Journey step playback inside the phone: slide in, pause, scroll to the button, tap */
-      /** Mobile captions: share of a step's scroll spent rising in / leaving */
-      caption: {
-        rise: 0.25,
-        leave: 0.22,
-        /** How much the leaving and the rising caption overlap */
-        overlap: 0.05,
-      },
       journey: {
-        /** Wait for the snap scroll to settle before the phone plays the step */
-        startDelaySec: 0.45,
-        slideSec: 0.6,
-        holdSec: 0.3,
-        scrollSec: 0.9,
-        tapSec: 0.6,
+        /** Beat before each step; then the phone slides and the title opens together */
+        startDelaySec: 0.12,
+        slideSec: 0.45,
+        holdSec: 0.12,
+        scrollSec: 0.55,
+        tapSec: 0.4,
         ease: 'power2.out',
       },
     },

@@ -1,13 +1,13 @@
 /* Case page: fixed right panel (50vw) with one page per chapter, left column of sticky
-   visuals (the journey phone stays pinned for its whole stretch), pager bottom-left. */
+   visuals, pager bottom-left. */
 .root {
   position: relative;
   min-height: var(--case-height);
 }
 
 /* Native snapping: one gesture lands on the next chapter. Snap areas are plain absolutely
-   placed markers (sticky elements make unreliable snap targets). Each journey step has its
-   own stop, so one gesture plays one step. */
+   placed markers (sticky elements make unreliable snap targets). The journey is a single
+   chapter: its phone plays on its own, the scroll never waits for it. */
 @media (min-width: 992px) {
   :global(html.case-snap) {
     scroll-snap-type: y mandatory;
@@ -182,11 +182,56 @@
   list-style: none;
 }
 .step {
+  color: var(--color-textDim);
+  transition: color var(--motion-duration-d500) var(--motion-ease-outSine);
+}
+.step:not([data-active]):hover {
+  color: var(--color-textMuted);
+}
+/* each title jumps the phone to its step */
+.stepButton {
   display: grid;
   grid-template-columns: 2.6em minmax(0, 1fr);
   align-items: baseline;
-  color: var(--color-textDim);
-  transition: color var(--motion-duration-d500) var(--motion-ease-outSine);
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.stepButton:focus-visible {
+  outline: 1px solid var(--color-textStrong);
+  outline-offset: 4px;
+}
+.stepBody,
+.stepTitle,
+.stepText {
+  display: block;
+}
+.replay {
+  margin-top: var(--layout-caseStudy-stepGap);
+  margin-left: 2.6em;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-textStrong);
+  font: inherit;
+  font-size: var(--type-small-size);
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.replay[hidden] {
+  display: none;
+}
+.replay:hover {
+  color: var(--color-textMuted);
+}
+.replay:focus-visible {
+  outline: 1px solid var(--color-textStrong);
+  outline-offset: 4px;
 }
 .step[data-active] {
   color: var(--color-textStrong);
@@ -294,9 +339,6 @@
   /* each visual paints in its own box: covering one section never repaints the others */
   contain: paint;
 }
-.journeySpacer {
-  height: calc(var(--steps) * var(--layout-caseStudy-journeyStep));
-}
 .bg {
   position: relative;
   display: flex;
@@ -305,7 +347,10 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background-color: var(--color-surface);
+}
+/* the closing visual covers the ones below it: dark like the panel, nothing shows through */
+.bgSolid {
+  background-color: var(--color-bg);
 }
 .bgImage {
   position: absolute;
@@ -313,11 +358,6 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-}
-.bgVideo,
-.bgJourney,
-.bgFramed {
-  background: var(--color-caseVideoBg);
 }
 /* blurred copy of the visual: colour and depth behind a framed screenshot or the phone */
 .ambient {
@@ -520,12 +560,10 @@
      stage is tall enough for every caption to pass; each caption plays its step on the phone. */
   .mJourney {
     position: relative;
-    height: calc(var(--steps) * var(--layout-caseStudy-mobileStep) + 100svh);
     margin: 16px -20px 0;
   }
   .mPhoneLayer {
-    position: sticky;
-    top: 0;
+    position: relative;
     display: flex;
     align-items: flex-start;
     justify-content: center;
@@ -536,12 +574,12 @@
   .mPhone {
     --layout-caseStudy-phoneWidth: var(--layout-caseStudy-mobilePhoneWidth);
   }
-  /* reading spot under the phone: captions rise into it, hold, and leave upwards */
+  /* reading spot over the bottom of the phone: the caption of the step playing */
   .mCaptions {
     position: absolute;
     left: 0;
     right: 0;
-    bottom: 4svh;
+    bottom: calc(4svh + 28px);
     height: 0;
     margin: 0;
     padding: 0;
@@ -580,6 +618,52 @@
     font-size: 14px;
     line-height: 1.5;
     color: var(--color-text);
+  }
+  /* step dots (each jumps to its step) and the replay, under the caption */
+  .mControls {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 2svh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    height: 24px;
+  }
+  .mDots {
+    display: flex;
+    gap: 2px;
+  }
+  .mDot {
+    position: relative;
+    width: 18px;
+    height: 24px;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+  }
+  .mDot::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-textDim);
+    transform: translate(-50%, -50%);
+    transition: background-color var(--motion-duration-d300) var(--motion-ease-outSine);
+  }
+  .mDot[data-active]::before {
+    background: var(--color-textStrong);
+  }
+  .mDot:focus-visible {
+    outline: 1px solid var(--color-textStrong);
+  }
+  .mControls .replay {
+    margin: 0;
   }
   .button {
     align-self: flex-start;

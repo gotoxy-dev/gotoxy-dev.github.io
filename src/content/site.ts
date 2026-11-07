@@ -125,6 +125,8 @@ export interface CaseStudy {
     closing: string
     /** `background` and `closing` are landscape website captures: show them whole, in a browser window */
     screenshot?: boolean
+    /** page 3 opens zoomed in (`scale`) on a point of `closing` (`origin`, CSS percentages) and pulls back to the whole view */
+    closingZoom?: { scale: number; origin: string }
   }
   /** Slug of the next case study */
   next: string
@@ -503,6 +505,22 @@ export const caseStudies: CaseStudy[] = [
           height: 955,
           taps: [],
         },
+        {
+          title: 'Courier at the door',
+          text: 'The app lets them know the courier is at the address, with the amount to have ready.',
+          screen: '/assets/cases/japon-in-box/journey/09-arrival.jpg',
+          app: '/assets/cases/japon-in-box/journey/app/09-arrival.html',
+          height: 930,
+          taps: [],
+        },
+        {
+          title: 'Order delivered',
+          text: 'A notification confirms the delivery and closes the order with a rating.',
+          screen: '/assets/cases/japon-in-box/journey/10-delivered.jpg',
+          app: '/assets/cases/japon-in-box/journey/app/10-delivered.html',
+          height: 790,
+          taps: [],
+        },
       ],
     },
     media: caseMedia('japon-in-box', {
@@ -510,6 +528,8 @@ export const caseStudies: CaseStudy[] = [
       device: undefined,
       closing: '/assets/cases/japon-in-box/locations.webp',
       screenshot: true,
+      // opens on the Japón Centro card
+      closingZoom: { scale: 2.8, origin: '49% 60%' },
     }),
     next: 'instituto-cam',
   },

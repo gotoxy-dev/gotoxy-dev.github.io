@@ -303,6 +303,22 @@ export const caseStudies: SiteContent['caseStudies'] = [
           height: 955,
           taps: [],
         },
+        {
+          title: 'El cadete llega',
+          text: 'La app le avisa que el cadete está en su domicilio, con el monto a tener listo.',
+          screen: '/assets/cases/japon-in-box/journey/09-arrival.jpg',
+          app: '/assets/cases/japon-in-box/journey/app/09-arrival.html',
+          height: 930,
+          taps: [],
+        },
+        {
+          title: 'Pedido entregado',
+          text: 'Una notificación confirma la entrega y cierra el pedido con una calificación.',
+          screen: '/assets/cases/japon-in-box/journey/10-delivered.jpg',
+          app: '/assets/cases/japon-in-box/journey/app/10-delivered.html',
+          height: 790,
+          taps: [],
+        },
       ],
     },
     media: caseMedia('japon-in-box', {
@@ -310,6 +326,8 @@ export const caseStudies: SiteContent['caseStudies'] = [
       device: undefined,
       closing: '/assets/cases/japon-in-box/locations.webp',
       screenshot: true,
+      // opens on the Japón Centro card
+      closingZoom: { scale: 2.8, origin: '49% 60%' },
     }),
     next: 'instituto-cam',
   },

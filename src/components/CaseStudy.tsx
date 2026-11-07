@@ -23,9 +23,23 @@ const CloseIcon = () => (
 )
 
 /** A landscape website capture shown whole inside a minimal browser window. */
-function BrowserFrame({ src, host, priority }: { src: string; host: string; priority?: boolean }) {
+function BrowserFrame({
+  src,
+  host,
+  priority,
+  zoom,
+}: {
+  src: string
+  host: string
+  priority?: boolean
+  /** Opens zoomed in on a point and pulls back when its chapter is entered (see setupChapterSwaps) */
+  zoom?: { scale: number; origin: string }
+}) {
   return (
-    <figure className={styles.browser}>
+    <figure
+      className={styles.browser}
+      {...(zoom ? { 'data-zoom-scale': zoom.scale, 'data-zoom-origin': zoom.origin } : {})}
+    >
       <div className={styles.browserBar} aria-hidden="true">
         <span className={styles.browserDots}>
           <i />
@@ -118,39 +132,33 @@ const TAP_RADIUS = parseFloat(tokens.layout.caseStudy.tapSize) / 2
 const pad = (n: number) => String(n).padStart(2, '0')
 const range = (n: number) => Array.from({ length: n }, (_, i) => i)
 const cssVars = (vars: Record<string, string | number>) => vars as CSSProperties
-const STEP = 'var(--layout-caseStudy-journeyStep)'
-
 /**
- * Chapters, each one a snap point: intro (cover), goal (reel), the journey when the case
- * has one (the phone stays pinned while each of its k steps gets its own snap stop,
- * `journeyStep` apart), and the results.
+ * Three chapters, each one a snap point: intro (cover), then the journey when the case has one
+ * (the phone plays its steps on its own, see setupJourney) or else the goal (reel), and the results.
  */
 function chapterLayout(study: CaseStudyContent) {
   const steps = study.journey?.steps ?? []
   const hasJourney = steps.length > 0
-  const count = hasJourney ? 4 : 3
+  const count = 3
   const k = steps.length
-  const extra = Math.max(0, k - 1)
   /** CSS top of each chapter's snap point */
-  const areas = range(count).map((i) => {
-    if (hasJourney && i === 3) return `calc(300vh + ${extra} * ${STEP})`
-    return `calc(${i} * 100vh)`
-  })
-  /** Snap stops of journey steps 1..k-1 (step 0 is the journey chapter itself) */
-  const stops = range(extra).map((i) => `calc(200vh + ${i + 1} * ${STEP})`)
-  return { steps, hasJourney, count, k, areas, stops, totalHeight: `calc(${count} * 100vh + ${extra} * ${STEP})` }
+  const areas = range(count).map((i) => `calc(${i} * 100vh)`)
+  return { steps, hasJourney, count, k, areas, totalHeight: `calc(${count} * 100vh)` }
 }
 
 /**
  * Chapter swaps: one short tween when the visible chapter changes. The outgoing panel page
- * fades out while moving against the scroll, the incoming one fades in from the other side,
- * and the pager follows. Nothing runs while the browser snaps between chapters.
+ * fades out while moving against the scroll, the incoming one's lines rise in one after
+ * another, and the pager follows. The left visuals are scrubbed by the scroll instead (see
+ * setupVisualParallax), so they move with the snap itself.
  */
 function setupChapterSwaps(root: HTMLElement, count: number, animate: boolean) {
-  const { swapSec, swapOutSec, swapInDelaySec, swapEase, pageLiftPx: lift } = tokens.motion.caseStudy
+  const { swapSec, swapOutSec, swapInDelaySec, swapEase, pageLiftPx: lift, lineLiftPx, lineStaggerSec } = tokens.motion.caseStudy
   const el = (key: string, i: number) => root.querySelector<HTMLElement>(`[data-case="${key}-${i}"]`)
   const pages = range(count).map((i) => el('page', i))
   const contents = range(count).map((i) => el('content', i))
+  /** The lines of each page that rise in one by one */
+  const lines = contents.map((c) => (c ? Array.from(c.children) : []))
   const labels = range(count).map((i) => el('label', i))
   const areas = range(count).map((i) => el('area', i))
   const fill = root.querySelector<HTMLElement>('[data-case="dash"]')
@@ -159,15 +167,40 @@ function setupChapterSwaps(root: HTMLElement, count: number, animate: boolean) {
   const last = count - 1
   const duration = animate ? swapSec : 0
 
+  // Closing capture that opens zoomed in on a point and pulls back once its chapter is entered.
+  const zoomEl = root.querySelector<HTMLElement>('[data-zoom-scale]')
+  const zoomScale = Number(zoomEl?.dataset.zoomScale ?? 1)
+  const zoomOrigin = zoomEl?.dataset.zoomOrigin ?? '50% 50%'
+  const { closingZoomSec, closingZoomDelaySec } = tokens.motion.caseStudy
+  let zoomTween: gsap.core.Tween | null = null
+  const zoomIn = () => {
+    if (!zoomEl) return
+    zoomTween?.kill()
+    gsap.set(zoomEl, { scale: zoomScale, transformOrigin: zoomOrigin })
+  }
+  const pullBack = () => {
+    if (!zoomEl) return
+    zoomIn()
+    zoomTween = gsap.to(zoomEl, {
+      scale: 1,
+      duration: animate ? closingZoomSec : 0,
+      delay: animate ? closingZoomDelaySec : 0,
+      ease: 'power3.inOut',
+    })
+  }
+
   let active = -1
   let swap: gsap.core.Timeline | null = null
 
   const place = (index: number) => {
     swap?.kill()
+    if (index === last) pullBack()
+    else zoomIn()
     active = index
     range(count).forEach((i) => {
       gsap.set([pages[i], labels[i]], { autoAlpha: i === index ? 1 : 0 })
       if (contents[i]) gsap.set(contents[i], { y: 0 })
+      if (lines[i].length) gsap.set(lines[i], { autoAlpha: 1, y: 0 })
     })
     gsap.set(fill, { scaleX: index / last })
     gsap.set(total, { color: index === last ? tokens.color.text : tokens.color.pager })
@@ -179,11 +212,13 @@ function setupChapterSwaps(root: HTMLElement, count: number, animate: boolean) {
     const from = active
     const dir = index > from ? 1 : -1
     swap?.kill()
+    if (index === last) pullBack()
+    else if (from === last) zoomIn()
     active = index
     range(count).forEach((i) => {
       if (i !== from && i !== index) gsap.set([pages[i], labels[i]], { autoAlpha: 0 })
     })
-    if (+gsap.getProperty(pages[index]!, 'opacity') === 0) gsap.set(contents[index], { y: lift * dir })
+    gsap.set(contents[index], { y: 0 })
     // The old page leaves quickly; the new one starts once it is mostly gone, so the two never overlap.
     const out = animate ? swapOutSec : 0
     const inAt = animate ? swapInDelaySec : 0
@@ -192,8 +227,13 @@ function setupChapterSwaps(root: HTMLElement, count: number, animate: boolean) {
       .to(pages[from], { autoAlpha: 0, duration: out, ease: 'power1.in' }, 0)
       .to(contents[from], { y: -lift * dir, duration: out, ease: 'power1.in' }, 0)
       .to(labels[from], { autoAlpha: 0, duration: out }, 0)
-      .to(pages[index], { autoAlpha: 1 }, inAt)
-      .to(contents[index], { y: 0 }, inAt)
+      .set(pages[index], { autoAlpha: 1 }, inAt)
+      .fromTo(
+        lines[index],
+        { autoAlpha: 0, y: lineLiftPx * dir },
+        { autoAlpha: 1, y: 0, stagger: animate ? lineStaggerSec : 0 },
+        inAt,
+      )
       .to(labels[index], { autoAlpha: 1 }, inAt)
       .to(fill, { scaleX: index / last }, 0)
       .to(total, { color: index === last ? tokens.color.text : tokens.color.pager }, inAt)
@@ -233,15 +273,48 @@ function setupChapterSwaps(root: HTMLElement, count: number, animate: boolean) {
 
   return () => {
     swap?.kill()
+    zoomTween?.kill()
     video?.pause()
   }
 }
 
 /**
+ * Left visuals, scrubbed by the scroll: while chapter i slides up over chapter i - 1, the
+ * incoming visual settles from a slight zoom and the covered one recedes and dims, centred.
+ */
+function setupVisualParallax(root: HTMLElement, count: number) {
+  const { visualZoom, visualRecede, visualDim } = tokens.motion.caseStudy
+  const visuals = range(count).map((i) => root.querySelector<HTMLElement>(`[data-visual="${i}"]`))
+  const areas = range(count).map((i) => root.querySelector<HTMLElement>(`[data-case="area-${i}"]`))
+  const triggers = range(count)
+    .slice(1)
+    .map((i) => {
+      const incoming = visuals[i]
+      // The recede goes on the covered visual's section, so it never fights that visual's own
+      // entrance zoom (a middle visual is both incoming and, later, covered).
+      const covered = visuals[i - 1]?.parentElement
+      const area = areas[i]
+      if (!incoming || !covered || !area) return null
+      const tl = gsap
+        .timeline({ defaults: { ease: 'none' } })
+        .fromTo(incoming, { scale: visualZoom }, { scale: 1 }, 0)
+        .fromTo(covered, { scale: 1, autoAlpha: 1 }, { scale: visualRecede, autoAlpha: visualDim }, 0)
+      return ScrollTrigger.create({
+        trigger: root,
+        start: () => `top+=${area.offsetTop - window.innerHeight} top`,
+        end: () => `top+=${area.offsetTop} top`,
+        scrub: true,
+        animation: tl,
+      })
+    })
+  return () => triggers.forEach((t) => t?.kill())
+}
+
+/**
  * Plays the journey inside one phone (`scope` holds its screen, track and tap ring). When a
  * step is shown, the new screen slides in from the right like app navigation, scrolls to the
- * button the user taps, and a tap ring pulses on it. It only moves forward: asking for an
- * earlier step leaves the phone on the last step played. `onStep` runs when a step starts.
+ * button the user taps, and a tap ring pulses on it. `show` only moves forward (one step at a
+ * time); `goto` jumps to any step. `onStep` runs when a step starts.
  */
 function createPhonePlayer(
   scope: HTMLElement,
@@ -250,12 +323,12 @@ function createPhonePlayer(
   {
     delaySec,
     onStep,
-    back = 'hold',
+    onIdle,
   }: {
     delaySec: number
     onStep?: (index: number) => void
-    /** Going back: `hold` stays on the last step played; `rest` shows the earlier step's end state, without animating */
-    back?: 'hold' | 'rest'
+    /** Runs when the phone has caught up with the last step asked for */
+    onIdle?: () => void
   },
 ) {
   const screen = scope.querySelector<HTMLElement>('[data-case="app-screen"]')
@@ -287,27 +360,47 @@ function createPhonePlayer(
   }
 
   let current = -1
+  /** Last step asked for; the phone plays its way there one step at a time. */
+  let target = -1
   let play: gsap.core.Timeline | null = null
+  let playing = false
 
-  /** Earlier step, shown at once in the state it ends in (never played in reverse). */
-  const rest = (index: number) => {
+  /** Plays the step after the current one; when it ends, moves on until `target` is reached. */
+  const advance = () => {
+    if (current >= target) {
+      const wasPlaying = playing
+      playing = false
+      if (wasPlaying) onIdle?.()
+      return
+    }
+    playing = true
+    // A jump of several steps (a deep link, the first load) is only skipped when nothing has
+    // been played yet; after that every step plays in order, so no screen is ever cut.
+    const index = current < 0 ? target : current + 1
+    play = playStep(index, current)
+    play.eventCallback('onComplete', advance)
+  }
+
+  /** Jumps straight to a step (no slide) and plays it from its start. */
+  const goto = (index: number) => {
     play?.kill()
-    current = index
-    gsap.set(tap, { autoAlpha: 0 })
-    gsap.set(track, { x: -index * APP_WIDTH })
-    contents.forEach((c, j) => j <= index && gsap.set(c, { y: -restingScroll(steps[j]) }))
-    onStep?.(index)
+    playing = true
+    target = index
+    play = playStep(index, -1)
+    play.eventCallback('onComplete', advance)
   }
 
   const show = (index: number) => {
-    // Never animates backwards. `hold` keeps the phone on the last step played until the scroll
-    // passes it again; `rest` jumps to the earlier step's end state so text and screen match.
-    if (index === current) return
-    if (index < current) {
-      if (back === 'rest') rest(index)
+    // Never animates backwards: an earlier step leaves the phone where it is.
+    if (index <= current) {
+      target = current
       return
     }
-    const from = current
+    target = index
+    if (!playing) advance()
+  }
+
+  const playStep = (index: number, from: number) => {
     current = index
     play?.kill()
     load(index)
@@ -322,14 +415,14 @@ function createPhonePlayer(
     // Earlier screens rest where they were left, so the slide shows the tapped state.
     contents.forEach((c, j) => j < index && gsap.set(c, { y: -restingScroll(steps[j]) }))
 
-    // Waits a beat (the snap settling on desktop), except on first load or a deep link.
+    // The same beat before every step (the snap settling on desktop), except on first load or a
+    // deep link. The step list highlight (`onStep`) and the slide start together after it.
     const delay = animate && from >= 0 ? delaySec : 0
     const tl = gsap.timeline({ delay, defaults: { ease: cfg.ease } })
     if (onStep) tl.call(() => onStep(index), undefined, 0)
     if (!animate) {
       tl.set(track, { x: -index * APP_WIDTH }, 0).set(content, { y: -restingScroll(step) }, 0)
-      play = tl
-      return
+      return tl
     }
     if (forward) tl.to(track, { x: -index * APP_WIDTH, duration: cfg.slideSec, ease: 'power2.inOut' }, 0)
     else tl.set(track, { x: -index * APP_WIDTH }, 0)
@@ -346,10 +439,13 @@ function createPhonePlayer(
         t += cfg.tapSec + cfg.holdSec
       })
     } else {
-      // Last screen: read it to the bottom.
+      // No tap: read the screen to the bottom.
       tl.to(content, { y: -restingScroll(step), duration: cfg.scrollSec * 2, ease: 'power1.inOut' }, t)
+      t += cfg.scrollSec * 2
     }
-    play = tl
+    // Let the finished screen be read before the next step may start.
+    tl.set({}, {}, t + cfg.holdSec)
+    return tl
   }
 
   load(0)
@@ -357,6 +453,12 @@ function createPhonePlayer(
 
   return {
     show,
+    goto,
+    /** Step the phone is on (-1 before the first one) */
+    current: () => current,
+    playing: () => playing,
+    pause: () => play?.pause(),
+    resume: () => play?.resume(),
     destroy: () => {
       play?.kill()
       resize.disconnect()
@@ -365,39 +467,100 @@ function createPhonePlayer(
 }
 
 /**
- * Desktop journey: every step is a snap stop; the phone in the left column plays the step the
- * scroll lands on, and the step list on the right only moves its highlight and rail.
+ * Autoplay shared by both layouts: while the journey is on screen (`setVisible`) the phone plays
+ * every step on its own, one after another; off screen it pauses and resumes where it stopped.
+ * `goto` jumps to a step and carries on from there; the last step reveals the replay button.
+ */
+function createJourneyAutoplay(
+  phone: HTMLElement,
+  steps: CaseJourneyStep[],
+  animate: boolean,
+  { onStep, replay }: { onStep: (index: number) => void; replay: HTMLButtonElement | null },
+) {
+  const k = steps.length
+  const { journey: cfg } = tokens.motion.caseStudy
+  let visible = false
+
+  const onIdle = () => {
+    if (!player) return
+    const i = player.current()
+    if (i >= k - 1) {
+      if (replay) replay.hidden = false
+      return
+    }
+    if (visible) player.show(i + 1)
+  }
+  const player = createPhonePlayer(phone, steps, animate, {
+    delaySec: cfg.startDelaySec,
+    onStep: (index) => {
+      onStep(index)
+      if (replay) replay.hidden = true
+    },
+    onIdle,
+  })
+  if (!player) return null
+
+  const setVisible = (next: boolean) => {
+    if (next === visible) return
+    visible = next
+    if (!visible) return player.pause()
+    if (player.current() < 0) return player.show(0)
+    player.resume()
+    // Paused between two steps: carry on from where it stopped.
+    if (!player.playing()) onIdle()
+  }
+  const onReplay = () => player.goto(0)
+  replay?.addEventListener('click', onReplay)
+
+  return {
+    setVisible,
+    goto: player.goto,
+    destroy: () => {
+      replay?.removeEventListener('click', onReplay)
+      player.destroy()
+    },
+  }
+}
+
+/** Wires a list of buttons so each one jumps the journey to its step. */
+function bindStepButtons(buttons: (HTMLButtonElement | null | undefined)[], goto: (index: number) => void) {
+  const offs = buttons.map((button, i) => {
+    const onClick = () => goto(i)
+    button?.addEventListener('click', onClick)
+    return () => button?.removeEventListener('click', onClick)
+  })
+  return () => offs.forEach((off) => off())
+}
+
+/**
+ * Desktop journey: one chapter of the scroll, played by `createJourneyAutoplay`. The step list
+ * follows the phone (highlight + rail) and each title jumps to its step.
  */
 function setupJourney(root: HTMLElement, steps: CaseJourneyStep[], animate: boolean) {
-  const area = root.querySelector<HTMLElement>('[data-case="area-2"]')
+  const area = root.querySelector<HTMLElement>('[data-case="area-1"]')
+  const after = root.querySelector<HTMLElement>('[data-case="area-2"]')
   const phone = root.querySelector<HTMLElement>('[data-case="phone-split"]')
   const rail = root.querySelector<HTMLElement>('[data-case="rail"]')
+  const replay = root.querySelector<HTMLButtonElement>('[data-case="replay"]')
   const items = steps.map((_, i) => root.querySelector<HTMLElement>(`[data-case="step-${i}"]`))
-  const stops = steps.map((_, i) => (i === 0 ? area : root.querySelector<HTMLElement>(`[data-case="stop-${i}"]`)))
-  if (!area || !phone || !rail) return
+  if (!area || !after || !phone || !rail) return
   const k = steps.length
   const { journey: cfg } = tokens.motion.caseStudy
 
-  const highlight = (index: number) => {
-    items.forEach((item, j) => item?.toggleAttribute('data-active', j === index))
-    gsap.to(rail, { scaleY: k > 1 ? index / (k - 1) : 1, duration: cfg.slideSec, ease: cfg.ease })
-  }
-  const player = createPhonePlayer(phone, steps, animate, { delaySec: cfg.startDelaySec, onStep: highlight })
-  if (!player) return
+  const autoplay = createJourneyAutoplay(phone, steps, animate, {
+    replay,
+    onStep: (index) => {
+      items.forEach((item, j) => item?.toggleAttribute('data-active', j === index))
+      gsap.to(rail, { scaleY: k > 1 ? index / (k - 1) : 1, duration: cfg.slideSec, ease: cfg.ease })
+    },
+  })
+  if (!autoplay) return
 
-  /** Current step: the last stop the scroll has reached, counting half a step early. */
-  const stepAt = (y: number) => {
-    const gap = stops[1] && stops[0] ? stops[1].offsetTop - stops[0].offsetTop : window.innerHeight
-    let index = 0
-    stops.forEach((stop, i) => {
-      if (stop && stop.offsetTop - gap / 2 <= y) index = i
-    })
-    return index
-  }
+  // On screen: from half a screen before the chapter until half a screen before the next one.
   const sync = (y: number) => {
-    if (y >= area.offsetTop - window.innerHeight * 0.5) player.show(stepAt(y))
+    const half = window.innerHeight / 2
+    autoplay.setVisible(y >= area.offsetTop - half && y < after.offsetTop - half)
   }
-
   const st = ScrollTrigger.create({
     trigger: root,
     start: 'top top',
@@ -407,70 +570,54 @@ function setupJourney(root: HTMLElement, steps: CaseJourneyStep[], animate: bool
   })
   items.forEach((item, j) => item?.toggleAttribute('data-active', j === 0))
   sync(st.scroll() - st.start)
+  const unbind = bindStepButtons(items.map((item) => item?.querySelector('button')), autoplay.goto)
 
-  return () => player.destroy()
+  return () => {
+    unbind()
+    st.kill()
+    autoplay.destroy()
+  }
 }
 
 /**
- * Mobile journey: the phone stays pinned on screen and plays the same steps. Each step's
- * caption rises from the bottom into a reading spot just under the phone (it never covers
- * the screen), holds there while that step plays, and leaves upwards as the next one rises,
- * all scrubbed by the scroll, so the text on screen always matches the phone.
+ * Mobile journey: the phone fills one screen and plays on its own (`createJourneyAutoplay`)
+ * while most of it is visible. The caption under it swaps with each step, and a row of dots
+ * jumps to any step.
  */
 function setupMobileJourney(root: HTMLElement, steps: CaseJourneyStep[], animate: boolean) {
   const stage = root.querySelector<HTMLElement>('[data-case="stage-stack"]')
   const phone = root.querySelector<HTMLElement>('[data-case="phone-stack"]')
+  const replay = root.querySelector<HTMLButtonElement>('[data-case="replay-stack"]')
   const captions = steps.map((_, i) => root.querySelector<HTMLElement>(`[data-case="caption-${i}"]`))
+  const dots = steps.map((_, i) => root.querySelector<HTMLButtonElement>(`[data-case="dot-${i}"]`))
   if (!stage || !phone) return
-  const k = steps.length
-  const player = createPhonePlayer(phone, steps, animate, { delaySec: 0, back: 'rest' })
-  if (!player) return
-  const { rise, leave, overlap } = tokens.motion.caseStudy.caption
+  const { journey: cfg } = tokens.motion.caseStudy
+  const swap = animate ? cfg.slideSec : 0
 
-  // One unit of scroll per step: caption i rises in during [i - rise, i] and holds; it leaves
-  // upwards just before caption i + 1 rises, the two overlapping only briefly.
-  const tl = gsap.timeline({ defaults: { ease: 'none' } })
-  captions.forEach((caption, i) => {
-    if (!caption) return
-    if (i === 0) gsap.set(caption, { autoAlpha: 1, yPercent: 0 })
-    else tl.fromTo(caption, { autoAlpha: 0, yPercent: 110 }, { autoAlpha: 1, yPercent: 0, duration: rise, ease: 'power2.out' }, i - rise)
-    if (i < k - 1) {
-      tl.to(caption, { autoAlpha: 0, yPercent: -70, duration: leave, ease: 'power1.in' }, i + 1 - rise - leave + overlap)
-    }
-  })
-  tl.set({}, {}, k)
+  let shown = -1
+  const showCaption = (index: number) => {
+    captions.forEach((caption, j) => {
+      if (!caption) return
+      if (j === index) gsap.fromTo(caption, { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: swap, ease: cfg.ease })
+      else if (j === shown) gsap.to(caption, { autoAlpha: 0, y: -12, duration: swap * 0.6, ease: 'power1.in' })
+      else gsap.set(caption, { autoAlpha: 0 })
+    })
+    dots.forEach((dot, j) => dot?.toggleAttribute('data-active', j === index))
+    shown = index
+  }
 
-  const stepAt = (progress: number) => gsap.utils.clamp(0, k - 1, Math.floor(progress * k + 0.001))
-  ScrollTrigger.create({
-    trigger: stage,
-    start: 'top top',
-    end: 'bottom bottom',
-    animation: animate ? tl : undefined,
-    scrub: animate ? 0.35 : false,
-    onUpdate: (self) => {
-      const index = stepAt(self.progress)
-      player.show(index)
-      if (!animate) captions.forEach((c, j) => c && gsap.set(c, { autoAlpha: j === index ? 1 : 0, yPercent: 0 }))
-    },
-    onRefresh: (self) => player.show(stepAt(self.progress)),
-  })
-  player.show(0)
+  const autoplay = createJourneyAutoplay(phone, steps, animate, { replay, onStep: showCaption })
+  if (!autoplay) return
+  showCaption(0)
 
-  // Images and the reel above the stage load after this runs and push it down: re-measure
-  // whenever the stacked content changes height, or captions and phone drift out of sync.
-  let raf = 0
-  const content = stage.parentElement?.parentElement ?? root
-  const reflow = new ResizeObserver(() => {
-    cancelAnimationFrame(raf)
-    raf = requestAnimationFrame(() => ScrollTrigger.refresh())
-  })
-  reflow.observe(content)
+  const io = new IntersectionObserver(([entry]) => autoplay.setVisible(entry.isIntersecting), { threshold: 0.6 })
+  io.observe(stage)
+  const unbind = bindStepButtons(dots, autoplay.goto)
 
   return () => {
-    cancelAnimationFrame(raf)
-    reflow.disconnect()
-    tl.kill()
-    player.destroy()
+    unbind()
+    io.disconnect()
+    autoplay.destroy()
   }
 }
 
@@ -478,12 +625,13 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
   const { content: { caseStudies }, lang } = useLanguage()
   const navigate = useNavigate()
   const nextLabel = lang === 'es' ? 'Siguiente proyecto' : 'Next project'
+  const replayLabel = lang === 'es' ? 'Ver de nuevo' : 'Watch again'
   const revealRef = useReveal<HTMLDivElement>({ immediate: true })
   const rootRef = useRef<HTMLDivElement | null>(null)
   const stackVideoRef = useRef<HTMLVideoElement | null>(null)
   const next = caseStudies.find((c) => c.slug === study.next)
   const [goal, results] = study.pages
-  const { steps, hasJourney, count, k, areas, stops, totalHeight } = chapterLayout(study)
+  const { steps, hasJourney, count, k, areas, totalHeight } = chapterLayout(study)
   const journeyLabel = study.journey?.label ?? ''
   const host = (() => {
     try {
@@ -506,9 +654,11 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
       if (!ctx.conditions?.split) return hasJourney ? setupMobileJourney(root, steps, animate) : undefined
       const stopJourney = hasJourney ? setupJourney(root, steps, animate) : undefined
       const stopSwaps = setupChapterSwaps(root, count, animate)
+      const stopParallax = animate ? setupVisualParallax(root, count) : undefined
       return () => {
         stopJourney?.()
         stopSwaps()
+        stopParallax?.()
       }
     })
     return () => mm.revert()
@@ -564,14 +714,11 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
         <CloseIcon />
       </Link>
 
-      {/* native snap points: one per chapter, plus one per journey step. No ids on purpose: the
+      {/* native snap points: one per chapter. No ids on purpose: the
           router scrolls to an element whose id matches the hash, which would fight the snap. */}
       <div className={styles.snapPoints} aria-hidden="true">
         {areas.map((top, i) => (
           <span key={`a${i}`} data-case={`area-${i}`} className={styles.snapPoint} style={cssVars({ '--top': top })} />
-        ))}
-        {stops.map((top, i) => (
-          <span key={`s${i}`} data-case={`stop-${i + 1}`} className={styles.snapPoint} style={cssVars({ '--top': top })} />
         ))}
       </div>
 
@@ -615,13 +762,15 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
           </div>
         </div>
 
-        <div className={styles.page} data-case="page-1">
-          {textPage(1, goal.label, goal.heading, goal.paragraphs)}
-        </div>
+        {!hasJourney && (
+          <div className={styles.page} data-case="page-1">
+            {textPage(1, goal.label, goal.heading, goal.paragraphs)}
+          </div>
+        )}
 
         {hasJourney && (
-          <div className={`${styles.page} ${styles.pageJourney}`} data-case="page-2">
-            <div className={styles.content} data-case="content-2">
+          <div className={`${styles.page} ${styles.pageJourney}`} data-case="page-1">
+            <div className={styles.content} data-case="content-1">
               <span className={styles.caps}>{journeyLabel}</span>
               <div className={styles.spaceLarge} />
               <div className={styles.journey}>
@@ -631,17 +780,22 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
                 <ol className={styles.steps}>
                   {steps.map((step, i) => (
                     <li key={step.title} className={styles.step} data-case={`step-${i}`}>
-                      <span className={styles.stepNumber}>{pad(i + 1)}</span>
-                      <div className={styles.stepBody}>
-                        <h3 className={styles.stepTitle}>{step.title}</h3>
-                        <div className={styles.stepReveal}>
-                          <p className={styles.stepText}>{step.text}</p>
-                        </div>
-                      </div>
+                      <button type="button" className={styles.stepButton}>
+                        <span className={styles.stepNumber}>{pad(i + 1)}</span>
+                        <span className={styles.stepBody}>
+                          <span className={styles.stepTitle}>{step.title}</span>
+                          <span className={styles.stepReveal}>
+                            <span className={styles.stepText}>{step.text}</span>
+                          </span>
+                        </span>
+                      </button>
                     </li>
                   ))}
                 </ol>
               </div>
+              <button type="button" className={styles.replay} data-case="replay" hidden>
+                {replayLabel}
+              </button>
             </div>
           </div>
         )}
@@ -659,54 +813,52 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
         </div>
       </div>
 
-      {/* left-hand sticky visuals: each one slides over the previous; the phone stays put through the journey */}
+      {/* left-hand sticky visuals: each one slides over the previous, which recedes and dims */}
       <div className={styles.sections} {...fade}>
         <section className={styles.section} style={cssVars({ zIndex: 1 })}>
           {study.media.screenshot ? (
-            <div className={`${styles.bg} ${styles.bgFramed}`}>
+            <div className={`${styles.bg} ${styles.bgFramed}`} data-visual="0">
               <img className={styles.ambient} src={study.media.background} alt="" aria-hidden="true" decoding="async" />
               <BrowserFrame src={study.media.background} host={host} priority />
             </div>
           ) : (
-            <div className={styles.bg}>
+            <div className={styles.bg} data-visual="0">
               <img className={styles.bgImage} src={study.media.background} alt="" decoding="async" fetchPriority="high" />
               {study.media.device && <img className={styles.device} src={study.media.device} alt="" decoding="async" />}
             </div>
           )}
         </section>
-        <section className={styles.section} style={cssVars({ zIndex: 2 })}>
-          <div className={`${styles.bg} ${styles.bgVideo}`}>
-            <video
-              className={styles.video}
-              data-case="reel"
-              src={study.media.video}
-              poster={study.media.videoPoster}
-              loop
-              muted
-              playsInline
-              preload="none"
-            />
-          </div>
-        </section>
-        {hasJourney && (
-          <>
-            <section className={styles.section} style={cssVars({ zIndex: 3 })}>
-              <div className={`${styles.bg} ${styles.bgJourney}`} data-case="phone-split">
-                <img className={styles.ambient} src={study.media.background} alt="" aria-hidden="true" decoding="async" />
-                <JourneyPhone steps={steps} className={styles.splitPhone} />
-              </div>
-            </section>
-            <div className={styles.journeySpacer} data-case="journey-spacer" style={cssVars({ '--steps': k - 1 })} aria-hidden="true" />
-          </>
+        {hasJourney ? (
+          <section className={styles.section} style={cssVars({ zIndex: 2 })}>
+            <div className={`${styles.bg} ${styles.bgJourney}`} data-case="phone-split" data-visual="1">
+              <img className={styles.ambient} src={study.media.background} alt="" aria-hidden="true" decoding="async" />
+              <JourneyPhone steps={steps} className={styles.splitPhone} />
+            </div>
+          </section>
+        ) : (
+          <section className={styles.section} style={cssVars({ zIndex: 2 })}>
+            <div className={`${styles.bg} ${styles.bgVideo}`} data-visual="1">
+              <video
+                className={styles.video}
+                data-case="reel"
+                src={study.media.video}
+                poster={study.media.videoPoster}
+                loop
+                muted
+                playsInline
+                preload="none"
+              />
+            </div>
+          </section>
         )}
-        <section className={styles.section} style={cssVars({ zIndex: 4 })}>
+        <section className={styles.section} style={cssVars({ zIndex: 3 })}>
           {study.media.screenshot ? (
-            <div className={`${styles.bg} ${styles.bgFramed}`}>
+            <div className={`${styles.bg} ${styles.bgFramed} ${styles.bgSolid}`} data-visual="2">
               <img className={styles.ambient} src={study.media.closing} alt="" aria-hidden="true" loading="lazy" decoding="async" />
-              <BrowserFrame src={study.media.closing} host={host} />
+              <BrowserFrame src={study.media.closing} host={host} zoom={study.media.closingZoom} />
             </div>
           ) : (
-            <div className={styles.bg}>
+            <div className={`${styles.bg} ${styles.bgSolid}`} data-visual="2">
               <img className={styles.bgImage} src={study.media.closing} alt="" loading="lazy" decoding="async" />
             </div>
           )}
@@ -728,30 +880,34 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
         <a href={study.link.href} target="_blank" rel="noreferrer" className={styles.button}>
           {study.link.label}
         </a>
-        <video
-          ref={stackVideoRef}
-          className={styles.stackVideo}
-          src={study.media.video}
-          poster={study.media.videoPoster}
-          loop
-          muted
-          playsInline
-          preload="none"
-        />
-        <div className={styles.stackBlock}>
-          <span className={styles.caps}>{goal.label}</span>
-          <h2 className={styles.heading}>{goal.heading}</h2>
-          {goal.paragraphs.map((t, i) => (
-            <p key={i} className={styles.paragraph}>
-              {t}
-            </p>
-          ))}
-        </div>
+        {!hasJourney && (
+          <>
+            <video
+              ref={stackVideoRef}
+              className={styles.stackVideo}
+              src={study.media.video}
+              poster={study.media.videoPoster}
+              loop
+              muted
+              playsInline
+              preload="none"
+            />
+            <div className={styles.stackBlock}>
+              <span className={styles.caps}>{goal.label}</span>
+              <h2 className={styles.heading}>{goal.heading}</h2>
+              {goal.paragraphs.map((t, i) => (
+                <p key={i} className={styles.paragraph}>
+                  {t}
+                </p>
+              ))}
+            </div>
+          </>
+        )}
         {hasJourney && (
           <div className={styles.stackBlock}>
             <span className={styles.caps}>{journeyLabel}</span>
-            {/* pinned phone with the step captions flowing up over it */}
-            <div className={styles.mJourney} data-case="stage-stack" style={cssVars({ '--steps': k })}>
+            {/* one screen: the phone plays on its own, its caption swaps with each step */}
+            <div className={styles.mJourney} data-case="stage-stack">
               <div className={styles.mPhoneLayer} data-case="phone-stack">
                 <JourneyPhone steps={steps} className={styles.mPhone} />
                 <ol className={styles.mCaptions}>
@@ -763,6 +919,16 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
                     </li>
                   ))}
                 </ol>
+                <div className={styles.mControls}>
+                  <div className={styles.mDots}>
+                    {steps.map((step, i) => (
+                      <button key={step.title} type="button" className={styles.mDot} data-case={`dot-${i}`} aria-label={`${pad(i + 1)} · ${step.title}`} />
+                    ))}
+                  </div>
+                  <button type="button" className={styles.replay} data-case="replay-stack" hidden>
+                    {replayLabel}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
