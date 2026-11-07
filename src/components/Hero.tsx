@@ -45,6 +45,7 @@ export function Hero() {
     <section ref={ref} className={styles.hero} id="top">
       <div className={styles.canvasWrap} {...canvasReveal}>
         <ParticleMark
+          fitViewport
           className={`${styles.canvas} ${ready ? styles.ready : ''}`}
           onReady={onReady}
         />

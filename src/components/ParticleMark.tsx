@@ -1,26 +1,27 @@
 import { useEffect, useRef } from 'react'
 import { tokens } from '@/theme/tokens'
 import { prefersReducedMotion } from '@/theme/motion'
-import { LOGO_MARK_PATHS } from './Logo'
+import { requestCloud } from './markCloud'
+import { MARK_HEIGHT, type MarkVariant } from './markSampling'
 import { createDotRenderer, DOT_STRIDE } from './particleRenderer'
 
 interface Props {
   className?: string
+  /** How the mark is sampled into points (see markSampling.ts); the hero uses the default. */
+  variant?: MarkVariant
+  /** Keep turning on its own, as on touch devices (design previews). */
+  autoRotate?: boolean
+  /**
+   * Size the mark by the viewport height and centre it in the visible part of its canvas
+   * (the hero canvas is taller than the screen); otherwise it fills the canvas.
+   */
+  fitViewport?: boolean
   /** Called once the first frame has been drawn. */
   onReady?: () => void
 }
 
 const P = tokens.particles
 const TAU = Math.PI * 2
-/** Logo viewBox side, visual centre and height of the mark (y 14 → 112), in viewBox units. */
-const VIEWBOX = 128
-const CENTER_X = 62.5
-const CENTER_Y = 63
-const MARK_HEIGHT = 98
-/** Mask resolution used to sample the mark (px per viewBox unit). */
-const MASK_RES = 4
-/** Directions probed around an edge point to find its outward normal. */
-const NORMAL_PROBES = 16
 /** Perspective of the former pre-rendered frames: focal length and camera distance, × square side. */
 const FOCAL = 1.6
 const CAMERA_PUSH = 0.4
@@ -29,98 +30,16 @@ const POINTER_IDLE_MS = 40
 /** Below these values the scene is at rest and the loop stops until the next input. */
 const REST_SPEED = 0.5
 const REST_ANGLE = 1e-4
+/** Half the drawn mark's height (with the tilt and a margin), as a fraction of its box. */
+const MARK_REACH = 0.42
+/** The mark is sampled again when its size changes the point step by more than this. */
+const RESAMPLE_CHANGE = 0.2
 
 const LIGHT = (() => {
   const l = [-0.4, -0.7, -0.6]
   const len = Math.hypot(l[0], l[1], l[2])
   return [l[0] / len, l[1] / len, l[2] / len] as const
 })()
-
-interface Cloud {
-  count: number
-  /** x, y, z per point, centred, in viewBox units. */
-  pos: Float32Array
-  /** Outward unit normal per point. */
-  nrm: Float32Array
-  mass: Float32Array
-}
-
-/** Small seeded PRNG so the cloud looks the same on every load. */
-function seeded(seed: number) {
-  let a = seed >>> 0
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0
-    let t = a
-    t = Math.imul(t ^ (t >>> 15), t | 1)
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
-  }
-}
-
-/**
- * Samples the logo mark as an extruded solid: a jittered grid fills the front
- * and back faces, and grid points on the outline are repeated through the depth
- * to build the side walls.
- */
-function sampleMark(step: number): Cloud {
-  const side = VIEWBOX * MASK_RES
-  const mask = document.createElement('canvas')
-  mask.width = mask.height = side
-  const mctx = mask.getContext('2d', { willReadFrequently: true })
-  if (!mctx) return { count: 0, pos: new Float32Array(), nrm: new Float32Array(), mass: new Float32Array() }
-  mctx.scale(MASK_RES, MASK_RES)
-  for (const d of LOGO_MARK_PATHS) mctx.fill(new Path2D(d))
-  const alpha = mctx.getImageData(0, 0, side, side).data
-
-  const inside = (x: number, y: number) => {
-    const px = Math.round(x * MASK_RES)
-    const py = Math.round(y * MASK_RES)
-    return px >= 0 && py >= 0 && px < side && py < side && alpha[(py * side + px) * 4 + 3] > 127
-  }
-
-  const rnd = seeded(7)
-  const pos: number[] = []
-  const nrm: number[] = []
-  const half = P.depth / 2
-  const layers = Math.max(2, Math.round(P.depth / step))
-  const add = (x: number, y: number, z: number, nx: number, ny: number, nz: number) => {
-    pos.push(x - CENTER_X, y - CENTER_Y, z)
-    nrm.push(nx, ny, nz)
-  }
-
-  for (let gy = step / 2; gy < VIEWBOX; gy += step) {
-    for (let gx = step / 2; gx < VIEWBOX; gx += step) {
-      if (!inside(gx, gy)) continue
-      const jx = gx + (rnd() - 0.5) * step * P.jitter
-      const jy = gy + (rnd() - 0.5) * step * P.jitter
-      const [x, y] = inside(jx, jy) ? [jx, jy] : [gx, gy]
-      add(x, y, -half, 0, 0, -1)
-      add(x, y, half, 0, 0, 1)
-
-      const edge = !inside(gx + step, gy) || !inside(gx - step, gy) || !inside(gx, gy + step) || !inside(gx, gy - step)
-      if (!edge) continue
-      let nx = 0
-      let ny = 0
-      for (let k = 0; k < NORMAL_PROBES; k++) {
-        const a = (k / NORMAL_PROBES) * TAU
-        if (!inside(x + Math.cos(a) * step * 1.5, y + Math.sin(a) * step * 1.5)) {
-          nx += Math.cos(a)
-          ny += Math.sin(a)
-        }
-      }
-      const len = Math.hypot(nx, ny) || 1
-      for (let k = 1; k < layers; k++) {
-        const z = -half + (P.depth * k) / layers + (rnd() - 0.5) * (P.depth / layers) * P.jitter
-        add(x, y, z, nx / len, ny / len, 0)
-      }
-    }
-  }
-
-  const count = pos.length / 3
-  const mass = new Float32Array(count)
-  for (let i = 0; i < count; i++) mass[i] = P.massMin + rnd() * (P.massMax - P.massMin)
-  return { count, pos: Float32Array.from(pos), nrm: Float32Array.from(nrm), mass }
-}
 
 /** Shortest signed angle from `a` to `b`. */
 const angleDelta = (a: number, b: number) => {
@@ -130,8 +49,9 @@ const angleDelta = (a: number, b: number) => {
 
 /**
  * The brand "G" as a live 3D particle cloud behind the hero headline.
- *  - Pointer X turns it (same mapping as the former image sequence: one full
- *    turn across the viewport), through a rotation spring with inertia.
+ *  - Pointer X turns it (one full turn across the viewport, facing the viewer
+ *    with the pointer in the middle), through a rotation spring with inertia.
+ *  - Its points keep the same on-screen spacing at any size (see `rebuild`).
  *  - Every point hangs on a spring at its place on the G. The pointer drags
  *    nearby points along with its velocity and pushes them outwards in
  *    proportion to its speed, so a slow pass barely ripples the surface and a
@@ -140,7 +60,7 @@ const angleDelta = (a: number, b: number) => {
  *  - Touch devices auto-rotate; reduced motion keeps the pointer rotation only,
  *    without inertia, intro or particle physics.
  */
-export function ParticleMark({ className, onReady }: Props) {
+export function ParticleMark({ className, onReady, variant = 'pillow', autoRotate = false, fitViewport = false }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const onReadyRef = useRef(onReady)
   onReadyRef.current = onReady
@@ -152,22 +72,28 @@ export function ParticleMark({ className, onReady }: Props) {
 
     const reduced = prefersReducedMotion()
     const touch = window.matchMedia('(hover: none)').matches
-    const cloud = sampleMark(touch ? P.stepTouch : P.step)
-    const n = cloud.count
-    const { pos, nrm, mass } = cloud
+    const spinning = touch || autoRotate
 
-    // per-point state, in canvas CSS px
-    const px = new Float32Array(n)
-    const py = new Float32Array(n)
-    const vx = new Float32Array(n)
-    const vy = new Float32Array(n)
-    const hx = new Float32Array(n)
-    const hy = new Float32Array(n)
-    const dots = new Float32Array(n * DOT_STRIDE)
+    // the cloud and its per-point state (canvas CSS px), rebuilt when the mark's size changes a lot
+    let n = 0
+    let pos: Float32Array = new Float32Array()
+    let nrm: Float32Array = new Float32Array()
+    let mass: Float32Array = new Float32Array()
+    let px = new Float32Array()
+    let py = new Float32Array()
+    let vx = new Float32Array()
+    let vy = new Float32Array()
+    let hx = new Float32Array()
+    let hy = new Float32Array()
+    let dots = new Float32Array()
+    let cloudStep = 0
 
     let width = 0
     let height = 0
+    /** Side of the square box the mark is drawn in, and its centre in the canvas. */
     let side = 0
+    let cx = 0
+    let cy = 0
     let rect = canvas.getBoundingClientRect()
     let placed = false // home positions known
     let intro = !reduced
@@ -178,11 +104,39 @@ export function ParticleMark({ className, onReady }: Props) {
     let last = 0
     let visible = true
     let ready = false
+    let disposed = false
 
     const pointer = { inside: false, x: 0, y: 0, vx: 0, vy: 0, t: 0 }
 
     const schedule = () => {
-      if (!raf && visible && side > 0) raf = requestAnimationFrame(frame)
+      if (!raf && visible && side > 0 && n > 0) raf = requestAnimationFrame(frame)
+    }
+
+    /**
+     * Samples the mark so its points sit `spacing` px apart on screen at this box size, the
+     * same grain at any size (a bigger mark gets more points, not sparser ones).
+     */
+    const rebuild = (box: number) => {
+      const unitPx = ((box * P.fill) / MARK_HEIGHT) * (FOCAL / (FOCAL + CAMERA_PUSH))
+      const spacing = touch ? P.spacingTouch : P.spacing
+      const step = Math.min(P.stepMax, Math.max(P.stepMin, spacing / unitPx))
+      if (cloudStep && Math.abs(step - cloudStep) / cloudStep < RESAMPLE_CHANGE) return
+      cloudStep = step
+      // sampled off the main thread; the old cloud keeps drawing until the new one arrives
+      requestCloud(step, variant).then((cloud) => {
+        if (disposed || step !== cloudStep) return
+        n = cloud.count
+        ;({ pos, nrm, mass } = cloud)
+        px = new Float32Array(n)
+        py = new Float32Array(n)
+        vx = new Float32Array(n)
+        vy = new Float32Array(n)
+        hx = new Float32Array(n)
+        hy = new Float32Array(n)
+        dots = new Float32Array(n * DOT_STRIDE)
+        placed = false
+        schedule()
+      })
     }
 
     const resize = () => {
@@ -193,7 +147,20 @@ export function ParticleMark({ className, onReady }: Props) {
       canvas.width = Math.round(width * dpr)
       canvas.height = Math.round(height * dpr)
       renderer.resize(width, height, dpr)
-      side = Math.min(width, height)
+      let box = Math.min(width, height)
+      cx = width / 2
+      cy = height / 2
+      if (fitViewport) {
+        box = Math.min(box, window.innerHeight * P.viewportFit)
+        if (height > box) {
+          // centre on the visible part of the screen, without leaving the canvas
+          const want = window.innerHeight * P.viewportCenter - (rect.top + window.scrollY)
+          const reach = box * MARK_REACH
+          cy = Math.min(height - reach, Math.max(reach, want))
+        }
+      }
+      side = box
+      if (side > 0) rebuild(side)
       placed = false // snap every point to its new home
       schedule()
     }
@@ -211,7 +178,7 @@ export function ParticleMark({ className, onReady }: Props) {
       }
 
       // rotation
-      if (touch && !reduced) target += P.autoRotate * dt
+      if (spinning && !reduced) target += P.autoRotate * dt
       const diff = angleDelta(angle, target)
       if (reduced) {
         angle = target
@@ -229,8 +196,6 @@ export function ParticleMark({ className, onReady }: Props) {
       const focal = FOCAL * side
       const push = CAMERA_PUSH * side
       const dotScale = P.dotSize / (focal / (focal + push))
-      const cx = width / 2
-      const cy = height / 2
 
       const radius = P.radius * side
       const radius2 = radius * radius
@@ -333,10 +298,10 @@ export function ParticleMark({ className, onReady }: Props) {
         onReadyRef.current?.()
       }
 
-      // keep animating while anything moves; touch devices spin forever
+      // keep animating while anything moves; touch devices and previews spin forever
       const resting =
         fastest < REST_SPEED && speed < 1 && Math.abs(diff) < REST_ANGLE && Math.abs(angVel) < REST_ANGLE
-      if (!reduced && (touch || !resting)) schedule()
+      if (!reduced && (spinning || !resting)) schedule()
       else last = 0
     }
 
@@ -359,8 +324,9 @@ export function ParticleMark({ className, onReady }: Props) {
       pointer.y = e.clientY
       pointer.t = e.timeStamp
       rect = canvas.getBoundingClientRect()
-      // one full turn across the viewport; moving right turns the G backwards
-      if (e.pointerType !== 'touch') target = -TAU * (e.clientX / window.innerWidth)
+      // one full turn across the viewport: the G faces the viewer with the pointer in the middle,
+      // and moving right turns it backwards
+      if (e.pointerType !== 'touch' && !autoRotate) target = -TAU * (e.clientX / window.innerWidth - 0.5)
       schedule()
     }
     const onLeave = () => {
@@ -373,6 +339,8 @@ export function ParticleMark({ className, onReady }: Props) {
     host.addEventListener('pointerleave', onLeave)
     const sizeObserver = new ResizeObserver(resize)
     sizeObserver.observe(canvas)
+    // the viewport height sizes the mark even when the canvas keeps its size
+    if (fitViewport) window.addEventListener('resize', resize)
     const viewObserver = new IntersectionObserver(([entry]) => {
       visible = entry.isIntersecting
       if (visible) schedule()
@@ -385,13 +353,15 @@ export function ParticleMark({ className, onReady }: Props) {
     viewObserver.observe(canvas)
 
     return () => {
+      disposed = true
       cancelAnimationFrame(raf)
       host.removeEventListener('pointermove', onMove as EventListener)
       host.removeEventListener('pointerleave', onLeave)
       sizeObserver.disconnect()
       viewObserver.disconnect()
+      window.removeEventListener('resize', resize)
     }
-  }, [])
+  }, [variant, autoRotate, fitViewport])
 
   return <canvas ref={canvasRef} className={className} aria-hidden="true" />
 }

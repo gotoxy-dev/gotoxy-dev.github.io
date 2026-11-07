@@ -297,13 +297,36 @@ export const tokens = {
    * Units: logo viewBox units (geometry), CSS px, seconds.
    */
   particles: {
-    /** Grid step between sampled points; lower = denser. Touch devices get the coarser one. */
-    step: 1.45,
-    stepTouch: 2.2,
+    /**
+     * On-screen distance between neighbouring points (CSS px); the mark is sampled to keep it
+     * at any size. Touch devices get the coarser one. The sampling step (logo viewBox units)
+     * stays within stepMin–stepMax, which caps the point count on very large screens.
+     */
+    spacing: 3.8,
+    spacingTouch: 4.8,
+    stepMin: 0.7,
+    stepMax: 3,
+    /** Hero (`fitViewport`): the mark's box is at most this × the viewport height, centred at this height of it. */
+    viewportFit: 1,
+    viewportCenter: 0.55,
     /** Random offset of each point, as a fraction of the step (hides the grid when rotating). */
     jitter: 0.7,
     /** Extrusion depth of the mark. */
     depth: 18,
+    /**
+     * Design variants (src/components/markSampling.ts, previewed at /design).
+     * wallBand: how close to the outline (units) a point counts as part of the side wall.
+     * bevel: radius of the rounded edge of `pillow`, as a fraction of half the depth (1 = fully round).
+     * bevelMaxSlope: cap on the extra points a steep part of that edge receives.
+     * ringWidth / ringGap / ringSpacing: thickness of a ring, distance between rings and
+     * distance between points along a ring, in `rings`.
+     */
+    wallBand: 0.5,
+    bevel: 1,
+    bevelMaxSlope: 4,
+    ringWidth: 0.6,
+    ringGap: 2.6,
+    ringSpacing: 1.1,
     /** Logo height / side of the square the canvas fits it in. */
     fill: 0.82,
     /** Forward tilt (rad) so the top faces catch the light. */
