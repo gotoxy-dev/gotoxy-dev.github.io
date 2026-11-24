@@ -135,11 +135,15 @@
   display: flex;
   align-items: center;
 }
+/* logos keep their brand colors: official files as they are, the rest as their name in the brand color */
 .logoItem img {
-  height: 44px;
+  height: var(--layout-clients-logoHeight);
   width: auto;
-  opacity: 0.8;
-  filter: grayscale(1);
+}
+.logoText {
+  font-size: var(--layout-clients-logoText);
+  line-height: 1;
+  white-space: nowrap;
 }
 @keyframes scroll {
   to {
@@ -239,7 +243,10 @@
   }
   /* reference phones: logos ~24px tall, stacked */
   .logoItem img {
-    height: 26px;
+    height: var(--layout-clients-phone-logoHeight);
+  }
+  .logoText {
+    font-size: var(--layout-clients-phone-logoText);
   }
   /* the duplicated set used by the desktop loop */
   .copy {

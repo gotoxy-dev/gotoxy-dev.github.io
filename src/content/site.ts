@@ -47,11 +47,13 @@ export interface Testimonial {
   quote: string
 }
 
-export interface ClientLogo {
-  id: string
-  name: string
-  src: string
-}
+/**
+ * A marquee logo: the brand's official logo file (`src`), or, where its logo can't be used,
+ * its name set in the site font and its brand color (`brand`, a key of tokens.color.brand).
+ */
+export type ClientLogo =
+  | { id: string; name: string; src: string; brand?: never }
+  | { id: string; name: string; brand: 'whatsapp' | 'moodle' | 'mercadoLibre'; src?: never }
 
 export interface AwardEntry {
   title: string
@@ -306,10 +308,10 @@ export const clients = {
   logos: [
     { id: 'l1', name: 'Japón in Box', src: '/assets/logos/client-japon-in-box.svg' },
     { id: 'l2', name: 'Instituto CAM', src: '/assets/logos/client-instituto-cam.png' },
-    { id: 'l4', name: 'WhatsApp Business API', src: '/assets/logos/stack-whatsapp.svg' },
+    { id: 'l4', name: 'WhatsApp Business API', brand: 'whatsapp' },
     { id: 'l5', name: 'Cloudflare Workers', src: '/assets/logos/stack-cloudflare.svg' },
-    { id: 'l6', name: 'Mercado Libre', src: '/assets/logos/stack-mercado-libre.svg' },
-    { id: 'l7', name: 'Moodle', src: '/assets/logos/stack-moodle.svg' },
+    { id: 'l6', name: 'Mercado Libre', brand: 'mercadoLibre' },
+    { id: 'l7', name: 'Moodle', brand: 'moodle' },
     { id: 'l8', name: 'Mercado Pago', src: '/assets/logos/stack-mercado-pago.svg' },
   ] satisfies ClientLogo[],
 }

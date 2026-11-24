@@ -86,7 +86,13 @@ export function Clients() {
           {/* two sets for the desktop loop; phones stack the first set only (`.copy` hidden) */}
           {[...clients.logos, ...clients.logos].map((l, i) => (
             <div key={`${l.id}-${i}`} className={`${styles.logoItem} ${i >= clients.logos.length ? styles.copy : ''}`}>
-              <img src={l.src} alt={l.name} />
+              {l.src ? (
+                <img src={l.src} alt={l.name} />
+              ) : (
+                <span className={styles.logoText} style={{ color: `var(--color-brand-${l.brand})` }}>
+                  {l.name}
+                </span>
+              )}
             </div>
           ))}
         </div>
