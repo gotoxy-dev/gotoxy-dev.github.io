@@ -1,5 +1,6 @@
 import { useContent } from '@/i18n'
 import { useReveal } from '@/hooks/useReveal'
+import { prefersReducedMotion } from '@/theme/motion'
 import { tokens } from '@/theme/tokens'
 import styles from './Footer.module.css'
 
@@ -26,7 +27,7 @@ export function Footer() {
 
   const toTop = (e: React.MouseEvent) => {
     e.preventDefault()
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'instant' : 'smooth' })
   }
 
   const textReveal = {
@@ -53,7 +54,7 @@ export function Footer() {
             ))}
           </ul>
           {/* "back to top hover": the arrow leaves upwards (y -30px) while a second one enters from below (y 30px → 0), 300ms outCirc */}
-          <a href="#top" className={styles.backTop} onClick={toTop}>
+          <a href="#top" className={`${styles.backTop} tap-area`} onClick={toTop}>
             <span className={styles.circle}>
               <span className={styles.arrowOut}>
                 <ArrowUp />
@@ -74,7 +75,7 @@ export function Footer() {
             </svg>
           </a>
           <br />
-          <a href={footer.contactHref} className={`${styles.email} ulink`} {...external(footer.contactHref)}>
+          <a href={footer.contactHref} className={`${styles.email} ulink tap-area`} {...external(footer.contactHref)}>
             {footer.contact}
           </a>
         </div>

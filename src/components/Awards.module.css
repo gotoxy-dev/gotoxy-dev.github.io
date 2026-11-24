@@ -19,9 +19,19 @@
   border-bottom: 1px solid var(--color-lineStrong);
   transition: border-color var(--motion-duration-d200) linear;
 }
-.row:hover {
-  border-color: var(--color-lineHover);
-  transition-duration: var(--motion-duration-d500);
+/* hover styles only where hovering exists (a tap leaves nothing stuck) */
+@media (hover: hover) {
+  .row:hover {
+    border-color: var(--color-lineHover);
+    transition-duration: var(--motion-duration-d500);
+  }
+}
+/* touch: the row's line lights up while it is pressed */
+@media (hover: none) {
+  .row:has(.toggle:active) {
+    border-color: var(--color-lineHover);
+    transition-duration: var(--motion-duration-d100);
+  }
 }
 /* "reddot-out" (rest): opacity 0, translateY(-8px); out: opacity 100ms, move 100ms outSine */
 .preview {
@@ -39,14 +49,17 @@
     transform var(--motion-duration-d100) var(--motion-ease-outSine);
 }
 /* "reddot-in": opacity 400ms linear, move 500ms outSine */
-.row:hover .preview {
-  opacity: 1;
-  transform: translateY(0);
-  transition:
-    opacity var(--motion-duration-d400) linear,
-    transform var(--motion-duration-d500) var(--motion-ease-outSine);
+@media (hover: hover) {
+  .row:hover .preview {
+    opacity: 1;
+    transform: translateY(0);
+    transition:
+      opacity var(--motion-duration-d400) linear,
+      transform var(--motion-duration-d500) var(--motion-ease-outSine);
+  }
 }
 .summary {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -130,7 +143,7 @@
   display: flex;
   justify-content: space-between;
   gap: 24px;
-  padding: 1vw 0;
+  padding: var(--layout-awards-entryPad) 0;
   font-size: 14px;
   color: var(--color-textMuted);
   opacity: 0;
@@ -176,16 +189,30 @@
     padding-left: 0;
   }
 }
-/* reference ≤479px: padding 40px 20px 100px, list margin 40px 0 0, rows 20px padding */
-@media (max-width: 479px) {
+/*
+ * Below lg and on touch screens the whole row toggles (as in Clients): the arrow button's hit area
+ * (an empty ::after) covers its row, which is at least 50px tall (phones: layout.tapMin + padding).
+ */
+@media (max-width: 991px), (hover: none) {
+  .toggle::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+}
+/* Phones, one tier (reference ≤479px): padding 40px top / 100px bottom, list 40px down, rows 20px padding, px entry rows */
+@media (max-width: 767px) {
   .section {
-    padding: 40px 0 100px;
+    padding: var(--layout-awards-phone-padTop) 0 var(--layout-awards-phone-padBottom);
   }
   .rows {
-    margin: 40px 0 0;
+    margin: var(--layout-awards-phone-listTop) 0 var(--layout-awards-phone-listBottom);
   }
   .summary {
-    min-height: 0;
-    padding: 20px 0;
+    min-height: var(--layout-tapMin);
+    padding: var(--layout-awards-phone-rowPad) 0;
+  }
+  .entryText {
+    padding: var(--layout-awards-phone-entryPad) 0;
   }
 }

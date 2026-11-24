@@ -28,8 +28,8 @@
 }
 .circle {
   position: relative;
-  width: 22px;
-  height: 22px;
+  width: var(--layout-footer-backTop);
+  height: var(--layout-footer-backTop);
   border: 1px solid var(--color-textMuted);
   border-radius: 50%;
   overflow: hidden;
@@ -45,13 +45,15 @@
 .arrowIn {
   transform: translateY(var(--motion-distance-backTopArrow));
 }
-.backTop:hover .arrowOut {
-  transform: translateY(calc(-1 * var(--motion-distance-backTopArrow)));
-  transition-timing-function: var(--motion-ease-outCirc);
-}
-.backTop:hover .arrowIn {
-  transform: translateY(0);
-  transition-timing-function: var(--motion-ease-outCirc);
+@media (hover: hover) {
+  .backTop:hover .arrowOut {
+    transform: translateY(calc(-1 * var(--motion-distance-backTopArrow)));
+    transition-timing-function: var(--motion-ease-outCirc);
+  }
+  .backTop:hover .arrowIn {
+    transform: translateY(0);
+    transition-timing-function: var(--motion-ease-outCirc);
+  }
 }
 .touchWrap {
   margin-top: var(--layout-footer-touchTop);
@@ -75,44 +77,7 @@
   font-size: 16px;
   text-transform: uppercase;
 }
-/* reference ≤991px: links line-height 220%, email 18px; ≤479px: email 16px, disclaimer margin 15px */
-@media (max-width: 991px) {
-  .socials {
-    line-height: 2.2;
-  }
-  .email {
-    font-size: 18px;
-  }
-}
-/* reference phones: BACK TO TOP above the links, link arrows always visible, GET IN TOUCH 64px */
-@media (max-width: 479px) {
-  .top {
-    flex-direction: column-reverse;
-    align-items: flex-start;
-    gap: 40px;
-  }
-  .socials :global(.alink) {
-    transform: none;
-  }
-  .socials :global(.alink-arrow) {
-    width: var(--layout-linkArrow);
-    opacity: 1;
-  }
-  .touch {
-    font-size: 64px;
-    line-height: 1;
-  }
-  .email {
-    font-size: 16px;
-  }
-  .bottom {
-    margin-top: 15px;
-    padding: 15px 0;
-  }
-  .touchWrap {
-    margin-top: 40px;
-  }
-}
+/* base rule before the media queries, so their phone spacing applies */
 .bottom {
   margin-top: var(--layout-footer-bottomTop);
   padding: 18px 0;
@@ -121,4 +86,61 @@
   letter-spacing: 0.04em;
   color: var(--color-textMuted);
   text-transform: uppercase;
+}
+
+/* touch: a short colour change while pressed (there is no hover) */
+@media (hover: none) {
+  .socials a:active,
+  .touch:active,
+  .email:active {
+    color: var(--color-textMuted);
+  }
+  .backTop:active {
+    color: var(--color-textStrong);
+  }
+}
+
+/* reference ≤991px: links line-height 220%, email 18px */
+@media (max-width: 991px) {
+  .socials {
+    line-height: 2.2;
+  }
+  .email {
+    font-size: 18px;
+  }
+}
+/*
+ * Phones (≤ 767 px; reference ≤479px): BACK TO TOP above the links, link arrows always visible, link
+ * rows 44px tall to tap, GET IN TOUCH larger than the section titles but under the hero headline
+ * (type.phone.closing), email 16px, copyright spacing 15px.
+ */
+@media (max-width: 767px) {
+  .top {
+    flex-direction: column-reverse;
+    align-items: flex-start;
+    gap: var(--layout-footer-phoneGap);
+  }
+  .socials :global(.alink) {
+    transform: none;
+    min-height: var(--layout-tapMin);
+  }
+  .socials :global(.alink-arrow) {
+    width: var(--layout-linkArrow);
+    opacity: 1;
+  }
+  /* two classes: outranks the phone `.t-h2` size of global.css, which loads after this module */
+  .touchWrap .touch {
+    font-size: var(--type-phone-closing-size);
+    line-height: var(--type-phone-closing-lineHeight);
+  }
+  .email {
+    font-size: 16px;
+  }
+  .bottom {
+    margin-top: var(--layout-footer-phoneBottom);
+    padding: var(--layout-footer-phoneBottom) 0;
+  }
+  .touchWrap {
+    margin-top: var(--layout-footer-phoneGap);
+  }
 }

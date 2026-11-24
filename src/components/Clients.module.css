@@ -56,16 +56,34 @@
 /* reference `.quote-cta-btn-read-btn`: 14px text, padding .21vw .69vw, 0.5px border */
 .readBtn :global(.pill) {
   height: auto;
-  padding: 0.208vw 0.694vw;
+  padding: var(--layout-clients-readPad);
   font-size: var(--type-small-size);
   line-height: 1.4;
   text-transform: uppercase;
   background: transparent;
 }
-/* "Hover IN/OUT Faq": button background rgba(255,255,255,.2) in 300ms, back in 500ms */
-.row:hover .readBtn :global(.pill) {
-  background: var(--color-pillHover);
-  transition-duration: var(--motion-duration-d300);
+/* "Hover IN/OUT Faq": button background rgba(255,255,255,.2) in 300ms, back in 500ms.
+   Only where hovering exists (a tap leaves nothing stuck); touch gets it while the row is pressed. */
+@media (hover: hover) {
+  .row:hover .readBtn :global(.pill) {
+    background: var(--color-pillHover);
+    transition-duration: var(--motion-duration-d300);
+  }
+}
+@media (hover: none) {
+  .summary:active .readBtn :global(.pill) {
+    background: var(--color-pillHover);
+    transition-duration: var(--motion-duration-d100);
+  }
+  /* small link: the arrow shows at rest (its desktop hover state); phones turn it into a pill.
+     `:global(.alink)` outranks the global rest shift whatever the stylesheet order. */
+  .seeMore:global(.alink) {
+    transform: none;
+  }
+  .seeMore :global(.alink-arrow) {
+    width: var(--layout-linkArrow);
+    opacity: 1;
+  }
 }
 .body {
   display: grid;
@@ -106,8 +124,10 @@
   width: max-content;
   animation: scroll calc(var(--motion-marquee-durationSec) * 1s) linear infinite;
 }
-.marquee:hover .track {
-  animation-play-state: paused;
+@media (hover: hover) {
+  .marquee:hover .track {
+    animation-play-state: paused;
+  }
 }
 .logoItem {
   flex: none;
@@ -143,9 +163,12 @@
   .head {
     display: contents;
   }
-  .title {
+  /* the head's reveal lives on this box, so it still rises and fades in here */
+  .titleBox {
     order: 0;
     margin-bottom: 30px;
+  }
+  .title {
     overflow: hidden;
   }
   .rows {
@@ -162,6 +185,9 @@
     font-size: 12px;
     letter-spacing: 0.04em;
     color: var(--color-text);
+  }
+  /* no rest shift for the pill (outranks the global `.alink` whatever the stylesheet order) */
+  .seeMore:global(.alink) {
     transform: none;
   }
   .seeMore :global(.alink-arrow) {
@@ -181,6 +207,9 @@
   .readBtn {
     grid-area: btn;
     align-self: start;
+  }
+  .readBtn :global(.pill) {
+    padding: var(--layout-clients-phone-readPad);
   }
   .company {
     grid-area: company;
@@ -213,7 +242,7 @@
     height: 26px;
   }
   /* the duplicated set used by the desktop loop */
-  .logoItem:nth-child(n + 9) {
+  .copy {
     display: none;
   }
 }

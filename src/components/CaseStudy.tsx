@@ -1,10 +1,10 @@
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import type { CaseJourneyStep, CaseStudy as CaseStudyContent } from '@/content/site'
 import { useLanguage } from '@/i18n'
 import { useReveal } from '@/hooks/useReveal'
 import { useSnapScroll, writeSectionHash } from '@/hooks/useSnapScroll'
-import { gsap, ScrollTrigger } from '@/theme/motion'
+import { gsap, offsetToStart, ScrollTrigger } from '@/theme/motion'
 import { tokens } from '@/theme/tokens'
 import { caseOpen, clearCaseOpen, enteredFromCard, markCaseClose } from '@/transitions'
 import { BrowserFrame, hostOf } from './BrowserFrame'
@@ -97,6 +97,34 @@ const TAP_RADIUS = parseFloat(tokens.layout.caseStudy.tapSize) / 2
 const pad = (n: number) => String(n).padStart(2, '0')
 const range = (n: number) => Array.from({ length: n }, (_, i) => i)
 const cssVars = (vars: Record<string, string | number>) => vars as CSSProperties
+const ms = (seconds: number) => `${Math.round(seconds * 1000)}ms`
+
+/** useReveal attributes of a stacked-layout line or block that rises in, `delaySec` into its scope's timeline. */
+const riseAttrs = (delaySec = 0) => {
+  const { liftPx, riseSec, fadeSec, ease } = tokens.motion.caseStudy.stack
+  return {
+    'data-reveal': 'y-fade',
+    'data-reveal-from': `${liftPx}px`,
+    'data-reveal-dur': ms(riseSec),
+    'data-reveal-fade-dur': ms(fadeSec),
+    'data-reveal-ease': ease,
+    'data-reveal-delay': ms(delaySec),
+  }
+}
+
+/**
+ * Stacked layout: a block that rises in once it scrolls into view (its own useReveal scope, so it
+ * waits for the scroll instead of playing with the page's first screen). `section` marks the block
+ * that opens a chapter, for `#2` / `#3` deep links (see useSnapScroll).
+ */
+function StackReveal({ className, section, children }: { className?: string; section?: number; children: ReactNode }) {
+  const ref = useReveal<HTMLDivElement>({ offset: tokens.motion.caseStudy.stack.offset })
+  return (
+    <div ref={ref} className={className} data-section={section} {...riseAttrs()}>
+      {children}
+    </div>
+  )
+}
 /**
  * Three chapters, each one a snap point: intro (cover), then the journey when the case has one
  * (the phone plays its steps on its own, see setupJourney) or else the goal (reel), and the results.
@@ -132,8 +160,9 @@ function setupChapterSwaps(root: HTMLElement, count: number, animate: boolean) {
   const last = count - 1
   const duration = animate ? swapSec : 0
 
-  // Closing capture that opens zoomed in on a point and pulls back once its chapter is entered.
-  const zoomEl = root.querySelector<HTMLElement>('[data-zoom-scale]')
+  // Closing capture that opens zoomed in on a point and pulls back once its chapter is entered
+  // (the split visual's; the stacked one has its own, see setupStackClosing).
+  const zoomEl = root.querySelector<HTMLElement>('[data-visual="2"] [data-zoom-scale]')
   const zoomScale = Number(zoomEl?.dataset.zoomScale ?? 1)
   const zoomOrigin = zoomEl?.dataset.zoomOrigin ?? '50% 50%'
   const { closingZoomSec, closingZoomDelaySec } = tokens.motion.caseStudy
@@ -273,6 +302,31 @@ function setupVisualParallax(root: HTMLElement, count: number) {
       })
     })
   return () => triggers.forEach((t) => t?.kill())
+}
+
+/**
+ * Stacked layout: the closing capture opens zoomed in on its point, like the split visual, and
+ * pulls back to the whole view once it has scrolled into view. Without motion it shows the whole view.
+ */
+function setupStackClosing(root: HTMLElement, animate: boolean) {
+  const box = root.querySelector<HTMLElement>('[data-case="closing-stack"]')
+  const zoomEl = box?.querySelector<HTMLElement>('[data-zoom-scale]')
+  if (!box || !zoomEl || !animate) return
+  const { closingZoomSec, closingZoomDelaySec, stack } = tokens.motion.caseStudy
+  gsap.set(zoomEl, { scale: Number(zoomEl.dataset.zoomScale ?? 1), transformOrigin: zoomEl.dataset.zoomOrigin ?? '50% 50%' })
+  const pullBack = gsap.to(zoomEl, {
+    scale: 1,
+    duration: closingZoomSec,
+    delay: closingZoomDelaySec,
+    ease: 'power3.inOut',
+    paused: true,
+  })
+  // The box, not the scaled window, so the zoom does not move the trigger.
+  const st = ScrollTrigger.create({ trigger: box, start: offsetToStart(stack.offset), once: true, onEnter: () => pullBack.play() })
+  return () => {
+    st.kill()
+    pullBack.kill()
+  }
 }
 
 /**
@@ -605,14 +659,22 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
 
   useSnapScroll({ count, snapClass: SNAP_CLASS })
 
-  // Split layout: chapter swaps and the snapped journey. Stacked layout: the pinned-phone journey.
+  // Split layout: chapter swaps and the snapped journey. Stacked layout: the one-screen journey
+  // and the closing capture's pull-back.
   useEffect(() => {
     const root = rootRef.current
     if (!root) return
     const mm = gsap.matchMedia(root)
     mm.add({ split: SPLIT, motion: MOTION_OK }, (ctx) => {
       const animate = Boolean(ctx.conditions?.motion)
-      if (!ctx.conditions?.split) return hasJourney ? setupMobileJourney(root, steps, animate) : undefined
+      if (!ctx.conditions?.split) {
+        const stopMobileJourney = hasJourney ? setupMobileJourney(root, steps, animate) : undefined
+        const stopClosing = setupStackClosing(root, animate)
+        return () => {
+          stopMobileJourney?.()
+          stopClosing?.()
+        }
+      }
       const stopJourney = hasJourney ? setupJourney(root, steps, animate) : undefined
       const stopSwaps = setupChapterSwaps(root, count, animate)
       const stopParallax = animate ? setupVisualParallax(root, count) : undefined
@@ -642,13 +704,15 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
   useLayoutEffect(() => () => markCaseClose(study.slug), [study.slug])
 
   // Opened from a home card: while the panel opens, its first page's lines rise in one after another.
+  // Stacked layout: the cover morphs from the card meanwhile, and the first screen's lines rise the same way.
   useEffect(() => {
     clearCaseOpen()
     const root = rootRef.current
-    if (!viaCard || !root || !window.matchMedia(`${SPLIT} and ${MOTION_OK}`).matches) return
+    if (!viaCard || !root || !window.matchMedia(MOTION_OK).matches) return
+    const lines = window.matchMedia(SPLIT).matches ? '[data-case="page-0"] [data-case-line]' : '[data-case="stack"] [data-case-line]'
     const { lineLiftPx, open } = tokens.motion.caseStudy
     const tween = gsap.fromTo(
-      root.querySelectorAll('[data-case="page-0"] [data-case-line]'),
+      root.querySelectorAll(lines),
       { y: lineLiftPx, autoAlpha: 0 },
       { y: 0, autoAlpha: 1, duration: open.textSec, delay: open.textDelaySec, stagger: open.textStaggerSec, ease: open.textEase },
     )
@@ -674,6 +738,47 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
   const fade = { 'data-reveal': 'fade', 'data-reveal-fade-dur': `${tokens.motion.caseStudy.fadeInSec * 1000}ms` }
   /** Panel and visuals: the card transition already brings them in. */
   const enter = viaCard ? {} : fade
+  /**
+   * Lines of the stacked layout's first screen: they rise in one after another on load, or after
+   * the morph when opened from a card (the open tween above animates them then).
+   */
+  const stackLine = (index: number) =>
+    viaCard ? { 'data-case-line': true } : { 'data-case-line': true, ...riseAttrs(index * tokens.motion.caseStudy.stack.staggerSec) }
+
+  /** Cover (`closing` false) or closing capture of the stacked layout, built like the split visuals 0 and 2. */
+  const stackVisual = (closing: boolean) => {
+    const src = closing ? study.media.closing : study.media.background
+    if (study.media.screenshot) {
+      return (
+        <div
+          className={`${styles.stackVisual} ${styles.stackFramed}`}
+          {...(closing ? { 'data-case': 'closing-stack' } : { style: { viewTransitionName: caseOpen.visual }, ...enter })}
+        >
+          <img className={styles.ambient} src={src} alt="" aria-hidden="true" decoding="async" {...(closing ? { loading: 'lazy' as const } : {})} />
+          <BrowserFrame
+            src={src}
+            host={host}
+            priority={!closing}
+            zoom={closing ? study.media.closingZoom : undefined}
+            className={styles.stackBrowser}
+            transitionName={closing ? undefined : caseOpen.browser}
+          />
+        </div>
+      )
+    }
+    return (
+      <div className={styles.stackVisual} {...(closing ? {} : { style: { viewTransitionName: caseOpen.visual }, ...enter })}>
+        <img
+          className={styles.bgImage}
+          src={src}
+          alt=""
+          decoding="async"
+          {...(closing ? { loading: 'lazy' as const } : { fetchPriority: 'high' as const })}
+        />
+        {!closing && study.media.device && <img className={styles.device} src={study.media.device} alt="" decoding="async" />}
+      </div>
+    )
+  }
 
   const textPage = (index: number, eyebrow: string, heading: string, paragraphs: string[]) => (
     <div className={styles.content} data-case={`content-${index}`}>
@@ -693,15 +798,28 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
 
   return (
     <div ref={setRefs} className={styles.root} style={cssVars({ '--case-height': totalHeight })}>
-      <Link to="/" resetScroll={false} className={styles.close} aria-label={lang === 'es' ? 'Cerrar caso' : 'Close case study'} {...fade}>
+      {/* hit area of at least layout.tapMin (global .tap-area); below lg it also paints a disc behind the X */}
+      <Link
+        to="/"
+        resetScroll={false}
+        className={`${styles.close} tap-area`}
+        aria-label={lang === 'es' ? 'Cerrar caso' : 'Close case study'}
+        {...fade}
+      >
         <CloseIcon />
       </Link>
 
-      {/* native snap points: one per chapter. No ids on purpose: the
+      {/* native snap points: one per chapter (split layout only). No ids on purpose: the
           router scrolls to an element whose id matches the hash, which would fight the snap. */}
       <div className={styles.snapPoints} aria-hidden="true">
         {areas.map((top, i) => (
-          <span key={`a${i}`} data-case={`area-${i}`} className={styles.snapPoint} style={cssVars({ '--top': top })} />
+          <span
+            key={`a${i}`}
+            data-case={`area-${i}`}
+            data-section={i}
+            className={styles.snapPoint}
+            style={cssVars({ '--top': top })}
+          />
         ))}
       </div>
 
@@ -856,34 +974,43 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
         </section>
       </div>
 
-      {/* stacked layout for small screens */}
-      <div className={styles.stack}>
-        <h1 className={styles.title}>{study.title}</h1>
-        <img className={styles.stackImage} src={study.media.background} alt="" decoding="async" />
+      {/* stacked layout below lg: the three chapters one after another, in the split layout's
+          language. Its cover carries the card transition names (the split visual 0 is not rendered
+          here, and this layout is not rendered from lg up, so only one set exists at any width). */}
+      <div className={styles.stack} data-case="stack">
+        <h1 className={styles.title} {...stackLine(0)}>
+          {study.title}
+        </h1>
+        {stackVisual(false)}
         <dl className={styles.table}>
-          {study.table.map((row) => (
-            <div key={row.label} className={styles.row}>
+          {study.table.map((row, i) => (
+            <div key={row.label} className={styles.row} {...stackLine(i + 1)}>
               <dt className={styles.rowLabel}>{row.label}</dt>
               <dd className={styles.rowValue}>{row.value}</dd>
             </div>
           ))}
         </dl>
-        <a href={study.link.href} target="_blank" rel="noreferrer" className={styles.button}>
-          {study.link.label}
-        </a>
+        <div className={styles.stackLink} {...stackLine(study.table.length + 1)}>
+          <a href={study.link.href} target="_blank" rel="noreferrer" className={styles.caseLink}>
+            {study.link.label}
+            <ArrowIcon />
+          </a>
+        </div>
         {!hasJourney && (
           <>
-            <video
-              ref={stackVideoRef}
-              className={styles.stackVideo}
-              src={study.media.video}
-              poster={study.media.videoPoster}
-              loop
-              muted
-              playsInline
-              preload="none"
-            />
-            <div className={styles.stackBlock}>
+            <StackReveal section={1}>
+              <video
+                ref={stackVideoRef}
+                className={styles.stackVideo}
+                src={study.media.video}
+                poster={study.media.videoPoster}
+                loop
+                muted
+                playsInline
+                preload="none"
+              />
+            </StackReveal>
+            <StackReveal className={styles.stackBlock}>
               <span className={styles.caps}>{goal.label}</span>
               <h2 className={styles.heading}>{goal.heading}</h2>
               {goal.paragraphs.map((t, i) => (
@@ -891,11 +1018,11 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
                   {t}
                 </p>
               ))}
-            </div>
+            </StackReveal>
           </>
         )}
         {hasJourney && (
-          <div className={styles.stackBlock}>
+          <StackReveal className={styles.stackBlock} section={1}>
             <span className={styles.caps}>{journeyLabel}</span>
             {/* one screen: the phone plays on its own, its caption swaps with each step */}
             <div className={styles.mJourney} data-case="stage-stack">
@@ -904,27 +1031,33 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
                 <ol className={styles.mCaptions}>
                   {steps.map((step, i) => (
                     <li key={step.title} className={styles.mCaption} data-case={`caption-${i}`}>
-                      <span className={styles.stepNumber}>{`${pad(i + 1)} / ${pad(k)}`}</span>
+                      <span className={styles.mCaptionHead}>
+                        <span className={styles.stepNumber}>{`${pad(i + 1)} / ${pad(k)}`}</span>
+                        {/* once the phone has played the last step, its caption offers the replay */}
+                        {i === k - 1 && (
+                          <button type="button" className={`${styles.replay} tap-area`} data-case="replay-stack" hidden>
+                            {replayLabel}
+                          </button>
+                        )}
+                      </span>
                       <h3 className={styles.mCaptionTitle}>{step.title}</h3>
                       <p className={styles.mCaptionText}>{step.text}</p>
                     </li>
                   ))}
                 </ol>
+                {/* one dot per step, each jumping to it; the row of hit areas spans the screen */}
                 <div className={styles.mControls}>
                   <div className={styles.mDots}>
                     {steps.map((step, i) => (
                       <button key={step.title} type="button" className={styles.mDot} data-case={`dot-${i}`} aria-label={`${pad(i + 1)} · ${step.title}`} />
                     ))}
                   </div>
-                  <button type="button" className={styles.replay} data-case="replay-stack" hidden>
-                    {replayLabel}
-                  </button>
                 </div>
               </div>
             </div>
-          </div>
+          </StackReveal>
         )}
-        <div className={styles.stackBlock}>
+        <StackReveal className={styles.stackBlock} section={resultsIndex}>
           <span className={styles.caps}>{results.label}</span>
           <h2 className={styles.heading}>{results.heading}</h2>
           {results.paragraphs.map((t, i) => (
@@ -932,11 +1065,15 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
               {t}
             </p>
           ))}
-        </div>
+        </StackReveal>
+        <StackReveal>{stackVisual(true)}</StackReveal>
         {next && (
-          <Link to="/projects/$slug" params={{ slug: next.slug }} className={styles.button}>
-            {nextLabel}
-          </Link>
+          <StackReveal className={styles.stackLink}>
+            <Link to="/projects/$slug" params={{ slug: next.slug }} className={styles.caseLink}>
+              {nextLabel}
+              <ArrowIcon />
+            </Link>
+          </StackReveal>
         )}
       </div>
     </div>

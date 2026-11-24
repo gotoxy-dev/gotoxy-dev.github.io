@@ -8,9 +8,21 @@
   padding: 0;
 }
 
+/*
+ * Horizontal overflow is clipped on <html> (→ the viewport) and on <body>. `clip`, unlike `hidden`,
+ * does not turn <body> into a scroll container, so `position: sticky` keeps the viewport as its
+ * scroller. Browsers without `clip` ignore the html rule and fall back to body `hidden`, which then
+ * propagates to the viewport as before.
+ */
 html {
   -webkit-text-size-adjust: 100%;
-  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: clip;
+}
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 body {
@@ -23,6 +35,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  overflow-x: clip;
 }
 
 a {
@@ -36,6 +49,30 @@ button {
   background: none;
   border: 0;
   cursor: pointer;
+}
+
+/* no double-tap zoom delay on controls (panning and pinch zoom stay) */
+a,
+button {
+  touch-action: manipulation;
+}
+
+/* `/#section` anchors land below the fixed navbar (its height per tier, see Navbar.module.css) */
+section[id],
+footer[id] {
+  scroll-margin-top: var(--layout-navHeight);
+}
+@media (max-width: 991px) {
+  section[id],
+  footer[id] {
+    scroll-margin-top: var(--layout-navHeightTablet);
+  }
+}
+@media (max-width: 767px) {
+  section[id],
+  footer[id] {
+    scroll-margin-top: var(--layout-navHeightMobile);
+  }
 }
 
 img,
@@ -157,6 +194,24 @@ ul {
 }
 
 /*
+ * Hit area of at least --layout-tapMin around a small control, without changing its layout or look
+ * (a centred, invisible ::before). Only for controls with no other target within 44px; rows of
+ * close targets get a real min-height instead. `:where` keeps a component's own `position`.
+ */
+:where(.tap-area) {
+  position: relative;
+}
+.tap-area::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max(100%, var(--layout-tapMin));
+  height: max(100%, var(--layout-tapMin));
+  transform: translate(-50%, -50%);
+}
+
+/*
  * Underline link (nav links, reference "underline1-open/out"):
  * width 0 → 100% in 400ms outQuart on hover, back to 0 in 300ms outQuart.
  */
@@ -174,9 +229,12 @@ ul {
   background: currentColor;
   transition: width var(--motion-duration-d300) var(--motion-ease-outQuart);
 }
-.ulink:hover::after {
-  width: 100%;
-  transition-duration: var(--motion-duration-d400);
+/* hover styles only where hovering exists, so a tap on a touch screen leaves nothing stuck */
+@media (hover: hover) {
+  .ulink:hover::after {
+    width: 100%;
+    transition-duration: var(--motion-duration-d400);
+  }
 }
 .ulink.is-active::after {
   width: 100%;
@@ -212,35 +270,49 @@ ul {
   stroke-width: 1.2;
   fill: none;
 }
-.alink:hover {
-  transform: translateX(0);
-  transition-duration: var(--motion-duration-d400);
+/* touch screens have no hover: the link rests in its hover pose so the arrow affordance shows */
+@media (hover: none) {
+  .alink {
+    transform: none;
+  }
+  .alink-arrow {
+    width: var(--layout-linkArrow);
+    opacity: 1;
+  }
 }
-.alink:hover .alink-arrow {
-  width: var(--layout-linkArrow);
-  opacity: 1;
-  transition:
-    width var(--motion-duration-d300) var(--motion-ease-outSine),
-    opacity var(--motion-duration-d400) linear;
-}
-
-/* reference phones: the numbers paragraph switches to `.h3-mobile`, 20px / 24px */
-@media (max-width: 767px) {
-  .t-lead {
-    font-size: 20px;
-    line-height: 24px;
+@media (hover: hover) {
+  .alink:hover {
+    transform: translateX(0);
+    transition-duration: var(--motion-duration-d400);
+  }
+  .alink:hover .alink-arrow {
+    width: var(--layout-linkArrow);
+    opacity: 1;
+    transition:
+      width var(--motion-duration-d300) var(--motion-ease-outSine),
+      opacity var(--motion-duration-d400) linear;
   }
 }
 
-/* reference ≤479px: h2 48px / 96%, h5/h6 captions 12px / 140% */
-@media (max-width: 479px) {
+/*
+ * Phones, one tier (≤ 767 px; tokens `type.phone`): hero headline largest, then section titles,
+ * which never shrink as the screen widens; the numbers paragraph is the reference `.h3-mobile`.
+ */
+@media (max-width: 767px) {
+  .t-display {
+    font-size: var(--type-phone-display-size);
+  }
   .t-h2 {
-    font-size: 48px;
-    line-height: 0.96;
+    font-size: var(--type-phone-h2-size);
+    line-height: var(--type-phone-h2-lineHeight);
+  }
+  .t-lead {
+    font-size: var(--type-phone-lead-size);
+    line-height: var(--type-phone-lead-lineHeight);
   }
   .t-caption {
-    font-size: 12px;
-    line-height: 1.4;
+    font-size: var(--type-phone-caption-size);
+    line-height: var(--type-phone-caption-lineHeight);
   }
 }
 

@@ -58,9 +58,13 @@
   color: var(--color-textMuted);
   transition: color var(--motion-duration-d300) linear;
 }
-.lang:hover,
 .langActive {
   color: var(--color-textStrong);
+}
+@media (hover: hover) {
+  .lang:hover {
+    color: var(--color-textStrong);
+  }
 }
 /* reference phones: "MENU" text trigger, 14px caps */
 .burger {
@@ -127,15 +131,50 @@
   transition-delay: calc(var(--motion-duration-d400) + var(--i) * var(--motion-duration-d100));
 }
 
+/* language buttons in the menu panel: 44px tap areas side by side (the text keeps its size) */
+.overlay .langs {
+  gap: 0;
+  margin-right: 0;
+}
+.overlay .lang {
+  display: inline-flex;
+  align-items: center;
+  min-width: var(--layout-tapMin);
+  min-height: var(--layout-tapMin);
+}
+
+/* touch: a short dim while pressed (there is no hover) */
+@media (hover: none) {
+  .burger:active,
+  .lang:active,
+  .overlayLink:active {
+    color: var(--color-textMuted);
+  }
+}
+
 /* reference ≤991px: 76px navbar, text menu trigger */
 @media (max-width: 991px) {
-  .nav { height: 76px; }
+  .nav { height: var(--layout-navHeightTablet); }
   .menu { display: none; }
   .burger { display: block; }
 }
-/* reference ≤479px: navbar 51px tall, 20px side padding */
-@media (max-width: 479px) {
+/*
+ * Phones (≤ 767 px): navbar 51px tall. At the top of the page it stays clear over the hero; once the
+ * page scrolls it gets a blurred dark backdrop so it reads over any content, and then catches taps
+ * itself instead of passing them to the content under it.
+ */
+@media (max-width: 767px) {
   .nav {
     height: var(--layout-navHeightMobile);
+    transition:
+      background-color var(--motion-duration-d300) linear,
+      -webkit-backdrop-filter var(--motion-duration-d300) linear,
+      backdrop-filter var(--motion-duration-d300) linear;
+  }
+  .nav.solid {
+    pointer-events: auto;
+    background-color: var(--color-navBg);
+    -webkit-backdrop-filter: blur(var(--layout-nav-blur));
+    backdrop-filter: blur(var(--layout-nav-blur));
   }
 }

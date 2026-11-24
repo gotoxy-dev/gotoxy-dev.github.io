@@ -29,6 +29,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.25em;
+  min-height: var(--layout-tapMin);
   font-size: var(--type-h2-size);
   line-height: var(--type-h2-lineHeight);
   text-transform: uppercase;
@@ -43,12 +44,21 @@
   transform: rotate(0deg);
   transition: transform var(--motion-duration-d200) var(--motion-ease-ease);
 }
-.button:hover svg {
-  transform: rotate(-90deg);
-  transition-duration: var(--motion-duration-d300);
+/* hover styles only where hovering exists (a tap leaves nothing stuck) */
+@media (hover: hover) {
+  .button:hover svg {
+    transform: rotate(-90deg);
+    transition-duration: var(--motion-duration-d300);
+  }
+}
+/* touch: the arrow rests in its hover state, pointing out of the page */
+@media (hover: none) {
+  .button svg {
+    transform: rotate(-90deg);
+  }
 }
 
-/* reference ≤991px: margin-bottom 11.1vw, wrapper margin-bottom 60px, LET'S TALK 48px */
+/* reference ≤991px: margin-bottom 11.1vw, wrapper margin-bottom 60px, LET'S TALK 48px (never above the headline) */
 @media (max-width: 991px) {
   .section {
     margin-bottom: 11.1vw;
@@ -62,30 +72,26 @@
     white-space: normal;
   }
   .button {
-    font-size: 48px;
+    font-size: min(var(--layout-cta-tabletButton), var(--type-h2-size));
     line-height: 0.96;
   }
 }
-/* reference ≤479px (`.here-to-talk-sec.mobile`): margin-bottom 110px, headline 32px, LET'S TALK 32px with a 24px arrow */
-@media (max-width: 479px) {
+/*
+ * Phones, one tier (reference ≤479px `.here-to-talk-sec.mobile`): margin-bottom 110px, 40px gaps;
+ * LET'S TALK takes the headline's phone size (`.t-h2`), as on desktop where both are `type.h2`.
+ */
+@media (max-width: 767px) {
   .section {
-    margin-bottom: 110px;
+    margin-bottom: var(--layout-cta-phone-sectionBottom);
   }
   .eyebrow {
-    margin-bottom: 40px;
+    margin-bottom: var(--layout-cta-phone-eyebrowBottom);
   }
   .headline {
-    font-size: 32px;
-    line-height: 1;
-    margin-bottom: 40px;
+    margin-bottom: var(--layout-cta-phone-wrapBottom);
   }
   .button {
-    font-size: 32px;
-    line-height: 1;
-    gap: 10px;
-  }
-  .button svg {
-    width: 24px;
-    height: 24px;
+    font-size: var(--type-phone-h2-size);
+    line-height: var(--type-phone-h2-lineHeight);
   }
 }

@@ -185,8 +185,10 @@
   color: var(--color-textDim);
   transition: color var(--motion-duration-d500) var(--motion-ease-outSine);
 }
-.step:not([data-active]):hover {
-  color: var(--color-textMuted);
+@media (hover: hover) {
+  .step:not([data-active]):hover {
+    color: var(--color-textMuted);
+  }
 }
 /* each title jumps the phone to its step */
 .stepButton {
@@ -226,8 +228,10 @@
 .replay[hidden] {
   display: none;
 }
-.replay:hover {
-  color: var(--color-textMuted);
+@media (hover: hover) {
+  .replay:hover {
+    color: var(--color-textMuted);
+  }
 }
 .replay:focus-visible {
   outline: 1px solid var(--color-textStrong);
@@ -318,8 +322,7 @@
   color: var(--color-textMuted);
 }
 .close:focus-visible,
-.caseLink:focus-visible,
-.button:focus-visible {
+.caseLink:focus-visible {
   outline: 1px solid var(--color-textStrong);
   outline-offset: 4px;
 }
@@ -462,7 +465,7 @@
 }
 .video {
   width: 100%;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: var(--layout-caseStudy-reelRatio);
   object-fit: cover;
 }
 
@@ -470,61 +473,114 @@
   display: none;
 }
 
+/* Stacked layout (below lg): the chapters one after another in the split layout's language
+   (framed cover over its blurred copy, ↗ caps links, rising lines). Sizes and gaps in px tokens
+   (layout.caseStudy.stack): the panel's vw values collapse to a few px on a phone. */
 @media (max-width: 991px) {
   .root {
     min-height: 0;
-    padding: 72px 20px 60px;
+    padding: var(--layout-caseStudy-stack-padTop) var(--layout-gutter) var(--layout-caseStudy-stack-padBottom);
   }
+  /* the snap points belong to the split layout: hidden, they add no height to the stack */
   .pager,
   .panel,
-  .sections {
+  .sections,
+  .snapPoints {
     display: none;
   }
+  /* the only way out (no navbar on case pages): readable over the content scrolling under it,
+     on a blurred disc the size of its hit area (the global .tap-area ::before) */
   .close {
-    top: 20px;
-    right: 20px;
-    width: 20px;
-    height: 20px;
+    top: var(--layout-gutter);
+    right: var(--layout-gutter);
+    width: var(--layout-caseStudy-stack-closeSize);
+    height: var(--layout-caseStudy-stack-closeSize);
+  }
+  .close::before {
+    z-index: -1;
+    border-radius: 50%;
+    background: var(--color-navBg);
+    -webkit-backdrop-filter: blur(var(--layout-nav-blur));
+    backdrop-filter: blur(var(--layout-nav-blur));
   }
   .stack {
     display: flex;
     flex-direction: column;
-    gap: 32px;
+    gap: var(--layout-caseStudy-stack-gap);
+  }
+  /* `#2` / `#3` deep links land a top padding below the edge, clear of the X (see useSnapScroll) */
+  .stack [data-section] {
+    scroll-margin-top: var(--layout-caseStudy-stack-padTop);
   }
   .stack .title {
-    font-size: 36px;
+    font-size: var(--layout-caseStudy-stack-titleSize);
   }
   .stack .heading {
-    font-size: 24px;
-    margin-bottom: 16px;
+    font-size: var(--layout-caseStudy-stack-headingSize);
+    margin-bottom: var(--layout-caseStudy-stack-headingGap);
   }
   .stack .paragraph {
-    font-size: 15px;
+    font-size: var(--layout-caseStudy-stack-paragraphSize);
     margin-bottom: 1em;
   }
   .stack .caps {
-    margin-bottom: 12px;
+    margin-bottom: var(--layout-caseStudy-stack-capsGap);
+  }
+  .stack .table {
+    gap: var(--layout-caseStudy-stack-rowGap);
+  }
+  .stack .row {
+    padding-bottom: var(--layout-caseStudy-stack-rowPadBottom);
   }
   .stack .rowLabel {
-    font-size: 12px;
+    font-size: var(--layout-caseStudy-stack-labelSize);
   }
   .stack .rowValue {
-    font-size: 14px;
+    font-size: var(--layout-caseStudy-stack-valueSize);
   }
-  .stackImage,
+  /* cover and closing capture, built like the split visuals: a page capture (with its device on
+     the cover), or a website capture in a browser window over its blurred copy (.ambient) */
+  .stackVisual {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    aspect-ratio: var(--layout-caseStudy-stack-coverRatio);
+    overflow: hidden;
+    background: var(--color-surface);
+  }
+  .stackFramed {
+    aspect-ratio: var(--layout-caseStudy-stack-framedRatio);
+  }
+  /* the home card's window width: card and cover windows match, so the morph is a plain move */
+  .stackBrowser {
+    position: relative;
+    width: var(--layout-project-browserWidth);
+  }
   .stackVideo {
     width: 100%;
     height: auto;
+    aspect-ratio: var(--layout-caseStudy-reelRatio);
+    object-fit: cover;
   }
   .stackBlock {
     display: flex;
     flex-direction: column;
   }
-  /* Mobile journey: the phone stays pinned while the step captions scroll up over it. The
-     stage is tall enough for every caption to pass; each caption plays its step on the phone. */
+  /* links as in the panel (.caseLink: muted caps + ↗), right-aligned like .pageLink, a full tap tall */
+  .stackLink {
+    align-self: flex-end;
+  }
+  .stack .caseLink {
+    min-height: var(--layout-tapMin);
+    font-size: var(--layout-caseStudy-stack-linkSize);
+  }
+  /* Mobile journey: one screen; the phone plays on its own, the caption of the step playing sits
+     over its bottom and the step dots under it. */
   .mJourney {
     position: relative;
-    margin: 16px -20px 0;
+    margin: var(--layout-caseStudy-stack-journeyGap) calc(-1 * var(--layout-gutter)) 0;
   }
   .mPhoneLayer {
     position: relative;
@@ -543,7 +599,7 @@
     position: absolute;
     left: 0;
     right: 0;
-    bottom: calc(4svh + 28px);
+    bottom: calc(4svh + var(--layout-tapMin));
     height: 0;
     margin: 0;
     padding: 0;
@@ -571,6 +627,17 @@
   .mCaption .stepNumber {
     color: var(--color-textMuted);
   }
+  /* step counter, and on the last step the replay (its .tap-area hit area keeps the row's height) */
+  .mCaptionHead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--layout-caseStudy-stack-capsGap);
+  }
+  .mCaption .replay {
+    margin: 0;
+    pointer-events: auto;
+  }
   .mCaptionTitle {
     font-size: 20px;
     line-height: 1.15;
@@ -583,26 +650,29 @@
     line-height: 1.5;
     color: var(--color-text);
   }
-  /* step dots (each jumps to its step) and the replay, under the caption */
+  /* step dots, each jumping to its step: hit areas layout.tapMin tall, as wide as the row allows
+     (layout.tapMin, or an equal share of the screen when the steps do not fit), with no gap
+     between them, so every tap on the row reaches the nearest step; the dots keep their size */
   .mControls {
     position: absolute;
     left: 0;
     right: 0;
     bottom: 2svh;
     display: flex;
-    align-items: center;
     justify-content: center;
-    gap: 16px;
-    height: 24px;
+    padding-inline: var(--layout-gutter);
   }
+  /* a definite width: the dots are empty buttons, so the row would have no intrinsic width */
   .mDots {
     display: flex;
-    gap: 2px;
+    justify-content: center;
+    width: 100%;
   }
   .mDot {
     position: relative;
-    width: 18px;
-    height: 24px;
+    flex: 0 1 var(--layout-tapMin);
+    min-width: 0;
+    height: var(--layout-tapMin);
     padding: 0;
     border: 0;
     background: none;
@@ -625,18 +695,6 @@
   }
   .mDot:focus-visible {
     outline: 1px solid var(--color-textStrong);
-  }
-  .mControls .replay {
-    margin: 0;
-  }
-  .button {
-    align-self: flex-start;
-    padding: 14px 40px;
-    border: 1px solid var(--color-textMuted);
-    border-radius: var(--radius-pill);
-    font-size: 14px;
-    line-height: 1.6;
-    text-transform: uppercase;
-    color: var(--color-textMuted);
+    outline-offset: -8px;
   }
 }

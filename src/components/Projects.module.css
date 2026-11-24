@@ -121,8 +121,8 @@
   .arrow {
     display: block;
   }
-  /* reference phone cards: 335 × 215 media */
+  /* reference phone cards: 335 × 215 media; the stacked case cover uses the same box (framedRatio) */
   .media {
-    aspect-ratio: 3 / 2;
+    aspect-ratio: var(--layout-project-phoneRatio);
   }
 }

@@ -20,7 +20,7 @@ export function Insights() {
       >
         <div className={styles.head}>
           <h2 className={styles.title}>{insights.title}</h2>
-          <a href={insights.moreHref} target="_blank" rel="noreferrer" className={`${styles.more} alink`}>
+          <a href={insights.moreHref} target="_blank" rel="noreferrer" className={`${styles.more} alink tap-area`}>
             {insights.moreLabel}
             <span className="alink-arrow">
               <svg viewBox="0 0 14 14" aria-hidden="true">

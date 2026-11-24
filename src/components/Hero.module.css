@@ -68,13 +68,15 @@
     padding-top: 91px;
     padding-bottom: 64px;
   }
-  /* reference `.hero-bg` on phones: 334px tall box 100px from the top, object pushed to the right edge */
+  /*
+   * Phones: the G behind the headline as on desktop, but whole: a square canvas centred across the
+   * screen (the mark fills it, so the G never reaches the screen edges), centred on the headline block
+   */
   .canvasWrap {
-    top: 100px;
-    left: auto;
-    right: -34vw;
-    width: 124vw;
-    height: 334px;
+    top: calc(var(--layout-hero-phone-markCenter) - var(--layout-hero-phone-canvasSize) / 2);
+    left: calc((100% - var(--layout-hero-phone-canvasSize)) / 2);
+    width: var(--layout-hero-phone-canvasSize);
+    height: var(--layout-hero-phone-canvasSize);
   }
   .row {
     flex-direction: column;
@@ -82,14 +84,24 @@
   .row > span {
     white-space: normal;
   }
-  /* reference phones: 64px; capped so the longest Spanish word ("CONSTRUIMOS") fits the 20px gutters */
+  /* phone display token (reference 64px, capped so "CONSTRUIMOS" fits the 20px gutters) */
   .headline {
-    font-size: min(64px, 12.2vw);
+    font-size: var(--type-phone-display-size);
   }
   .row.right {
     align-items: flex-start;
   }
   .caption {
     margin-top: 48px;
+  }
+}
+
+/*
+ * Touch: a horizontal drag anywhere on the hero turns the G (ParticleMark), so the browser keeps
+ * only vertical scrolling and pinch zoom here; a vertical swipe still scrolls (pointercancel).
+ */
+@media (hover: none) and (prefers-reduced-motion: no-preference) {
+  .hero {
+    touch-action: pan-y pinch-zoom;
   }
 }

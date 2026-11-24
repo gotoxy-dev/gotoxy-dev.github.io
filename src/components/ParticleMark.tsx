@@ -9,7 +9,7 @@ interface Props {
   className?: string
   /** How the mark is sampled into points (see markSampling.ts); the hero uses the default. */
   variant?: MarkVariant
-  /** Keep turning on its own, as on touch devices (design previews). */
+  /** Keep turning on its own, whatever the pointer does (design previews). */
   autoRotate?: boolean
   /**
    * Size the mark by the viewport height and centre it in the visible part of its canvas
@@ -57,8 +57,13 @@ const angleDelta = (a: number, b: number) => {
  *    proportion to its speed, so a slow pass barely ripples the surface and a
  *    fast swipe scatters it; heavier points react less and settle later.
  *  - Air drag makes points trail behind when the G spins fast.
- *  - Touch devices auto-rotate; reduced motion keeps the pointer rotation only,
- *    without inertia, intro or particle physics.
+ *  - Touch devices: a horizontal finger drag turns the G from where it is (one full
+ *    turn per screen width, through the same spring) and the finger stirs the points
+ *    like the pointer; vertical swipes scroll the page (pointercancel ends the drag).
+ *    Once the finger lets go the G keeps its angle and, after `idleDelay`, turns on
+ *    its own again; otherwise the loop stops once everything settles.
+ *  - Reduced motion keeps the mouse rotation only, without inertia, intro or
+ *    particle physics; on touch devices the G stays still.
  */
 export function ParticleMark({ className, onReady, variant = 'pillow', autoRotate = false, fitViewport = false }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
@@ -72,7 +77,8 @@ export function ParticleMark({ className, onReady, variant = 'pillow', autoRotat
 
     const reduced = prefersReducedMotion()
     const touch = window.matchMedia('(hover: none)').matches
-    const spinning = touch || autoRotate
+    /** The finger turns and stirs the mark (the hero on touch devices; previews keep auto-rotating). */
+    const fingerDrag = touch && !autoRotate && !reduced
 
     // the cloud and its per-point state (canvas CSS px), rebuilt when the mark's size changes a lot
     let n = 0
@@ -107,9 +113,27 @@ export function ParticleMark({ className, onReady, variant = 'pillow', autoRotat
     let disposed = false
 
     const pointer = { inside: false, x: 0, y: 0, vx: 0, vy: 0, t: 0 }
+    /** Finger turning the G (pointerId, -1 = none), where it touched down and the angle it found. */
+    let drag = -1
+    let dragX = 0
+    let dragFrom = 0
+    /** Touch: the G turns on its own until the finger takes it, again `idleDelay` after it lets go. */
+    let idle = false
+    let idleTimer = 0
+    /** Viewport and pixel ratio the mark was last fitted to. */
+    let viewW = 0
+    let viewH = 0
+    let fittedDpr = 0
 
     const schedule = () => {
       if (!raf && visible && side > 0 && n > 0) raf = requestAnimationFrame(frame)
+    }
+    const idleLater = () => {
+      window.clearTimeout(idleTimer)
+      idleTimer = window.setTimeout(() => {
+        idle = true
+        schedule()
+      }, P.idleDelay * 1000)
     }
 
     /**
@@ -141,7 +165,24 @@ export function ParticleMark({ className, onReady, variant = 'pillow', autoRotat
 
     const resize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 2)
-      rect = canvas.getBoundingClientRect()
+      const viewWidth = window.innerWidth
+      const viewHeight = window.innerHeight
+      const next = canvas.getBoundingClientRect()
+      // touch devices: the address bar showing/hiding only changes the viewport height; keep the
+      // fitted mark and every point where they are (no new backing store, re-centring or snap)
+      const barsOnly =
+        touch &&
+        side > 0 &&
+        dpr === fittedDpr &&
+        viewWidth === viewW &&
+        next.width === width &&
+        next.height === height &&
+        Math.abs(viewHeight - viewH) < viewH * P.viewportSlack
+      rect = next
+      if (barsOnly) return
+      viewW = viewWidth
+      viewH = viewHeight
+      fittedDpr = dpr
       width = rect.width
       height = rect.height
       canvas.width = Math.round(width * dpr)
@@ -151,10 +192,10 @@ export function ParticleMark({ className, onReady, variant = 'pillow', autoRotat
       cx = width / 2
       cy = height / 2
       if (fitViewport) {
-        box = Math.min(box, window.innerHeight * P.viewportFit)
+        box = Math.min(box, viewHeight * P.viewportFit)
         if (height > box) {
           // centre on the visible part of the screen, without leaving the canvas
-          const want = window.innerHeight * P.viewportCenter - (rect.top + window.scrollY)
+          const want = viewHeight * P.viewportCenter - (rect.top + window.scrollY)
           const reach = box * MARK_REACH
           cy = Math.min(height - reach, Math.max(reach, want))
         }
@@ -178,6 +219,7 @@ export function ParticleMark({ className, onReady, variant = 'pillow', autoRotat
       }
 
       // rotation
+      const spinning = autoRotate || idle
       if (spinning && !reduced) target += P.autoRotate * dt
       const diff = angleDelta(angle, target)
       if (reduced) {
@@ -298,15 +340,34 @@ export function ParticleMark({ className, onReady, variant = 'pillow', autoRotat
         onReadyRef.current?.()
       }
 
-      // keep animating while anything moves; touch devices and previews spin forever
+      // keep animating while anything moves; previews spin forever, the hero on touch devices while idle
       const resting =
         fastest < REST_SPEED && speed < 1 && Math.abs(diff) < REST_ANGLE && Math.abs(angVel) < REST_ANGLE
       if (!reduced && (spinning || !resting)) schedule()
       else last = 0
     }
 
+    const onDown = (e: PointerEvent) => {
+      if (!fingerDrag || e.pointerType !== 'touch' || drag !== -1) return
+      // the finger takes the G where it is: it stops turning on its own and follows the drag
+      drag = e.pointerId
+      dragX = e.clientX
+      dragFrom = target
+      idle = false
+      window.clearTimeout(idleTimer)
+      pointer.inside = true
+      pointer.x = e.clientX
+      pointer.y = e.clientY
+      pointer.vx = 0
+      pointer.vy = 0
+      pointer.t = e.timeStamp
+      rect = canvas.getBoundingClientRect()
+    }
     const onMove = (e: PointerEvent) => {
-      if (pointer.t && e.pointerType !== 'touch') {
+      const finger = e.pointerType === 'touch'
+      // where the finger drags the G, only the finger that touched down counts
+      if (finger && fingerDrag && e.pointerId !== drag) return
+      if (pointer.t && (!finger || fingerDrag)) {
         const dt = Math.max(1, e.timeStamp - pointer.t) / 1000
         // smoothed, clamped pointer velocity (px/s)
         let ivx = 0.6 * pointer.vx + 0.4 * ((e.clientX - pointer.x) / dt)
@@ -326,17 +387,33 @@ export function ParticleMark({ className, onReady, variant = 'pillow', autoRotat
       rect = canvas.getBoundingClientRect()
       // one full turn across the viewport: the G faces the viewer with the pointer in the middle,
       // and moving right turns it backwards
-      if (e.pointerType !== 'touch' && !autoRotate) target = -TAU * (e.clientX / window.innerWidth - 0.5)
+      if (!finger && !autoRotate) target = -TAU * (e.clientX / window.innerWidth - 0.5)
+      // the finger turns it by its own travel from where it took the G, at the same rate
+      else if (finger && fingerDrag) target = dragFrom - TAU * ((e.clientX - dragX) / window.innerWidth)
       schedule()
     }
     const onLeave = () => {
       pointer.inside = false
       pointer.t = 0
     }
+    // finger lifted, or taken by the browser for a vertical scroll: the G keeps its angle
+    const onUp = (e: PointerEvent) => {
+      if (e.pointerId !== drag) return
+      drag = -1
+      onLeave()
+      idleLater()
+      schedule()
+    }
 
     const host = canvas.closest('section') ?? window
     host.addEventListener('pointermove', onMove as EventListener, { passive: true })
     host.addEventListener('pointerleave', onLeave)
+    if (fingerDrag) {
+      host.addEventListener('pointerdown', onDown as EventListener, { passive: true })
+      host.addEventListener('pointerup', onUp as EventListener)
+      host.addEventListener('pointercancel', onUp as EventListener)
+      idleLater() // after the intro, the G starts turning on its own
+    }
     const sizeObserver = new ResizeObserver(resize)
     sizeObserver.observe(canvas)
     // the viewport height sizes the mark even when the canvas keeps its size
@@ -355,8 +432,12 @@ export function ParticleMark({ className, onReady, variant = 'pillow', autoRotat
     return () => {
       disposed = true
       cancelAnimationFrame(raf)
+      window.clearTimeout(idleTimer)
       host.removeEventListener('pointermove', onMove as EventListener)
       host.removeEventListener('pointerleave', onLeave)
+      host.removeEventListener('pointerdown', onDown as EventListener)
+      host.removeEventListener('pointerup', onUp as EventListener)
+      host.removeEventListener('pointercancel', onUp as EventListener)
       sizeObserver.disconnect()
       viewObserver.disconnect()
       window.removeEventListener('resize', resize)

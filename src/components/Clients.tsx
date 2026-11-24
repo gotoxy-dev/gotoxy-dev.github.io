@@ -19,32 +19,37 @@ export function Clients() {
   return (
     <section ref={sectionRef} className={styles.section} id="process">
       <div className="container">
-        <div
-          className={styles.head}
-          data-reveal="y-fade"
-          data-reveal-from={distance.block}
-          data-reveal-dur={duration.d500}
-          data-reveal-fade-dur={duration.d400}
-        >
-          <h2 ref={titleRef} className={`${styles.title} t-h2`}>
-            {clients.title.map((line, i) => (
-              <span
-                key={i}
-                className={styles.titleLine}
-                data-reveal="y"
-                data-reveal-from={distance.titleLine}
-                data-reveal-dur={duration.d700}
-                data-reveal-delay={`${i * parseFloat(duration.d100)}ms`}
-              >
-                {line}
-              </span>
-            ))}
-          </h2>
+        <div className={styles.head}>
+          {/* The head's rise: on the title box, not on `.head`, which is `display: contents` on phones
+              (no box to move there). The "see more" link only fades in once this rise is over, so it
+              reads the same on desktop. */}
+          <div
+            className={styles.titleBox}
+            data-reveal="y-fade"
+            data-reveal-from={distance.block}
+            data-reveal-dur={duration.d500}
+            data-reveal-fade-dur={duration.d400}
+          >
+            <h2 ref={titleRef} className={`${styles.title} t-h2`}>
+              {clients.title.map((line, i) => (
+                <span
+                  key={i}
+                  className={styles.titleLine}
+                  data-reveal="y"
+                  data-reveal-from={distance.titleLine}
+                  data-reveal-dur={duration.d700}
+                  data-reveal-delay={`${i * parseFloat(duration.d100)}ms`}
+                >
+                  {line}
+                </span>
+              ))}
+            </h2>
+          </div>
           <a
             href={clients.seeMoreHref}
             target="_blank"
             rel="noreferrer"
-            className={`${styles.seeMore} t-caption alink`}
+            className={`${styles.seeMore} t-caption alink tap-area`}
             data-reveal="fade"
             data-reveal-fade-dur={duration.d300}
             data-reveal-fade-delay={SEE_MORE_DELAY}
@@ -78,8 +83,9 @@ export function Clients() {
 
       <div className={styles.marquee} aria-hidden="true">
         <div className={styles.track}>
+          {/* two sets for the desktop loop; phones stack the first set only (`.copy` hidden) */}
           {[...clients.logos, ...clients.logos].map((l, i) => (
-            <div key={`${l.id}-${i}`} className={styles.logoItem}>
+            <div key={`${l.id}-${i}`} className={`${styles.logoItem} ${i >= clients.logos.length ? styles.copy : ''}`}>
               <img src={l.src} alt={l.name} />
             </div>
           ))}

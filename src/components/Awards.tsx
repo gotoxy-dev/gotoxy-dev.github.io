@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { useContent } from '@/i18n'
 import { useReveal } from '@/hooks/useReveal'
 import { tokens } from '@/theme/tokens'
@@ -23,6 +23,7 @@ export function Awards() {
   const { awards } = useContent()
   const ref = useReveal<HTMLElement>({ offset: 25 })
   const [openId, setOpenId] = useState<string | null>(null)
+  const uid = useId()
 
   return (
     <section ref={ref} className={styles.section} id="numbers">
@@ -40,21 +41,24 @@ export function Awards() {
             const expandable = g.entries.length > 0
             const open = openId === g.id
             const long = g.entries.length >= LONG_LIST_MIN_ENTRIES
+            const nameId = `${uid}-${g.id}`
             return (
               <div key={g.id} className={`${styles.row} ${open ? styles.open : ''} ${long ? styles.long : ''}`}>
                 {/* "reddot-in/out": the preview sits beside the row and fades/slides in on hover */}
                 {g.image && <img src={g.image} alt="" className={styles.preview} aria-hidden="true" />}
                 <div className={styles.summary}>
-                  <span className={styles.name}>
+                  <span className={styles.name} id={nameId}>
                     {g.name}
                     {expandable && <span className={styles.count}>/ {String(g.entries.length).padStart(2, '0')}</span>}
                   </span>
+                  {/* The arrow is the row's button (named by the row, its state in aria-expanded); on
+                      touch screens and below lg its hit area covers the whole row, as in Clients. */}
                   {expandable && (
                     <button
                       className={styles.toggle}
                       onClick={() => setOpenId(open ? null : g.id)}
                       aria-expanded={open}
-                      aria-label={`${open ? 'Collapse' : 'Expand'} ${g.name}`}
+                      aria-labelledby={nameId}
                     >
                       <ArrowIcon />
                     </button>

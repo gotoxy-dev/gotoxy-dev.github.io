@@ -48,6 +48,8 @@ export const tokens = {
     pill: '#969494', // outline of tag pills
     pillHover: 'rgba(255,255,255,0.2)', // READ / CLOSE button background on hover
     overlay: 'rgba(0,0,0,0.6)',
+    /** Phones: navbar backdrop once the page leaves the top (blurred, see layout.nav.blur) */
+    navBg: 'rgba(0,0,0,0.72)',
   },
 
   font: {
@@ -74,6 +76,19 @@ export const tokens = {
     link: { size: '14px', lineHeight: '28px', letterSpacing: '0' }, // footer links
     more: { size: '1.389vw', lineHeight: '1.2', letterSpacing: '0' }, // "More insights" link (21.33px)
     tag: { size: '11px', lineHeight: '1.5', letterSpacing: '0.04em' },
+    /**
+     * Phones (≤ 767 px, one tier). The hero headline stays the largest text: it is capped at 12.2vw so
+     * the longest Spanish word ("CONSTRUIMOS") fits the 20px gutters, and every size below grows with a
+     * smaller vw share, so it stays under the hero at any phone width (320 px: 39 > 36.8 > 33.6 > 32).
+     * Section titles never shrink as the screen widens: 42px from 400px up, the tablet floor of `h2`.
+     */
+    phone: {
+      display: { size: 'min(64px, 12.2vw)' }, // hero headline (Hero.module.css sets the same value)
+      closing: { size: 'min(56px, 11.5vw)', lineHeight: 1 }, // footer "Let's talk" (reference 64px, capped under the hero)
+      h2: { size: 'min(42px, 10.5vw)', lineHeight: 0.96 },
+      lead: { size: '20px', lineHeight: '24px' }, // reference `.h3-mobile`
+      caption: { size: '12px', lineHeight: 1.4 },
+    },
   },
 
   /** Layout measured on the reference at 1536px (60px side gutter, full-width containers). */
@@ -81,7 +96,15 @@ export const tokens = {
     containerMax: 'none',
     gutter: 'clamp(20px, 3.906vw, 60px)',
     navHeight: '88px',
-    navHeightMobile: '51px', // reference `.navbar-wrapper` ≤479px
+    navHeightTablet: '76px', // reference `.navbar-wrapper` ≤991px
+    navHeightMobile: '51px', // reference `.navbar-wrapper` on phones (≤ 767 px here: one phone tier)
+    nav: {
+      /** Phones: once the page has scrolled this far (px) the bar gets its blurred backdrop (color.navBg) */
+      solidAfter: 8,
+      blur: '14px',
+    },
+    /** Minimum touch target (Apple HIG / WCAG 2.5.5); smaller controls get a larger hit area (`.tap-area`) */
+    tapMin: '44px',
     /** Trailing arrow of small links (reference `.footer-arrow`) */
     linkArrow: '11px',
     hero: {
@@ -91,18 +114,57 @@ export const tokens = {
       canvasHeight: '63.9vw',
       canvasLeft: '-36.7vw',
       canvasTop: '3.75vw',
+      /**
+       * Phones (≤ 767 px): the particle G's canvas is a square centred across the screen, its centre
+       * this far below the hero top, behind the headline block (390 px: headline 111–396 px). The G is
+       * at most 0.71 × the square wide at any angle (≈ 57 px clear of each edge at 390 px), 0.73 × tall.
+       */
+      phone: {
+        canvasSize: 'min(100vw, 420px)',
+        markCenter: '250px',
+      },
     },
     project: {
       gap: '4.167vw', // margin between cards
       inner: '0.833vw', // line → title row → media
       /** Card media of a website case: its capture in a browser window, over a blurred copy */
       browserWidth: '70%',
+      /** Phones (≤ 767 px): card media box (reference phone cards 335 × 215); the stacked case cover copies it */
+      phoneRatio: '3 / 2',
+    },
+    /**
+     * Browser window around website captures (BrowserFrame: home cards, case covers and closings).
+     * Its chrome is drawn in `unit`s: 1 px from a 480 px wide window up (desktop and tablets, as
+     * before), scaled down in proportion below that (phones), so a 245 px window on a phone is a
+     * smaller copy of the desktop window instead of a heavier one. `unit` is in cqi (1 % of the
+     * window's width: the frame is a size container). Sizes below are in units; `urlMin` floors the URL.
+     */
+    browser: {
+      unit: 'min(1px, 100cqi / 480)',
+      radius: 12,
+      bar: 34,
+      barPad: 14,
+      dot: 10,
+      dotGap: 7,
+      urlSize: 11,
+      urlLine: 20, // the body line-height the URL used to inherit
+      urlMin: '7px',
+      urlPadY: 4,
+      urlPadX: 18,
+      urlRadius: 6,
+      /** Drop shadow offset and blur (vw: it shrinks with the screen, like the window) */
+      shadow: '0 2.4vw 4vw',
     },
     clients: {
       padTop: '6.944vw',
       titleBottom: '4.167vw',
       rowHeight: '74px',
       marqueePad: '8.5vw',
+      /** READ / CLOSE pill (reference .21vw .69vw); phones get px, the vw values collapse to ≈ 1 × 3 px */
+      readPad: '0.208vw 0.694vw',
+      phone: {
+        readPad: '6px 14px',
+      },
     },
     awards: {
       padTop: '6.458vw',
@@ -115,12 +177,30 @@ export const tokens = {
       previewWidth: '13.889vw',
       previewHeight: '8.194vw',
       previewLeft: '-53%',
+      entryPad: '1vw', // entry row padding (top and bottom)
+      /** Phones (≤ 767 px, reference ≤ 479 px): px spacing; the whole row toggles, at least layout.tapMin tall */
+      phone: {
+        padTop: '40px',
+        padBottom: '100px',
+        listTop: '40px',
+        listBottom: '30px', // gap above "running in production today" (tablet value; the reference had none)
+        rowPad: '20px',
+        entryPad: '12px',
+      },
     },
     cta: {
       eyebrowBottom: '4.167vw',
       wrapWidth: '80.35vw',
       wrapBottom: '5.556vw',
       sectionBottom: '17.708vw',
+      /** Tablets: LET'S TALK at most this size (reference 48px), never above the headline (`type.h2`) */
+      tabletButton: '48px',
+      /** Phones (≤ 767 px, reference ≤ 479 px); LET'S TALK uses the headline size, `type.phone.h2` */
+      phone: {
+        eyebrowBottom: '40px',
+        wrapBottom: '40px',
+        sectionBottom: '110px',
+      },
     },
     insights: {
       headHeight: '5.37vw',
@@ -133,11 +213,28 @@ export const tokens = {
       /** rest offsets of the hover interaction */
       imageShift: '-27vw',
       textShift: '-31vw',
+      /**
+       * Touch screens and tablets show every service with its image at rest (the desktop hover
+       * state): tablets beside the text at this width, phones above it, full width; desktop ratio.
+       */
+      imageRatio: '26.389 / 14.792',
+      tabletImageWidth: '36%',
+      tabletGap: '24px',
+      phone: {
+        itemPad: '32px', // above the image and below the tag (the tablet item padding)
+        itemGap: '20px', // image → text (reference)
+        moreTop: '40px', // last item → "Book a call" pill
+      },
     },
     footer: {
       padTop: '2.6vw',
       touchTop: '3.6vw',
       bottomTop: '5.9vw',
+      /** Back-to-top circle (its hit area grows to layout.tapMin) */
+      backTop: '22px',
+      /** Phones (reference ≤479px): gap above / below the link list, copyright spacing */
+      phoneGap: '40px',
+      phoneBottom: '15px',
     },
     /** Case-study page (reference `.case-wrapper` / `.project-section`) */
     caseStudy: {
@@ -165,8 +262,6 @@ export const tokens = {
       splitPhoneWidth: 'min(24vw, 41vh)',
       /** Website captures in a browser window (cover, results) */
       browserWidth: '84%',
-      browserRadius: '12px',
-      browserBar: '34px',
       /** Blurred copy of the visual behind it, for colour and depth */
       ambientBlur: '80px',
       ambientOpacity: '0.15',
@@ -184,6 +279,37 @@ export const tokens = {
       /** Mobile journey: one screen, phone width and caption width */
       mobilePhoneWidth: 'min(62vw, 33svh)',
       captionWidth: 'min(340px, calc(100vw - 48px))',
+      /** The goal chapter's reel (split visual and stacked layout) */
+      reelRatio: '16 / 9',
+      /**
+       * Stacked layout (below lg: phones and tablets). Sizes and gaps in px: the panel's vw values
+       * above are measured at 1536px and collapse to a few px on a phone.
+       */
+      stack: {
+        padTop: '72px',
+        padBottom: '60px',
+        gap: '32px',
+        titleSize: '36px',
+        headingSize: '24px',
+        headingGap: '16px',
+        paragraphSize: '15px',
+        capsGap: '12px',
+        labelSize: '12px',
+        valueSize: '14px',
+        rowGap: '12px',
+        rowPadBottom: '12px',
+        /** External link and next project (desktop `.caseLink`: caps + ↗), at least layout.tapMin tall */
+        linkSize: '14px',
+        /** Cover / closing visual: page captures are 900×1100 */
+        coverRatio: '9 / 11',
+        /**
+         * Website captures in a browser window: the same box as the phone card's media
+         * (layout.project.phoneRatio) and its window width, so the card → case morph is a plain move.
+         */
+        framedRatio: 'var(--layout-project-phoneRatio)',
+        closeSize: '20px',
+        journeyGap: '16px',
+      },
     },
   },
 
@@ -224,6 +350,14 @@ export const tokens = {
       text: '2vw',
       projectTitle: '40px',
       projectMedia: '80px',
+      /**
+       * Phones: the same share of the media as on desktop (80 / 40 px of an 858 px tall media ≈ 9.3 % /
+       * 4.7 %); the phone media is ≈ 57 % of the screen width tall, so ≈ 21 / 10 px at 390 px.
+       */
+      phone: {
+        projectTitle: '2.67vw',
+        projectMedia: '5.33vw',
+      },
       awardEntry: '10px',
       awardPreview: '-8px',
       linkShift: '-10px',
@@ -279,6 +413,19 @@ export const tokens = {
         textStaggerSec: 0.07,
         textEase: 'power3.out',
       },
+      /**
+       * Stacked layout (below lg): the first screen's lines rise in one after another on load (after
+       * the morph when opened from a card, with `open` above); each later block rises in as it
+       * scrolls into view (useReveal `y-fade`, `offset` = percent of the viewport it must enter).
+       */
+      stack: {
+        liftPx: 28,
+        riseSec: 0.8,
+        fadeSec: 0.5,
+        staggerSec: 0.07,
+        ease: 'outQuart',
+        offset: 15,
+      },
       /** Journey step playback inside the phone: slide in, pause, scroll to the button, tap */
       journey: {
         /** Beat before each step; then the phone slides and the title opens together */
@@ -309,6 +456,11 @@ export const tokens = {
     /** Hero (`fitViewport`): the mark's box is at most this × the viewport height, centred at this height of it. */
     viewportFit: 1,
     viewportCenter: 0.55,
+    /**
+     * Touch devices: a height-only viewport change smaller than this fraction of the height (the
+     * address bar showing/hiding) keeps the fitted mark and its points as they are.
+     */
+    viewportSlack: 0.25,
     /** Random offset of each point, as a fraction of the step (hides the grid when rotating). */
     jitter: 0.7,
     /** Extrusion depth of the mark. */
@@ -366,8 +518,12 @@ export const tokens = {
     /** Intro: points start scattered this far (fraction of the side) and the G turns in from this angle (rad). */
     introScatter: 0.3,
     introAngle: -1.3,
-    /** Auto-rotation on touch devices (rad/s). */
+    /**
+     * Auto-rotation (rad/s) of the /design previews, and idle turn of the hero G on touch devices,
+     * which starts this long (s) after load and after the finger lets go of it.
+     */
     autoRotate: 0.35,
+    idleDelay: 2.5,
   },
 
   z: {
@@ -376,6 +532,7 @@ export const tokens = {
     heroText: 2,
   },
 
+  /** Phones are one tier: below `md` (≤ 767 px); tablets `md`–`lg`; desktop from `lg` (992 px). */
   breakpoints: {
     sm: 480,
     md: 768,

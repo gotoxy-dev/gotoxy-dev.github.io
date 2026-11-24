@@ -4,7 +4,7 @@ import type { Project } from '@/content/site'
 import { useContent } from '@/i18n'
 import { useReveal } from '@/hooks/useReveal'
 import { useInView } from '@/hooks/useInView'
-import { useScrub } from '@/hooks/useScrub'
+import { useScrub, type ScrubOptions } from '@/hooks/useScrub'
 import { tokens } from '@/theme/tokens'
 import { caseOpen, markCaseOpen, RETURN_NAME_MS, returningSlug, supportsViewTransitions } from '@/transitions'
 import { BrowserFrame, hostOf } from './BrowserFrame'
@@ -37,12 +37,20 @@ export function Projects() {
  * Reference "hp-product-while-scrolling" keyframes (scroll progress 0..1):
  *   title wrapper: y 40px → 0 (50%) → 20px (100%), opacity 0 → 1 (33%)
  *   media wrapper: y 80px → 0 (50%) → 40px (100%), opacity 0 → 1 (33%)
+ * Desktop and tablets scrub while the card crosses the middle of the screen (`top 50%` →
+ * `bottom 50%`). A phone card is a third of the screen tall, so that window left the lower half
+ * of the screen empty: on phones the same keyframes run while the card's top travels from the
+ * bottom edge to the middle (shown as it enters, settled above the middle), with the travel
+ * scaled to the phone media (`motion.distance.phone`).
  */
-function buildCardScrub(tl: gsap.core.Timeline, root: HTMLElement) {
+const CARD_SCRUB: ScrubOptions = { phone: { start: 'top bottom', end: 'top 50%' } }
+
+function buildCardScrub(tl: gsap.core.Timeline, root: HTMLElement, phone: boolean) {
   const head = root.querySelector<HTMLElement>('[data-scrub="head"]')
   const media = root.querySelector<HTMLElement>('[data-scrub="media"]')
-  const { projectTitle, projectMedia } = tokens.motion.distance
-  const restY = (from: string) => `${parseFloat(from) / 2}px`
+  const { projectTitle, projectMedia } = phone ? tokens.motion.distance.phone : tokens.motion.distance
+  // half the entry travel, in the token's own unit (px on desktop, vw on phones)
+  const restY = (from: string) => `${parseFloat(from) / 2}${from.replace(/^[\d.]+/, '')}`
 
   if (head) {
     tl.fromTo(head, { y: projectTitle, opacity: 0 }, { opacity: 1, duration: 0.33 }, 0)
@@ -73,7 +81,7 @@ function ProjectCard({ project }: { project: Project }) {
   // website cases show their capture in a browser window, like the case's first visual
   const framed = study?.media.screenshot ? study : undefined
   const lineRef = useReveal<HTMLDivElement>({ offset: 50 })
-  const scrubRef = useScrub<HTMLAnchorElement>(buildCardScrub)
+  const scrubRef = useScrub<HTMLAnchorElement>(buildCardScrub, CARD_SCRUB)
   const { ref: mediaRef, inView } = useInView<HTMLDivElement>({ rootMargin: '200px 0px', threshold: 0.01 })
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const browserRef = useRef<HTMLElement | null>(null)

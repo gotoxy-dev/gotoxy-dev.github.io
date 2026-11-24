@@ -1,36 +1,47 @@
-/* website capture shown whole in a minimal browser window; the caller sets its width */
+/*
+ * Website capture shown whole in a minimal browser window; the caller sets its width.
+ * The figure is a size container (it keeps the caller's width, ref, transition name and zoom) and
+ * the window inside draws the chrome in `--layout-browser-unit`s, which shrink with windows
+ * narrower than 480px (phones), so the chrome keeps the desktop proportions at any width.
+ */
 .browser {
   margin: 0;
+  container-type: inline-size;
+}
+.window {
+  --u: var(--layout-browser-unit);
   overflow: hidden;
   border: 1px solid var(--color-browserEdge);
-  border-radius: var(--layout-caseStudy-browserRadius);
+  border-radius: calc(var(--layout-browser-radius) * var(--u));
   background: var(--color-browserBar);
-  box-shadow: 0 2.4vw 4vw var(--color-phoneShadow);
+  box-shadow: var(--layout-browser-shadow) var(--color-phoneShadow);
 }
 .bar {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  height: var(--layout-caseStudy-browserBar);
-  padding: 0 14px;
+  height: calc(var(--layout-browser-bar) * var(--u));
+  padding: 0 calc(var(--layout-browser-barPad) * var(--u));
 }
 .dots {
   display: flex;
-  gap: 7px;
+  gap: calc(var(--layout-browser-dotGap) * var(--u));
 }
 .dots i {
-  width: 10px;
-  height: 10px;
+  width: calc(var(--layout-browser-dot) * var(--u));
+  height: calc(var(--layout-browser-dot) * var(--u));
   border-radius: 50%;
   background: var(--color-browserDot);
 }
 .url {
-  padding: 4px 18px;
-  border-radius: 6px;
+  padding: calc(var(--layout-browser-urlPadY) * var(--u)) calc(var(--layout-browser-urlPadX) * var(--u));
+  border-radius: calc(var(--layout-browser-urlRadius) * var(--u));
   background: var(--color-browserUrl);
-  font-size: 11px;
+  font-size: max(var(--layout-browser-urlMin), calc(var(--layout-browser-urlSize) * var(--u)));
+  line-height: calc(var(--layout-browser-urlLine) * var(--u));
   letter-spacing: 0.02em;
   color: var(--color-textMuted);
+  white-space: nowrap;
 }
 .shot {
   display: block;
