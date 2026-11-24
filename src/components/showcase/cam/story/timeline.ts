@@ -6,8 +6,12 @@ import { camCampaign, camReportBars, camSignup } from '../camData'
 import { hookMessage, hookNames, layout, messageSpots, RING_HERO, ringSpot, ticketSpots, versionSpots } from './Film'
 import { createFilmParticles } from './particles'
 import {
+  contentTime,
   createScript,
   nearestSetX,
+  playSegmentAt,
+  PSEG,
+  PTOTAL,
   setX,
   SEG,
   SEGMENTS,
@@ -15,7 +19,6 @@ import {
   TOTAL,
   worldTransform,
   SECTION_TONE,
-  segmentAt,
   type Box,
   type Focus,
   type FocusName,
@@ -337,10 +340,10 @@ export function buildFilm(
   /* ---- HUD timecode ---- */
   const timecode = one(root, '[data-film="timecode"]')
   const clock = (t: number) => {
-    const sec = Math.floor(Math.min(t, TOTAL))
+    const sec = Math.floor(Math.min(t, PTOTAL))
     return `${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`
   }
-  if (timecode) writers.push({ el: timecode, reset: clock(0), text: clock })
+  // the timecode follows playback time (see sync), not the content clock
 
   // the timeline lasts exactly the film
   tl.set({}, {}, TOTAL)
@@ -483,20 +486,23 @@ export function buildFilm(
 
   /* ---- section entry: a white or black card with the title large in the centre, then to the top-left, smaller ---- */
   const titles = all(root, '[data-film="title"]')
+  const subtitles = all(root, '[data-film="subtitle"]')
   const card = one(root, '[data-film="entry-card"]')
   const cardWipe = gsap.parseEase(M.filmCardWipeEase) as (p: number) => number
   let cardState = ''
-  /** The entry card: fades in over filmCardInSec before a section, holds with the title, wipes open from the top as the title travels */
+  /** Playback: the title and its subtitle hold on the card this long, then the title travels */
+  const MOVE_AT = M.filmTitleInSec + M.filmTitleHoldSec + M.filmEntryExtraSec
+  /** The entry card (playback time): fades in over filmCardInSec before a section, holds with the title and subtitle, wipes open from the top as the title travels */
   const syncCard = (t: number) => {
     let state = 'hidden'
     if (card && !reduced) {
-      const i = segmentAt(t)
+      const i = playSegmentAt(t)
       const next = i + 1
-      const moveAt = M.filmTitleInSec + M.filmTitleHoldSec
-      if (next < SEGMENTS && t > SEG[next] - M.filmCardInSec) {
-        state = `${SECTION_TONE[next]}|${clamp01((t - (SEG[next] - M.filmCardInSec)) / M.filmCardInSec).toFixed(3)}|0`
+      const moveAt = MOVE_AT
+      if (next < SEGMENTS && t > PSEG[next] - M.filmCardInSec) {
+        state = `${SECTION_TONE[next]}|${clamp01((t - (PSEG[next] - M.filmCardInSec)) / M.filmCardInSec).toFixed(3)}|0`
       } else {
-        const wipe = cardWipe(clamp01((t - SEG[i] - moveAt) / M.filmTitleMoveSec))
+        const wipe = cardWipe(clamp01((t - PSEG[i] - moveAt) / M.filmTitleMoveSec))
         if (wipe < 1) state = `${SECTION_TONE[i]}|1|${wipe.toFixed(4)}`
       }
     }
@@ -522,19 +528,50 @@ export function buildFilm(
     titleBig = titles.map((title) => (title.offsetWidth ? Math.min(L.filmTitleBig, (L.filmTitleFit * width) / title.offsetWidth) : L.filmTitleBig))
   }
   const titleState = titles.map(() => '')
+  const subState = subtitles.map(() => '')
+  /** Subtitle under the big title (playback time): in just after it, out as the title starts to travel */
+  const syncSubtitles = (t: number) => {
+    const current = playSegmentAt(t)
+    subtitles.forEach((sub, i) => {
+      let state = 'hidden'
+      if (i === current && !reduced) {
+        const local = t - PSEG[i]
+        const appear = clamp01((local - M.filmSubtitleDelaySec) / M.filmTitleInSec)
+        const leave = clamp01((local - MOVE_AT) / (M.filmTitleMoveSec * 0.35))
+        const opacity = appear * (1 - leave)
+        // below the centred title: half its big height plus the gap
+        const title = titles[i]
+        const offset = (title ? (title.offsetHeight * (titleBig[i] ?? 1)) / 2 : 0) + L.filmSubtitleGap
+        if (opacity > 0) state = `${opacity.toFixed(3)}|${((1 - appear) * L.filmSubtitleGap).toFixed(1)}|${offset.toFixed(1)}|${SECTION_TONE[i] === 'dark' ? 1 : 0}`
+      }
+      if (state === subState[i]) return
+      subState[i] = state
+      if (state === 'hidden') {
+        sub.style.visibility = ''
+        sub.style.opacity = ''
+        return
+      }
+      const [opacity, rise, offset, ink] = state.split('|')
+      sub.style.setProperty('--sub-off', `${offset}px`)
+      sub.style.setProperty('--sub-rise', `${rise}px`)
+      sub.style.setProperty('--c', ink)
+      sub.style.opacity = opacity
+      sub.style.visibility = 'visible'
+    })
+  }
   const syncTitles = (t: number) => {
-    const current = segmentAt(t)
+    const current = playSegmentAt(t)
     titles.forEach((title, i) => {
       let state = 'hidden'
       if (i === current) {
-        const local = t - SEG[i]
+        const local = t - PSEG[i]
         const appear = clamp01(local / M.filmTitleInSec)
-        const moveAt = M.filmTitleInSec + M.filmTitleHoldSec
+        const moveAt = MOVE_AT
         const move = titleMove(clamp01((local - moveAt) / M.filmTitleMoveSec))
         const shrink = titleShrink(clamp01((local - moveAt - M.filmTitleMoveSec) / M.filmTitleShrinkSec))
         const big = titleBig[i] ?? 1
         const sc = (big + (1 - big) * shrink) * (1 + 0.3 * (1 - titleIn(appear)))
-        const out = i < SEGMENTS - 1 ? clamp01((SEG[i + 1] - t) / M.filmTitleOutSec) : 1
+        const out = i < SEGMENTS - 1 ? clamp01((PSEG[i + 1] - t) / M.filmTitleOutSec) : 1
         // on a light card the title starts dark and turns light as it travels to the dark band
         const ink = reduced || SECTION_TONE[i] === 'dark' ? 1 : move
         state = `${(1 - move).toFixed(4)}|${sc.toFixed(4)}|${(appear * out).toFixed(3)}|${ink.toFixed(3)}`
@@ -561,11 +598,15 @@ export function buildFilm(
   const shown = sets.map(() => true)
   let lensBlur = -1
   let view: FilmView = { segment: -1, ended: false }
-  const segFill = (i: number, t: number) => clamp01((t - SEG[i]) / (SEG[i + 1] - SEG[i]))
+  const segFill = (i: number, T: number) => clamp01((T - PSEG[i]) / (PSEG[i + 1] - PSEG[i]))
+  let clockText = ''
 
   /** x the world is currently drawn relative to (see nearestSetX) */
   let base = NaN
-  const sync = (t: number) => {
+  /** Renders playback time `T`: the card, titles, timecode and segment bars on playback time, everything else on content time */
+  const sync = (T: number) => {
+    const t = contentTime(T)
+    tl.time(t, false)
     script.poseAt(t, cam)
     const b = nearestSetX(cam.x)
     if (b !== base) {
@@ -584,8 +625,11 @@ export function buildFilm(
       world.style.setProperty('--cy', String(cam.y))
     }
     syncWindows(t)
-    syncTitles(t)
-    syncCard(t)
+    syncTitles(T)
+    syncSubtitles(T)
+    syncCard(T)
+    const ct = clock(T)
+    if (timecode && ct !== clockText) timecode.textContent = clockText = ct
     sets.forEach((set, i) => {
       const on = setVisible(i, t)
       if (on !== shown[i]) {
@@ -604,7 +648,7 @@ export function buildFilm(
       if (w.el.textContent !== text) w.el.textContent = text
     }
     fills().forEach((fill, i) => {
-      if (fill) fill.style.transform = `scaleX(${segFill(i, t)})`
+      if (fill) fill.style.transform = `scaleX(${segFill(i, T)})`
     })
     if (renderer && size.w) {
       const n = particles.fill(t, size.w, size.h, dots)
@@ -613,32 +657,31 @@ export function buildFilm(
         drawn = n
       }
     }
-    let segment = SEGMENTS - 1
-    for (let i = 1; i <= SEGMENTS; i++) {
-      if (t < SEG[i]) {
-        segment = i - 1
-        break
-      }
-    }
-    const ended = t >= TOTAL
+    const segment = playSegmentAt(T)
+    const ended = T >= PTOTAL
     if (segment !== view.segment || ended !== view.ended) {
       view = { segment, ended }
       onView(view)
     }
   }
 
-  tl.eventCallback('onUpdate', () => sync(tl.time()))
+  // The film plays on playback time: an empty tween as long as the film drives `sync`, which sets
+  // the content timeline (`tl`, never played itself) to the matching content time.
+  const player = gsap.timeline({ paused: true })
+  player.to({}, { duration: PTOTAL, ease: 'none' }, 0)
+  player.eventCallback('onUpdate', () => sync(player.time()))
 
   return {
-    tl,
+    tl: player,
     sync,
     resize: () => {
       script = createScript(measure(), viewOf())
       measureTitles()
       resizeCanvas()
-      sync(tl.time())
+      sync(player.time())
     },
     dispose: () => {
+      player.kill()
       tl.kill()
       for (const w of writers) w.el.textContent = w.reset
       if (world) world.style.transform = ''
@@ -654,6 +697,8 @@ export function buildFilm(
         w.el.style.opacity = ''
       }
       for (const title of titles) title.removeAttribute('style')
+      for (const sub of subtitles) sub.removeAttribute('style')
+      if (timecode) timecode.textContent = clock(0)
       card?.removeAttribute('style')
       lens?.style.removeProperty('--film-center')
     },

@@ -103,6 +103,8 @@ export function CamStory({ story, active, className }: { story: CaseShowcase['st
   const goTo = (i: number) => (reduced ? seek(HOLD[i], false) : seek(SEEK[i], true))
 
   const labels = [story.scenes[0].label, ...story.words, story.scenes[2].label]
+  /** What each section is about, under its big title on the entry card */
+  const subtitles = [story.scenes[0].title, ...story.steps, story.scenes[2].title]
   const scene = view.segment === PROBLEM ? 0 : view.segment === RESULTS ? 2 : 1
   const texts = [story.scenes[0].text, ...story.steps, story.scenes[2].text]
   const toggleLabel = view.ended ? story.replay : playing ? story.pause : story.play
@@ -159,6 +161,11 @@ export function CamStory({ story, active, className }: { story: CaseShowcase['st
           {labels.map((label, i) => (
             <span key={`${i}-${label}`} className={styles.sectionTitle} data-film="title">
               {label}
+            </span>
+          ))}
+          {subtitles.map((text, i) => (
+            <span key={`${i}-${text}`} className={styles.sectionSub} data-film="subtitle">
+              {text}
             </span>
           ))}
         </div>

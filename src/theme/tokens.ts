@@ -223,6 +223,10 @@ export const tokens = {
       filmTitleSize: 'clamp(20px, 4.6cqw, 40px)',
       /** Scale of the title in the centre, capped so the word keeps a margin inside the frame */
       filmTitleBig: 2.6,
+      /** Subtitle under the big title on the entry card (the section's caption) */
+      filmSubtitleSize: 'clamp(14px, 2.6cqw, 22px)',
+      filmSubtitleWidth: 'min(82%, 34em)',
+      filmSubtitleGap: 18,
       filmTitleFit: 0.86,
       filmBandPad: 'clamp(12px, 3cqw, 24px)',
       filmHudSize: '11px',
@@ -446,6 +450,10 @@ export const tokens = {
       filmCardInSec: 0.3,
       filmTitleInSec: 0.3,
       filmTitleHoldSec: 0.8,
+      /** Each section's entry card holds this much longer so its subtitle can be read (the content waits under it) */
+      filmEntryExtraSec: 0.5,
+      /** The subtitle under the big title comes in this long after it */
+      filmSubtitleDelaySec: 0.15,
       filmTitleMoveSec: 0.85,
       filmTitleShrinkSec: 0.35,
       filmTitleOutSec: 0.15,

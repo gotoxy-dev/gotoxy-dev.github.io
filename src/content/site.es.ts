@@ -359,7 +359,7 @@ export const caseStudies: SiteContent['caseStudies'] = [
     pages: [
       {
         label: 'Objetivo',
-        heading: 'Del mail que nadie abría a un proceso que se sostiene solo.',
+        heading: 'Una plataforma que centraliza toda la operación',
         paragraphs: [
           'Instituto CAM necesitaba registrar y avisar a más de 3.000 alumnos antes de empezar clases. Por mail, nunca llegaban a tiempo.',
           'Armamos todo el proceso de punta a punta: registro presencial con validación de documentos y cotejo automático contra la lista de la universidad, y el mail reemplazado por completo por WhatsApp, con usuario, contraseña y link de Zoom enviados por la API oficial de Meta.',

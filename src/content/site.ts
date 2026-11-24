@@ -613,7 +613,7 @@ export const caseStudies: CaseStudy[] = [
     pages: [
       {
         label: 'Goal',
-        heading: 'From a mail nobody opened to a process that sustains itself.',
+        heading: 'One platform that runs the whole operation',
         paragraphs: [
           'Instituto CAM needed to register and notify more than 3,000 students before classes started. By mail, the messages never arrived on time.',
           'We built the whole process end to end: on-site registration with document validation and a cross-check against the university’s list, and mail fully replaced by WhatsApp, with the user, password and Zoom link sent through Meta’s official API.',

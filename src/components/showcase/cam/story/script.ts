@@ -303,9 +303,41 @@ export const SECTION_TONE: ('light' | 'dark')[] = [
   'dark', // results: three small screens on the near-black backdrop above the dark stats band
 ]
 
-/** Segment buttons seek to their cut; reduced-motion stills hold on a composed frame of each */
-export const SEEK = SEG.slice(0, SEGMENTS)
-export const HOLD = [2.8, s(R, 6.6), s(C, 8.6), s(W, 8.9), s(P, 8.2), s(I, 8.6), TOTAL]
+/*
+ * Two clocks. The script and every animation run on CONTENT time (SEG, TOTAL). The film plays on
+ * PLAYBACK time: each section's entry card holds `filmEntryExtraSec` longer so its subtitle can be
+ * read, and the content waits underneath (frozen while the card is opaque, after the title is in).
+ */
+const EXTRA = M.filmEntryExtraSec
+const FREEZE = M.filmTitleInSec
+/** Playback start of each section, and the playback length of the film */
+export const PSEG = SEG.map((t, i) => t + i * EXTRA)
+export const PTOTAL = PSEG[SEGMENTS]
+
+/** Which section playback time `T` falls in */
+export function playSegmentAt(T: number) {
+  for (let i = 1; i <= SEGMENTS; i++) if (T < PSEG[i]) return i - 1
+  return SEGMENTS - 1
+}
+
+/** Content time shown at playback time `T` */
+export function contentTime(T: number) {
+  if (T >= PTOTAL) return TOTAL
+  const i = playSegmentAt(T)
+  const local = Math.max(0, T - PSEG[i])
+  return SEG[i] + (local < FREEZE ? local : local < FREEZE + EXTRA ? FREEZE : local - EXTRA)
+}
+
+/** Playback time at which content time `t` is shown */
+export function playbackTime(t: number) {
+  const i = segmentAt(t)
+  const local = t - SEG[i]
+  return PSEG[i] + (local < FREEZE ? local : local + EXTRA)
+}
+
+/** Segment buttons seek to their cut; reduced-motion stills hold on a composed frame of each (playback time) */
+export const SEEK = PSEG.slice(0, SEGMENTS)
+export const HOLD = [2.8, s(R, 6.6), s(C, 8.6), s(W, 8.9), s(P, 8.2), s(I, 8.6), TOTAL].map(playbackTime)
 
 /** Particle window: records converge into the students panel */
 export const RECORDS_WINDOW = { start: s(R, 4.4), end: s(R, 8.6) }

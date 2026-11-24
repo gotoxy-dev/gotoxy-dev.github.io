@@ -162,6 +162,27 @@
 .entryCard[data-tone="dark"] {
   background: var(--color-cam-stageDeep);
 }
+/*
+ * Subtitle on the entry card: the section's caption, centred under the big title (story/timeline.ts
+ * writes --sub-off: half the big title's height plus the gap) in the title's colour, gone as the
+ * title starts to travel.
+ */
+.sectionSub {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--layout-showcase-filmSubtitleWidth);
+  --c: 0;
+  color: color-mix(in srgb, var(--color-cam-card) calc(var(--c) * 100%), var(--color-cam-stageDeep));
+  font-size: var(--layout-showcase-filmSubtitleSize);
+  font-weight: var(--font-weight-light);
+  line-height: 1.3;
+  text-align: center;
+  text-wrap: balance;
+  transform: translate(-50%, calc(var(--sub-off, 0px) + var(--sub-rise, 0px)));
+  opacity: 0;
+  visibility: hidden;
+}
 .sectionTitle {
   position: absolute;
   left: var(--layout-showcase-filmBandPad);
