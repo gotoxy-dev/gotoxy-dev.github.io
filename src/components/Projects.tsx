@@ -78,7 +78,8 @@ function nameCard(media: HTMLElement | null, browser: HTMLElement | null, on = t
     el.style.viewTransitionName = on ? value : ''
     el.toggleAttribute('data-case-name', on)
   }
-  name(media, caseOpen.visual)
+  // a showcase board morphs its square stage, which matches the case cover's in proportion
+  name(media?.querySelector<HTMLElement>('[data-showcase-stage]') ?? media, caseOpen.visual)
   name(browser, caseOpen.browser)
 }
 

@@ -131,3 +131,20 @@
 .cover[data-closing][data-layout='row'] .board {
   transition: transform calc(var(--motion-showcase-boardRowSec) * 1s) var(--motion-showcase-boardOpenEase);
 }
+
+/*
+ * The shared grid floats on the page itself: the square's background fades out as the grid gets
+ * there (card while it settles, cover while it closes) and the view transition only carries the
+ * screens (the square stage, see CamBoard `transitionName`). The cover fades it back in as it settles.
+ */
+.frame[data-layout='row'] .backdrop {
+  opacity: 0;
+  /* gone well before the grid arrives, so the transition never captures a trace of it */
+  transition: opacity calc(var(--motion-showcase-boardRowSec) * 0.6s) linear;
+}
+.cover .backdrop {
+  transition: opacity calc(var(--motion-showcase-boardIntroSec) * 1s) linear;
+}
+.frame[data-snap] .backdrop {
+  transition: none;
+}

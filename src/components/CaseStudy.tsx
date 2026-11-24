@@ -797,12 +797,9 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
     const src = closing ? study.media.closing : study.media.background
     if (visuals && showcase && !closing) {
       return (
-        <div
-          className={`${styles.stackVisual} ${styles.stackFramed}`}
-          style={{ viewTransitionName: caseOpen.visual }}
-          {...enter}
-        >
-          <visuals.Board label={showcase.boardLabel} cover intro={viaCard} />
+        // the board's square stage morphs, not this box (CamBoard `transitionName`)
+        <div className={`${styles.stackVisual} ${styles.stackFramed}`} {...enter}>
+          <visuals.Board label={showcase.boardLabel} cover intro={viaCard} transitionName={caseOpen.visual} />
         </div>
       )
     }
@@ -978,8 +975,8 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
       <div className={styles.sections} {...enter}>
         <section className={styles.section} style={cssVars({ zIndex: 1 })}>
           {visuals && showcase ? (
-            <div className={styles.bg} data-visual="0" style={{ viewTransitionName: caseOpen.visual }}>
-              <visuals.Board label={showcase.boardLabel} cover intro={viaCard} />
+            <div className={styles.bg} data-visual="0">
+              <visuals.Board label={showcase.boardLabel} cover intro={viaCard} transitionName={caseOpen.visual} />
             </div>
           ) : study.media.screenshot ? (
             <div className={`${styles.bg} ${styles.bgFramed}`} data-visual="0" style={{ viewTransitionName: caseOpen.visual }}>

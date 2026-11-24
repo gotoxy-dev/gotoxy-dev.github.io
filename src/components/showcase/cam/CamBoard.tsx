@@ -49,6 +49,7 @@ export function CamBoard({
   zoomOnHover,
   intro,
   cover,
+  transitionName,
 }: {
   label: string
   className?: string
@@ -56,6 +57,11 @@ export function CamBoard({
   intro?: boolean
   /** Case cover: flat, pulled back, faint, with depth (see the cover effect) */
   cover?: boolean
+  /**
+   * View transition name for the square stage (case page). The card ⇄ case morph moves the stage,
+   * not the frame: it is square at both ends, so the grid only moves and scales, never stretches.
+   */
+  transitionName?: string
 }) {
   const frameRef = useRef<HTMLDivElement>(null)
   const zoomRef = useRef<HTMLDivElement>(null)
@@ -100,7 +106,7 @@ export function CamBoard({
         ease: M.boardRowEase,
         scale: true,
         onComplete: () => {
-          // back inside the square, with its background, before the view transition captures the card
+          // back inside the square (its background stays hidden while `row`), before the view transition captures the card
           frame.dataset.snap = ''
           delete frame.dataset.open
           void frame.offsetWidth
@@ -351,7 +357,12 @@ export function CamBoard({
     >
       <div className={styles.backdrop} />
       <div className={styles.bleed}>
-        <div className={styles.stage} aria-hidden="true">
+        <div
+          className={styles.stage}
+          data-showcase-stage=""
+          style={transitionName ? { viewTransitionName: transitionName } : undefined}
+          aria-hidden="true"
+        >
           <div ref={zoomRef} className={styles.zoom}>
             <div ref={boardRef} className={styles.board}>
               <Phone className={styles.phone}>
