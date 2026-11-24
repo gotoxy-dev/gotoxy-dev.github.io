@@ -1,0 +1,530 @@
+/*
+ * Instituto CAM panel mockups. Colors come from tokens (color.cam); the em values are the
+ * mockup's own drawing (like coordinates in an SVG), so a parent scales a screen through its
+ * font-size and every proportion follows.
+ */
+
+.window {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 0.9em;
+  background: var(--color-cam-page);
+  color: var(--color-cam-text);
+  font-family: var(--font-sans);
+  font-weight: var(--font-weight-regular);
+  font-size: 1em;
+  line-height: 1.35;
+  text-transform: none;
+  letter-spacing: 0;
+  box-shadow: 0 2em 4em var(--color-cam-shadow);
+}
+
+/* ---- top bar ---- */
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 1.6em;
+  padding: 0 1.4em;
+  height: 3.2em;
+  flex: none;
+  background: var(--color-cam-navy);
+  color: var(--color-cam-navyText);
+  font-size: 0.82em;
+}
+.nav {
+  display: flex;
+  gap: 1.3em;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+.navItem {
+  position: relative;
+  white-space: nowrap;
+}
+.navActive {
+  color: var(--color-cam-card);
+}
+.navActive::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1.05em;
+  height: 0.18em;
+  background: var(--color-cam-card);
+}
+.user {
+  color: var(--color-cam-card);
+  font-weight: 600;
+}
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  color: var(--color-cam-navy);
+  font-weight: 800;
+  font-size: 1.25em;
+  letter-spacing: -0.02em;
+}
+.logoLight {
+  color: var(--color-cam-card);
+  font-size: 1.15em;
+}
+.logoCap {
+  width: 1.3em;
+  height: auto;
+  fill: var(--color-cam-blue);
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  flex: 1;
+  min-height: 0;
+  padding: 1.4em 1.6em;
+}
+.h {
+  margin: 0;
+  font-size: 1.3em;
+  font-weight: 700;
+}
+
+/* ---- cards, rows, text ---- */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7em;
+  padding: 1.1em 1.2em;
+  border: 0.08em solid var(--color-cam-line);
+  border-radius: 0.6em;
+  background: var(--color-cam-card);
+  min-width: 0;
+}
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1em;
+}
+.split {
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  gap: 1em;
+  align-items: start;
+}
+.strong {
+  font-weight: 600;
+}
+.muted {
+  color: var(--color-cam-muted);
+  font-size: 0.85em;
+}
+.muted b {
+  color: var(--color-cam-text);
+}
+
+/* ---- KPI tiles ---- */
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.8em;
+}
+.kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+  padding: 0.9em 1em;
+  border: 0.08em solid var(--color-cam-line);
+  border-radius: 0.6em;
+  background: var(--color-cam-card);
+}
+.kpiDash {
+  width: 1em;
+  height: 0.2em;
+  border-radius: 1em;
+  background: var(--color-cam-navy);
+}
+.kpiValue {
+  font-size: 1.6em;
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.kpiLabel {
+  color: var(--color-cam-muted);
+  font-size: 0.78em;
+}
+
+/* ---- pills (tone classes double as the KPI dash colour) ---- */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15em 0.65em;
+  border-radius: 1em;
+  font-size: 0.78em;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.pill.green {
+  color: var(--color-cam-green);
+  background: var(--color-cam-greenSoft);
+}
+.pill.amber {
+  color: var(--color-cam-amber);
+  background: var(--color-cam-amberSoft);
+}
+.pill.red {
+  color: var(--color-cam-red);
+  background: var(--color-cam-redSoft);
+}
+.pill.blue {
+  color: var(--color-cam-blue);
+  background: var(--color-cam-blueSoft);
+}
+.pill.muted {
+  color: var(--color-cam-muted);
+  background: var(--color-cam-page);
+}
+.kpiDash.green {
+  background: var(--color-cam-green);
+}
+.kpiDash.amber {
+  background: var(--color-cam-amber);
+}
+.kpiDash.red {
+  background: var(--color-cam-red);
+}
+.kpiDash.blue {
+  background: var(--color-cam-blue);
+}
+
+/* ---- students table ---- */
+.search {
+  padding: 0.55em 0.8em;
+  border: 0.08em solid var(--color-cam-line);
+  border-radius: 0.45em;
+  color: var(--color-cam-faint);
+  font-size: 0.85em;
+}
+.tr {
+  display: grid;
+  grid-template-columns: 2.4fr 0.8fr 1fr 1.2fr 1fr;
+  align-items: center;
+  gap: 0.6em;
+  padding: 0.45em 0;
+  border-top: 0.08em solid var(--color-cam-line);
+  font-size: 0.88em;
+  white-space: nowrap;
+}
+.tr > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.th {
+  border-top: 0;
+  color: var(--color-cam-muted);
+  font-size: 0.72em;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* ---- campaign ---- */
+.sequence {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em;
+}
+.step {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+  padding: 0.3em 0.7em 0.3em 0.35em;
+  border-radius: 1em;
+  background: var(--color-cam-blueSoft);
+  color: var(--color-cam-navy);
+  font-size: 0.82em;
+}
+.stepIndex {
+  display: inline-grid;
+  place-items: center;
+  width: 1.5em;
+  height: 1.5em;
+  border-radius: 50%;
+  background: var(--color-cam-blue);
+  color: var(--color-cam-card);
+  font-size: 0.85em;
+  font-weight: 700;
+}
+.progress {
+  height: 0.6em;
+  border-radius: 1em;
+  background: var(--color-cam-page);
+  overflow: hidden;
+}
+.progressFill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-cam-whatsapp);
+  transform-origin: left center;
+}
+
+/* ---- report chart ---- */
+.chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.9em;
+  height: 9em;
+}
+.barCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.4em;
+  flex: 1;
+  height: 100%;
+}
+.chartBar {
+  flex: 1;
+  width: 100%;
+  border-radius: 0.3em 0.3em 0 0;
+  background: linear-gradient(to top, var(--color-cam-blue), var(--color-cam-chartTop));
+  transform-origin: bottom center;
+}
+.barLabel {
+  color: var(--color-cam-muted);
+  font-size: 0.7em;
+}
+
+/* ---- buttons, fields ---- */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5em 1em;
+  border: 0.08em solid var(--color-cam-line);
+  border-radius: 0.45em;
+  background: var(--color-cam-card);
+  font-size: 0.82em;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.buttonPrimary {
+  border-color: var(--color-cam-navy);
+  background: var(--color-cam-navy);
+  color: var(--color-cam-card);
+}
+.buttonBlock {
+  display: flex;
+  width: 100%;
+  padding-block: 0.75em;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+}
+.fieldLabel {
+  color: var(--color-cam-muted);
+  font-size: 0.75em;
+}
+.input {
+  padding: 0.5em 0.75em;
+  border: 0.08em solid var(--color-cam-line);
+  border-radius: 0.45em;
+  background: var(--color-cam-card);
+  font-size: 0.88em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.received {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4em;
+}
+.chip {
+  padding: 0.3em 0.7em;
+  border-radius: 0.45em;
+  background: var(--color-cam-blueSoft);
+  color: var(--color-cam-navy);
+  font-size: 0.8em;
+  font-weight: 600;
+}
+.summary {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.45em 1em;
+  font-size: 0.8em;
+}
+.summary > :nth-child(odd) {
+  color: var(--color-cam-muted);
+}
+.total {
+  font-size: 1.6em;
+  font-weight: 700;
+}
+
+/* ---- phone ---- */
+.phone {
+  padding: 0.55em;
+  border-radius: 2.6em;
+  background: var(--color-cam-phone);
+  box-shadow: 0 2em 4em var(--color-cam-shadow);
+}
+.phoneScreen {
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+  border-radius: 2.1em;
+  background: var(--color-cam-card);
+  color: var(--color-cam-text);
+  font-family: var(--font-sans);
+  font-weight: var(--font-weight-regular);
+  line-height: 1.35;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* signup form */
+.signup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75em;
+  padding: 2.4em 1.4em 1.4em;
+}
+.signupTitle {
+  margin-top: 0.4em;
+  font-size: 1.35em;
+  font-weight: 700;
+}
+.phoneField {
+  display: flex;
+  gap: 0.4em;
+}
+.phoneField .input {
+  flex: 1;
+}
+.prefix {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.6em;
+  border: 0.08em solid var(--color-cam-line);
+  border-radius: 0.45em;
+  font-size: 0.85em;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* WhatsApp */
+.chat {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--color-cam-chatBg);
+}
+.chatHead {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  padding: 2.2em 1em 0.8em;
+  background: var(--color-cam-chatHead);
+  color: var(--color-cam-card);
+  font-weight: 600;
+}
+.chatHead > span:last-child {
+  display: flex;
+  flex-direction: column;
+}
+.chatStatus {
+  font-size: 0.75em;
+  font-weight: var(--font-weight-regular);
+  opacity: 0.75;
+}
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 2.4em;
+  height: 2.4em;
+  border-radius: 50%;
+  background: var(--color-cam-navy);
+  font-size: 0.8em;
+}
+.chatBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7em;
+  padding: 1em 0.9em;
+}
+.bubble {
+  align-self: flex-start;
+  max-width: 88%;
+  padding: 0.6em 0.8em 0.4em;
+  border-radius: 0.2em 0.9em 0.9em 0.9em;
+  background: var(--color-cam-card);
+  font-size: 0.88em;
+  box-shadow: 0 0.1em 0.2em var(--color-cam-shadow);
+}
+.bubbleTime {
+  display: block;
+  margin-top: 0.2em;
+  color: var(--color-cam-muted);
+  font-size: 0.75em;
+  text-align: right;
+}
+
+/* ---- spreadsheet ---- */
+.sheet {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 0.5em;
+  background: var(--color-cam-card);
+  color: var(--color-cam-text);
+  font-family: var(--font-sans);
+  font-size: 1em;
+  line-height: 1.3;
+  text-transform: none;
+  letter-spacing: 0;
+  box-shadow: 0 2em 4em var(--color-cam-shadow);
+}
+.sheetTitle {
+  padding: 0.6em 1em;
+  background: var(--color-cam-green);
+  color: var(--color-cam-card);
+  font-size: 0.85em;
+  font-weight: 600;
+}
+.sheetRow {
+  display: grid;
+  grid-template-columns: 2em 2.2fr 1.6fr 1fr 0.9fr 1.1fr;
+  font-size: 0.82em;
+}
+.sheetRow > span {
+  padding: 0.4em 0.5em;
+  border-right: 0.08em solid var(--color-cam-sheetGrid);
+  border-bottom: 0.08em solid var(--color-cam-sheetGrid);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 2em;
+}
+.sheetHead > span,
+.sheetIndex {
+  background: var(--color-cam-sheetHead);
+  color: var(--color-cam-muted);
+  font-weight: 600;
+}
+.sheetEmpty {
+  background: var(--color-cam-amberSoft);
+}
+.sheetDoubt {
+  color: var(--color-cam-red);
+  font-weight: 600;
+}

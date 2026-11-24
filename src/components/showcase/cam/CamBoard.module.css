@@ -1,0 +1,41 @@
+/* The frame is the size container; the stage is a square `layout.showcase.stage` em wide, sized
+   on the mean of the frame's sides and centred: the board (larger than the stage) still covers a
+   tall half-screen visual without zooming in so far that the phones leave the frame. */
+.frame {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  container-type: size;
+  background:
+    radial-gradient(60% 55% at 70% 30%, var(--color-cam-stageGlow), transparent 70%),
+    linear-gradient(160deg, var(--color-cam-stage), var(--color-cam-stageDeep));
+}
+.stage {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(var(--layout-showcase-stage) * 1em);
+  height: calc(var(--layout-showcase-stage) * 1em);
+  font-size: calc((50cqw + 50cqh) / var(--layout-showcase-stage));
+  translate: -50% -50%;
+  pointer-events: none;
+  user-select: none;
+}
+.board {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: grid;
+  grid-template-columns: 22em 60em 50em;
+  grid-template-rows: 44em 44em;
+  gap: 3.6em;
+  /* nudged right and down so the student's phones (first column) stay in the frame */
+  transform: translate(-40%, -47%) var(--layout-showcase-tilt);
+  transform-style: preserve-3d;
+}
+.screen,
+.phone {
+  height: 100%;
+  min-width: 0;
+}

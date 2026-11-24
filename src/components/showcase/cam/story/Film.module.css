@@ -1,0 +1,269 @@
+/*
+ * The story film's stage. The frame (CamStory) is the size container. The world is drawn in em
+ * where 1em = 1 % of the frame's width, under a perspective of `filmPerspective` em, so the
+ * whole film scales with its box like an SVG. Only the world's transform (the camera), a few leaf
+ * layers and the overlays change per frame; filters never sit on a preserve-3d element.
+ */
+
+/* ---- 3D world ---- */
+.lens {
+  position: absolute;
+  inset: 0;
+  font-size: calc(100cqw / 100);
+}
+.viewport {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  perspective: calc(var(--layout-showcase-filmPerspective) * 1em);
+  perspective-origin: 50% var(--film-center, var(--layout-showcase-filmWorldTop));
+}
+/*
+ * The world is ONE flat surface that the camera moves in 3D (`flat`, not `preserve-3d`). With every
+ * screen as its own plane in a shared 3D context, Chrome rasterised only some 256 px tiles of a
+ * screen far from the camera and left the rest unpainted: screen-aligned black blocks over the
+ * focused screen, coming and going as the camera moved. A flat world is drawn as one quad under the
+ * viewport's perspective, so that cannot happen. The depth between screens is kept by `--k` on each
+ * place (below): the perspective scale its own z would have had, from the camera values sync writes
+ * on the world (--D: eye-to-plane distance, --cx / --cy: camera axis, all in em).
+ */
+.world {
+  position: absolute;
+  left: 50%;
+  top: var(--film-center, var(--layout-showcase-filmWorldTop));
+  width: 0;
+  height: 0;
+  transform-style: flat;
+}
+.set {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-style: flat;
+  transform: translate3d(calc(var(--x) * 1em), 0, 0);
+}
+/*
+ * A flat layer centred on (x, y, z); GSAP tweens the vars, never the transform itself. Its depth is
+ * emulated on the flat world: k = D / (D - z) scales the layer and its offset from the camera axis,
+ * as the perspective would (D defaults far away, so k = 1 until the film's sync runs).
+ */
+.place {
+  --k: calc(var(--D, 100000) / max(var(--D, 100000) - var(--z), 1));
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--w);
+  height: var(--h);
+  transform: translate3d(
+      calc(((var(--sx, 0) + var(--x) - var(--cx, 0)) * var(--k) + var(--cx, 0) - var(--sx, 0)) * 1em),
+      calc(((var(--y) - var(--cy, 0)) * var(--k) + var(--cy, 0)) * 1em),
+      0
+    )
+    rotateX(calc(var(--rx) * 1deg)) rotateY(calc(var(--ry) * 1deg)) rotateZ(calc(var(--rz) * 1deg))
+    scale(calc(var(--s) * var(--k))) translate(-50%, -50%);
+  backface-visibility: hidden;
+}
+.content {
+  font-size: calc(var(--fs) * 1em);
+}
+.fill {
+  width: 100%;
+  height: 100%;
+}
+.cover {
+  position: absolute;
+  inset: 0;
+}
+.sheet {
+  width: 43em;
+}
+
+/* hook: the operator's WhatsApp, one chat per student */
+.chat {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-cam-chatBg);
+}
+.chatHead {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  padding: 2.2em 1em 0.8em;
+  background: var(--color-cam-chatHead);
+  color: var(--color-cam-card);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 2.2em;
+  height: 2.2em;
+  border-radius: 50%;
+  background: var(--color-cam-faint);
+  color: var(--color-cam-navy);
+  font-size: 0.9em;
+}
+.chatBody {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 1em 0.9em;
+}
+.bubbleOut {
+  align-self: flex-end;
+  max-width: 88%;
+  padding: 0.6em 0.8em 0.4em;
+  border-radius: 0.9em 0.2em 0.9em 0.9em;
+  background: var(--color-cam-chatOut);
+  font-size: 0.88em;
+  box-shadow: 0 0.1em 0.2em var(--color-cam-shadow);
+}
+.bubbleTime {
+  display: block;
+  margin-top: 0.2em;
+  color: var(--color-cam-muted);
+  font-size: 0.75em;
+  text-align: right;
+}
+.composer {
+  margin: 0 0.7em 1.2em;
+  padding: 0.7em 1em;
+  border-radius: 1.4em;
+  background: var(--color-cam-card);
+  font-size: 0.8em;
+  line-height: 1.35;
+  min-height: 4.1em;
+  overflow: hidden;
+}
+.hookCount {
+  display: block;
+  color: var(--color-cam-card);
+  font-family: var(--font-sans);
+  font-size: 13em;
+  font-weight: var(--font-weight-regular);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.hookTotal {
+  color: var(--color-cam-navyText);
+  font-weight: var(--font-weight-light);
+}
+.clock {
+  display: block;
+  width: 26em;
+  height: 26em;
+}
+.clockFace {
+  fill: none;
+  stroke: var(--color-cam-navyText);
+  stroke-width: 2.2;
+}
+.clockHour,
+.clockMinute {
+  stroke: var(--color-cam-card);
+  stroke-linecap: round;
+}
+.clockHour {
+  stroke-width: 2.6;
+}
+.clockMinute {
+  stroke-width: 1.8;
+}
+.clockPin {
+  fill: var(--color-cam-card);
+}
+
+/* signup: today's counter floating over the students panel */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.5em 1.1em;
+  border-radius: 2em;
+  background: var(--color-cam-card);
+  color: var(--color-cam-text);
+  font-family: var(--font-sans);
+  white-space: nowrap;
+  box-shadow: 0 1em 2em var(--color-cam-shadow);
+}
+.badge b {
+  font-size: 1.4em;
+  font-variant-numeric: tabular-nums;
+}
+.badgeDot {
+  width: 0.7em;
+  height: 0.7em;
+  border-radius: 50%;
+  background: var(--color-cam-green);
+}
+.badgeLabel {
+  color: var(--color-cam-muted);
+}
+
+/* ---- overlays ---- */
+.canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.stats {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4cqmin;
+  padding: 10cqmin 6cqmin 5cqmin;
+  background: linear-gradient(to top, color-mix(in srgb, var(--color-cam-stageDeep) 92%, transparent) 35%, transparent);
+  color: var(--color-cam-card);
+  font-family: var(--font-sans);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+}
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5cqmin;
+  min-width: 0;
+}
+.statValue {
+  font-size: var(--layout-showcase-filmStatSize);
+  font-weight: var(--font-weight-light);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.statLabel {
+  color: var(--color-cam-navyText);
+  font-size: var(--layout-showcase-filmStatLabelSize);
+  line-height: 1.3;
+}
+
+/* a vignette keeps the eye in the centre */
+.vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 75% 70% at 50% 48%,
+    transparent 55%,
+    color-mix(in srgb, var(--color-cam-stageDeep) 80%, var(--color-bg)) 130%
+  );
+  pointer-events: none;
+}
+
+/* phones: fewer flying layers */
+@media (max-width: 767px) {
+  .extra {
+    display: none;
+  }
+}

@@ -50,6 +50,45 @@ export const tokens = {
     overlay: 'rgba(0,0,0,0.6)',
     /** Phones: navbar backdrop once the page leaves the top (blurred, see layout.nav.blur) */
     navBg: 'rgba(0,0,0,0.72)',
+    /**
+     * Instituto CAM product mockups (src/components/showcase/cam): the panel's own palette
+     * (navy bar, white cards on a light page, status pills) and the presentation backdrop.
+     */
+    cam: {
+      /* presentation backdrop: near-black like the other projects, a faint navy cast and blue glow */
+      stage: '#0c111c',
+      stageDeep: '#030407',
+      stageGlow: 'rgba(47,111,237,0.22)',
+      /** Report chart bars: top of their gradient (the bars stay CAM blue on any backdrop) */
+      chartTop: '#1d4fd8',
+      navy: '#1c2740',
+      navyText: '#c9d3ea',
+      blue: '#2f6fed',
+      blueSoft: '#e6eefe',
+      page: '#f3f5f9',
+      card: '#ffffff',
+      line: '#e2e6ee',
+      text: '#1c2740',
+      muted: '#7b859a',
+      faint: '#c4cad6',
+      green: '#1d9a55',
+      greenSoft: '#e1f4e8',
+      amber: '#b97c0c',
+      amberSoft: '#fcf1d9',
+      red: '#cf4040',
+      redSoft: '#fae3e3',
+      chatBg: '#ece5dc',
+      chatOut: '#d9fdd3',
+      chatHead: '#0f5d52',
+      whatsapp: '#25d366',
+      sheetHead: '#e9edf3',
+      sheetGrid: '#d5dbe5',
+      phone: '#0e1117',
+      shadow: 'rgba(6,14,40,0.45)',
+      /* results illustrations, on the case page's dark visual */
+      before: '#7b7979',
+      after: '#7fb0ff',
+    },
   },
 
   font: {
@@ -131,6 +170,69 @@ export const tokens = {
       browserWidth: '70%',
       /** Phones (≤ 767 px): card media box (reference phone cards 335 × 215); the stacked case cover copies it */
       phoneRatio: '3 / 2',
+      /**
+       * Presentation card (a project with `feature` copy): description on the left, the product's
+       * presentation image on the right (reference noomo "Fighting hurricanes" slide).
+       */
+      split: {
+        columns: '5fr 7fr',
+        gap: '4.167vw',
+        mediaRatio: '1 / 1',
+        /** …never taller than the screen below the navbar, so the whole slide fits in one view */
+        mediaMaxHeight: 'calc(100svh - 2 * var(--layout-navHeight))',
+        titleSize: 'clamp(32px, 3.75vw, 64px)',
+        titleLine: 1,
+        textSize: 'clamp(15px, 1.25vw, 20px)',
+        textLine: 1.35,
+        textMax: '34em',
+        titleGap: '2.222vw',
+        tabletGap: '32px',
+        phoneGap: '20px',
+        /** Phones: the image comes first (like every other card), then a smaller title */
+        phoneTitleSize: '28px',
+        phoneTitleLine: 1.05,
+      },
+    },
+    /**
+     * Product visuals drawn in code (src/components/showcase). Mockups are drawn in em on a design
+     * stage `stage` em wide; the stage's font-size scales it to its box (cover or contain).
+     */
+    showcase: {
+      stage: 100,
+      /** Presentation board: the grid of screens, tilted */
+      tilt: 'perspective(240em) rotateX(22deg) rotateZ(-14deg)',
+      /**
+       * Story film: the 3D world is drawn in em where 1em = 1 % of the frame's width, and the
+       * camera's perspective is in those em. Overlays (section title, band, stats) use cq units
+       * and px. Each section's title enters large in the centre, travels to the top-left band and
+       * shrinks to `filmTitleSize`; the world's centre sits in the area below the band (measured,
+       * `filmWorldTop` until then) and the camera fits each screen inside that area.
+       */
+      filmPerspective: 160,
+      filmWorldTop: '56%',
+      filmWhipBlur: 0.9,
+      filmTitleSize: 'clamp(20px, 4.6cqw, 40px)',
+      /** Scale of the title in the centre, capped so the word keeps a margin inside the frame */
+      filmTitleBig: 2.6,
+      filmTitleFit: 0.86,
+      filmTitleScrimBlur: '6px',
+      filmBandPad: 'clamp(12px, 3cqw, 24px)',
+      filmHudSize: '11px',
+      filmStatSize: 'clamp(22px, 7.5cqmin, 88px)',
+      filmStatLabelSize: '13px',
+      filmDotPx: 2.6,
+      filmDprMax: 2,
+      /** Story (animated explainer): caption and controls below the stage, px */
+      captionSize: '15px',
+      captionTitleSize: 'clamp(18px, 1.6vw, 26px)',
+      controlSize: '12px',
+      controlGap: '16px',
+      storyPad: 'clamp(20px, 2.5vw, 40px)',
+      /** Story caption: readable line length */
+      storyCaptionMax: '36em',
+      /** Results illustrations: base size grows with the visual's width */
+      outcomeSize: 'clamp(13px, 1.55cqi, 17px)',
+      outcomeIcon: '3.4em',
     },
     /**
      * Browser window around website captures (BrowserFrame: home cards, case covers and closings).
@@ -319,6 +421,42 @@ export const tokens = {
   },
 
   motion: {
+    /**
+     * Product visuals drawn in code (src/components/showcase). Story: a 3D film in code, seven
+     * segments (problem, the five process steps, results) ≈ 72 s in all, restarted each time
+     * its chapter is entered; a virtual camera cuts between the panel screens floating in 3D.
+     * Outcomes: the before / after items rise one after another and their illustrations draw in.
+     */
+    showcase: {
+      /** Story film segments, seconds: problem, signup, cross-check, campaigns, payments, reports, results */
+      filmSegmentsSec: [16, 9.5, 9.5, 10, 9.5, 9.5, 8],
+      /** Whip pan between sets (it ends on the next cut); a cut between screens fades the old one out, then the new one in (no flash) */
+      filmWhipSec: 0.3,
+      filmCutFadeSec: 0.25,
+      /** Section title: enters large in the centre, holds, travels to the top-left, then shrinks; leaves as the next section starts */
+      filmTitleInSec: 0.35,
+      filmTitleHoldSec: 1,
+      filmTitleMoveSec: 0.7,
+      filmTitleShrinkSec: 0.35,
+      filmTitleOutSec: 0.15,
+      filmTitleMoveEase: 'expo.inOut',
+      /** Hand-held shake on the hook shots, degrees */
+      filmShakeDeg: 1.1,
+      filmPopEase: 'back.out(2)',
+      filmCrashEase: 'expo.out',
+      filmWhipEase: 'power4.inOut',
+      /** Particles: records converging into the panel and the burst of messages (fewer on phones), ambient dust */
+      filmParticles: 420,
+      filmParticlesPhone: 160,
+      filmDust: 60,
+      filmDustPhone: 28,
+      ease: 'power3.out',
+      countSec: 1.6,
+      outcomeStaggerSec: 0.12,
+      outcomeRiseSec: 0.8,
+      outcomeDrawSec: 1.4,
+      outcomeLiftPx: 24,
+    },
     /** Webflow IX2 easing names → cubic-bezier (used by CSS and by GSAP via CustomEase). */
     ease: {
       outSine: 'cubic-bezier(0.39, 0.575, 0.565, 1)',

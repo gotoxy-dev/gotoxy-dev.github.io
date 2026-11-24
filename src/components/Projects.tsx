@@ -8,6 +8,7 @@ import { useScrub, type ScrubOptions } from '@/hooks/useScrub'
 import { tokens } from '@/theme/tokens'
 import { caseOpen, markCaseOpen, RETURN_NAME_MS, returningSlug, supportsViewTransitions } from '@/transitions'
 import { BrowserFrame, hostOf } from './BrowserFrame'
+import { showcases } from './showcase'
 import styles from './Projects.module.css'
 
 export function Projects() {
@@ -46,17 +47,17 @@ export function Projects() {
 const CARD_SCRUB: ScrubOptions = { phone: { start: 'top bottom', end: 'top 50%' } }
 
 function buildCardScrub(tl: gsap.core.Timeline, root: HTMLElement, phone: boolean) {
-  const head = root.querySelector<HTMLElement>('[data-scrub="head"]')
   const media = root.querySelector<HTMLElement>('[data-scrub="media"]')
   const { projectTitle, projectMedia } = phone ? tokens.motion.distance.phone : tokens.motion.distance
   // half the entry travel, in the token's own unit (px on desktop, vw on phones)
   const restY = (from: string) => `${parseFloat(from) / 2}${from.replace(/^[\d.]+/, '')}`
 
-  if (head) {
-    tl.fromTo(head, { y: projectTitle, opacity: 0 }, { opacity: 1, duration: 0.33 }, 0)
-    tl.to(head, { y: 0, duration: 0.5 }, 0)
-    tl.to(head, { y: restY(projectTitle), duration: 0.5 }, 0.5)
-  }
+  // the presentation card's description moves with the title row
+  root.querySelectorAll<HTMLElement>('[data-scrub="head"], [data-scrub="text"]').forEach((el) => {
+    tl.fromTo(el, { y: projectTitle, opacity: 0 }, { opacity: 1, duration: 0.33 }, 0)
+    tl.to(el, { y: 0, duration: 0.5 }, 0)
+    tl.to(el, { y: restY(projectTitle), duration: 0.5 }, 0.5)
+  })
   if (media) {
     tl.fromTo(media, { y: projectMedia, opacity: 0 }, { opacity: 1, duration: 0.33 }, 0)
     tl.to(media, { y: 0, duration: 0.5 }, 0)
@@ -78,8 +79,11 @@ function nameCard(media: HTMLElement | null, browser: HTMLElement | null, on = t
 function ProjectCard({ project }: { project: Project }) {
   const { caseStudies } = useContent()
   const study = caseStudies.find((c) => c.projectId === project.id)
+  // cases with visuals drawn in code show their presentation board, like the case's first visual
+  const Board = study?.showcase ? showcases[study.showcase.id].Board : undefined
   // website cases show their capture in a browser window, like the case's first visual
-  const framed = study?.media.screenshot ? study : undefined
+  const framed = !Board && study?.media.screenshot ? study : undefined
+  const feature = project.feature
   const lineRef = useReveal<HTMLDivElement>({ offset: 50 })
   const scrubRef = useScrub<HTMLAnchorElement>(buildCardScrub, CARD_SCRUB)
   const { ref: mediaRef, inView } = useInView<HTMLDivElement>({ rootMargin: '200px 0px', threshold: 0.01 })
@@ -121,6 +125,34 @@ function ProjectCard({ project }: { project: Project }) {
     }
   }, [inView])
 
+  const media = (
+    <div className={styles.mediaWrap} data-scrub="media">
+      <div ref={mediaRef} className={`${styles.media} ${feature ? styles.mediaSplit : ''}`}>
+        {Board && study?.showcase ? (
+          <Board label={study.showcase.boardLabel} />
+        ) : framed ? (
+          <div className={styles.framed}>
+            <img className={styles.ambient} src={framed.media.background} alt="" aria-hidden="true" loading="lazy" decoding="async" />
+            <BrowserFrame ref={browserRef} src={framed.media.background} host={hostOf(framed.link.href)} className={styles.browser} />
+          </div>
+        ) : (
+          <>
+            <video
+              ref={videoRef}
+              src={inView || playing ? project.video : undefined}
+              poster={project.poster}
+              muted
+              loop
+              playsInline
+              preload="metadata"
+            />
+            <img className={`${styles.poster} ${playing ? styles.hidden : ''}`} src={project.poster} alt="" aria-hidden="true" />
+          </>
+        )}
+      </div>
+    </div>
+  )
+
   const body = (
     <>
       <div ref={lineRef} className={styles.lineWrap}>
@@ -141,29 +173,24 @@ function ProjectCard({ project }: { project: Project }) {
         </svg>
       </div>
 
-      <div className={styles.mediaWrap} data-scrub="media">
-        <div ref={mediaRef} className={styles.media}>
-          {framed ? (
-            <div className={styles.framed}>
-              <img className={styles.ambient} src={framed.media.background} alt="" aria-hidden="true" loading="lazy" decoding="async" />
-              <BrowserFrame ref={browserRef} src={framed.media.background} host={hostOf(framed.link.href)} className={styles.browser} />
-            </div>
-          ) : (
-            <>
-              <video
-                ref={videoRef}
-                src={inView || playing ? project.video : undefined}
-                poster={project.poster}
-                muted
-                loop
-                playsInline
-                preload="metadata"
-              />
-              <img className={`${styles.poster} ${playing ? styles.hidden : ''}`} src={project.poster} alt="" aria-hidden="true" />
-            </>
-          )}
+      {feature ? (
+        // presentation card (reference noomo slide): the description on the left, the image on the right
+        <div className={styles.split}>
+          <div className={styles.feature} data-scrub="text">
+            <h3 className={styles.featureTitle}>{feature.title}</h3>
+            <p className={styles.featureText}>{feature.text}</p>
+            <span className={styles.featureCta}>
+              {feature.cta}
+              <svg viewBox="0 0 14 14" aria-hidden="true">
+                <path d="M2 12L12 2M4 2h8v8" />
+              </svg>
+            </span>
+          </div>
+          {media}
         </div>
-      </div>
+      ) : (
+        media
+      )}
     </>
   )
 
@@ -180,7 +207,7 @@ function ProjectCard({ project }: { project: Project }) {
       to="/projects/$slug"
       params={{ slug: study.slug }}
       onClick={onOpen}
-      className={styles.card}
+      className={`${styles.card} ${feature ? styles.cardSplit : ''}`}
     >
       {body}
     </Link>

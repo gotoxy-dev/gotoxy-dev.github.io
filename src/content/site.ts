@@ -24,6 +24,18 @@ export interface Project {
   href: string
   /** Shown as a card on the home (the reference shows four); every case keeps its page and next-link. */
   featured?: boolean
+  /**
+   * Presentation card: the description on the left and the product's presentation image on the
+   * right (the case's `showcase` board), instead of the full-width media.
+   */
+  feature?: ProjectFeature
+}
+
+export interface ProjectFeature {
+  title: string
+  text: string
+  /** Call to action that opens the case (the whole card is the link) */
+  cta: string
 }
 
 export interface Testimonial {
@@ -96,6 +108,54 @@ export interface CaseJourney {
   steps: CaseJourneyStep[]
 }
 
+export interface CaseStoryScene {
+  /** Small caps label (THE PROBLEM…) */
+  label: string
+  title: string
+  text: string
+}
+
+export type CaseOutcomeIcon = 'signup' | 'campus' | 'messages' | 'payments' | 'control'
+
+export interface CaseOutcome {
+  icon: CaseOutcomeIcon
+  title: string
+  before: string
+  after: string
+}
+
+/**
+ * Product visuals drawn in code (src/components/showcase) instead of the media images: the
+ * presentation board (home card and chapter 1), an animated explainer (chapter 2) and the
+ * before / after of the team's daily operation (chapter 3).
+ */
+export interface CaseShowcase {
+  /** Which product's visuals (key of the showcase registry) */
+  id: 'cam'
+  /** Accessible description of the presentation board */
+  boardLabel: string
+  story: {
+    /** Eyebrow above the scene captions */
+    label: string
+    /** Problem, solution, results */
+    scenes: [CaseStoryScene, CaseStoryScene, CaseStoryScene]
+    /** Captions of the solution scene, one per step of the process, in order */
+    steps: string[]
+    /** One big word per step, cut on screen as the step starts (kinetic type) */
+    words: string[]
+    /** Figures shown in the results scene */
+    stats: { value: string; label: string }[]
+    replay: string
+    pause: string
+    play: string
+  }
+  outcomes: {
+    before: string
+    after: string
+    items: CaseOutcome[]
+  }
+}
+
 export interface CaseStudy {
   slug: string
   /** Project this case belongs to (`projects[].id`) */
@@ -128,6 +188,8 @@ export interface CaseStudy {
     /** page 3 opens zoomed in (`scale`) on a point of `closing` (`origin`, CSS percentages) and pulls back to the whole view */
     closingZoom?: { scale: number; origin: string }
   }
+  /** Visuals drawn in code; when present they replace `media` on the page (media stays for SEO) */
+  showcase?: CaseShowcase
   /** Slug of the next case study */
   next: string
 }
@@ -191,6 +253,11 @@ export const projects: Project[] = [
     poster: '/assets/videos/project-02.jpg',
     href: '/projects/instituto-cam',
     featured: true,
+    feature: {
+      title: 'Academic management, WhatsApp and payments in one platform',
+      text: 'Instituto CAM supports Brazilian students at universities in Paraguay. It ran thousands of students on spreadsheets, one-by-one messages and manual uploads to the virtual campus. We built a custom web platform that runs the whole operation.',
+      cta: 'View case study',
+    },
   },
   {
     id: 'animageneris',
@@ -557,11 +624,87 @@ export const caseStudies: CaseStudy[] = [
         heading: 'Built to carry real volume from day one, not a demo',
         paragraphs: [
           'Infrastructure on Cloudflare Workers and D1, with no servers to maintain and no personal number that can be banned. Automatic cross-checking against the university list, with manual review only for the differences.',
-          'Afterwards we extended it into the institute’s own panel, fourteen screens: automatic Moodle enrolment, campaigns, resends, security and audit. The institute controls everything without depending on us.',
+          'Afterwards we extended it into the institute’s own panel: automatic Moodle enrolment, campaigns, resends, payments in three currencies with several cashiers, roles and a change history. The institute controls everything without depending on us.',
         ],
       },
     ],
     media: caseMedia('instituto-cam'),
+    showcase: {
+      id: 'cam',
+      boardLabel: 'Instituto CAM panel: students, WhatsApp campaign, delivery report, payments, and the student’s signup form and WhatsApp messages',
+      story: {
+        label: 'The story, step by step',
+        scenes: [
+          {
+            label: 'The problem',
+            title: 'Thousands of students, spreadsheets and one message at a time',
+            text: 'Data typed by hand, duplicates and phones with no format. Every campus login and every class schedule went out one message at a time.',
+          },
+          {
+            label: 'The solution',
+            title: 'One platform that runs the whole operation',
+            text: 'Online signup, cross-check against the university, automatic Moodle enrolment, WhatsApp campaigns and payments, in a single panel.',
+          },
+          {
+            label: 'The results',
+            title: 'From manual tasks to a daily operation',
+            text: 'The team works from one panel. On the first day of the campaign close to 2,000 messages went out.',
+          },
+        ],
+        steps: [
+          'Students sign up on their own, through the registration module',
+          'CAM’s operators audit the records and cross-check every student, commission by commission',
+          'Once checked, they assign WhatsApp campaigns that send each student their Moodle class details',
+          'They also manage the payments, in guaraníes, dollars and reais',
+          'Reports show the statistics, campaign errors and every kind of issue',
+        ],
+        words: ['Signup', 'Cross-check', 'Campaigns', 'Payments', 'Reports'],
+        stats: [
+          { value: '3,000+', label: 'students in one panel' },
+          { value: '≈2,000', label: 'messages on the first campaign day' },
+          { value: '3', label: 'currencies, several cashiers' },
+        ],
+        replay: 'Watch again',
+        pause: 'Pause',
+        play: 'Play',
+      },
+      outcomes: {
+        before: 'Before',
+        after: 'Now',
+        items: [
+          {
+            icon: 'signup',
+            title: 'Signup',
+            before: 'Spreadsheets typed by hand, with duplicates and missing data',
+            after: 'Online form in Portuguese and Spanish, with the phone validated by country',
+          },
+          {
+            icon: 'campus',
+            title: 'Virtual campus',
+            before: 'Accounts and commissions loaded into Moodle one by one',
+            after: 'Automatic enrolment by commission, and a check of the differences between campus and system',
+          },
+          {
+            icon: 'messages',
+            title: 'Messaging',
+            before: 'Logins and schedules sent one message at a time',
+            after: 'Campaigns to 3,000+ students with delivery tracking, resends and automatic replies',
+          },
+          {
+            icon: 'payments',
+            title: 'Payments',
+            before: 'Paper receipts and separate accounts for each currency',
+            after: 'Guaraníes, dollars and reais, several cashiers and the receipt sent to the student by WhatsApp',
+          },
+          {
+            icon: 'control',
+            title: 'Control',
+            before: 'No record of who changed what',
+            after: 'Users, roles and a change history; PDF and Excel reports',
+          },
+        ],
+      },
+    },
     next: 'animageneris',
   },
   {

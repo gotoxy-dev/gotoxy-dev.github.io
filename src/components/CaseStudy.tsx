@@ -9,6 +9,7 @@ import { tokens } from '@/theme/tokens'
 import { caseOpen, clearCaseOpen, enteredFromCard, markCaseClose } from '@/transitions'
 import { BrowserFrame, hostOf } from './BrowserFrame'
 import { DeviceFrame } from './DeviceFrame'
+import { showcases } from './showcase'
 import styles from './CaseStudy.module.css'
 
 const ArrowIcon = () => (
@@ -145,7 +146,7 @@ function chapterLayout(study: CaseStudyContent) {
  * another, and the pager follows. The left visuals are scrubbed by the scroll instead (see
  * setupVisualParallax), so they move with the snap itself.
  */
-function setupChapterSwaps(root: HTMLElement, count: number, animate: boolean) {
+function setupChapterSwaps(root: HTMLElement, count: number, animate: boolean, onChapter?: (index: number) => void) {
   const { swapSec, swapOutSec, swapInDelaySec, swapEase, pageLiftPx: lift, lineLiftPx, lineStaggerSec } = tokens.motion.caseStudy
   const el = (key: string, i: number) => root.querySelector<HTMLElement>(`[data-case="${key}-${i}"]`)
   const pages = range(count).map((i) => el('page', i))
@@ -198,6 +199,7 @@ function setupChapterSwaps(root: HTMLElement, count: number, animate: boolean) {
     })
     gsap.set(fill, { scaleX: index / last })
     gsap.set(total, { color: index === last ? tokens.color.text : tokens.color.pager })
+    onChapter?.(index)
   }
 
   const go = (index: number) => {
@@ -232,6 +234,7 @@ function setupChapterSwaps(root: HTMLElement, count: number, animate: boolean) {
       .to(fill, { scaleX: index / last }, 0)
       .to(total, { color: index === last ? tokens.color.text : tokens.color.pager }, inAt)
     writeSectionHash(index)
+    onChapter?.(index)
   }
 
   /** Chapter on screen: the last snap area whose top is less than half a screen away. */
@@ -269,7 +272,24 @@ function setupChapterSwaps(root: HTMLElement, count: number, animate: boolean) {
     swap?.kill()
     zoomTween?.kill()
     video?.pause()
+    onChapter?.(-1)
   }
+}
+
+/**
+ * Stacked layout: true while `ref`'s element shows at least `threshold` of itself (the showcase
+ * story plays and the outcomes rise in then). Never true while the stack is hidden (split layout).
+ */
+function useOnScreen(ref: { current: HTMLElement | null }, threshold: number, key: string) {
+  const [on, setOn] = useState(false)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const io = new IntersectionObserver(([entry]) => setOn(entry.isIntersecting), { threshold })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [ref, threshold, key])
+  return on
 }
 
 /**
@@ -656,6 +676,15 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
   // Opened from a home card: the view transition brings in the first visual and the panel.
   const [viaCard] = useState(enteredFromCard)
   const resultsIndex = count - 1
+  // Visuals drawn in code (src/components/showcase): board, story and outcomes replace the media.
+  const showcase = study.showcase
+  const visuals = showcase ? showcases[showcase.id] : undefined
+  /** Split layout: the chapter on screen (-1 while the split layout is off) */
+  const [chapter, setChapter] = useState(-1)
+  const stackStoryRef = useRef<HTMLDivElement | null>(null)
+  const stackOutcomesRef = useRef<HTMLDivElement | null>(null)
+  const stackStoryOn = useOnScreen(stackStoryRef, 0.5, study.slug)
+  const stackOutcomesOn = useOnScreen(stackOutcomesRef, 0.25, study.slug)
 
   useSnapScroll({ count, snapClass: SNAP_CLASS })
 
@@ -676,7 +705,7 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
         }
       }
       const stopJourney = hasJourney ? setupJourney(root, steps, animate) : undefined
-      const stopSwaps = setupChapterSwaps(root, count, animate)
+      const stopSwaps = setupChapterSwaps(root, count, animate, setChapter)
       const stopParallax = animate ? setupVisualParallax(root, count) : undefined
       return () => {
         stopJourney?.()
@@ -748,6 +777,17 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
   /** Cover (`closing` false) or closing capture of the stacked layout, built like the split visuals 0 and 2. */
   const stackVisual = (closing: boolean) => {
     const src = closing ? study.media.closing : study.media.background
+    if (visuals && showcase && !closing) {
+      return (
+        <div
+          className={`${styles.stackVisual} ${styles.stackFramed}`}
+          style={{ viewTransitionName: caseOpen.visual }}
+          {...enter}
+        >
+          <visuals.Board label={showcase.boardLabel} />
+        </div>
+      )
+    }
     if (study.media.screenshot) {
       return (
         <div
@@ -919,7 +959,11 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
       {/* left-hand sticky visuals: each one slides over the previous, which recedes and dims */}
       <div className={styles.sections} {...enter}>
         <section className={styles.section} style={cssVars({ zIndex: 1 })}>
-          {study.media.screenshot ? (
+          {visuals && showcase ? (
+            <div className={styles.bg} data-visual="0" style={{ viewTransitionName: caseOpen.visual }}>
+              <visuals.Board label={showcase.boardLabel} />
+            </div>
+          ) : study.media.screenshot ? (
             <div className={`${styles.bg} ${styles.bgFramed}`} data-visual="0" style={{ viewTransitionName: caseOpen.visual }}>
               <img className={styles.ambient} src={study.media.background} alt="" aria-hidden="true" decoding="async" />
               <BrowserFrame
@@ -937,7 +981,13 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
             </div>
           )}
         </section>
-        {hasJourney ? (
+        {visuals && showcase ? (
+          <section className={styles.section} style={cssVars({ zIndex: 2 })}>
+            <div className={styles.bg} data-visual="1">
+              <visuals.Story story={showcase.story} active={chapter === 1} />
+            </div>
+          </section>
+        ) : hasJourney ? (
           <section className={styles.section} style={cssVars({ zIndex: 2 })}>
             <div className={`${styles.bg} ${styles.bgJourney}`} data-case="phone-split" data-visual="1">
               <img className={styles.ambient} src={study.media.background} alt="" aria-hidden="true" decoding="async" />
@@ -961,7 +1011,11 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
           </section>
         )}
         <section className={styles.section} style={cssVars({ zIndex: 3 })}>
-          {study.media.screenshot ? (
+          {visuals && showcase ? (
+            <div className={`${styles.bg} ${styles.bgSolid}`} data-visual="2">
+              <visuals.Outcomes outcomes={showcase.outcomes} active={chapter === 2} />
+            </div>
+          ) : study.media.screenshot ? (
             <div className={`${styles.bg} ${styles.bgFramed} ${styles.bgSolid}`} data-visual="2">
               <img className={styles.ambient} src={study.media.closing} alt="" aria-hidden="true" loading="lazy" decoding="async" />
               <BrowserFrame src={study.media.closing} host={host} zoom={study.media.closingZoom} className={styles.browser} />
@@ -996,7 +1050,25 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
             <ArrowIcon />
           </a>
         </div>
-        {!hasJourney && (
+        {visuals && showcase && (
+          <>
+            <StackReveal section={1}>
+              <div ref={stackStoryRef}>
+                <visuals.Story story={showcase.story} active={stackStoryOn} />
+              </div>
+            </StackReveal>
+            <StackReveal className={styles.stackBlock}>
+              <span className={styles.caps}>{goal.label}</span>
+              <h2 className={styles.heading}>{goal.heading}</h2>
+              {goal.paragraphs.map((t, i) => (
+                <p key={i} className={styles.paragraph}>
+                  {t}
+                </p>
+              ))}
+            </StackReveal>
+          </>
+        )}
+        {!visuals && !hasJourney && (
           <>
             <StackReveal section={1}>
               <video
@@ -1066,7 +1138,15 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
             </p>
           ))}
         </StackReveal>
-        <StackReveal>{stackVisual(true)}</StackReveal>
+        {visuals && showcase ? (
+          <StackReveal>
+            <div ref={stackOutcomesRef}>
+              <visuals.Outcomes outcomes={showcase.outcomes} active={stackOutcomesOn} />
+            </div>
+          </StackReveal>
+        ) : (
+          <StackReveal>{stackVisual(true)}</StackReveal>
+        )}
         {next && (
           <StackReveal className={styles.stackLink}>
             <Link to="/projects/$slug" params={{ slug: next.slug }} className={styles.caseLink}>

@@ -89,6 +89,70 @@
   opacity: 0;
 }
 
+/* ---- presentation card (project `feature`): description left, presentation image right ---- */
+.split {
+  display: grid;
+  grid-template-columns: var(--layout-project-split-columns);
+  gap: var(--layout-project-split-gap);
+  align-items: stretch;
+}
+.feature {
+  display: flex;
+  flex-direction: column;
+  gap: var(--layout-project-split-titleGap);
+  min-width: 0;
+  will-change: transform, opacity;
+}
+.featureTitle {
+  font-size: var(--layout-project-split-titleSize);
+  line-height: var(--layout-project-split-titleLine);
+  font-weight: var(--font-weight-light);
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+.featureText {
+  max-width: var(--layout-project-split-textMax);
+  color: var(--color-textMuted);
+  font-size: var(--layout-project-split-textSize);
+  line-height: var(--layout-project-split-textLine);
+  font-weight: var(--font-weight-light);
+}
+/* "View case study ↗" (reference), pushed to the bottom of the column; the whole card is the link */
+.featureCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: auto;
+  align-self: flex-start;
+  color: var(--color-textMuted);
+  font-size: var(--type-small-size);
+  line-height: var(--type-small-lineHeight);
+  text-transform: uppercase;
+  transition: color var(--motion-duration-d300) linear;
+}
+.featureCta svg {
+  width: var(--layout-linkArrow);
+  height: var(--layout-linkArrow);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.2;
+  transition: transform var(--motion-duration-d300) var(--motion-ease-outQuart);
+}
+@media (hover: hover) {
+  .cardSplit:hover .featureCta {
+    color: var(--color-textStrong);
+  }
+  .cardSplit:hover .featureCta svg {
+    transform: translate(2px, -2px);
+  }
+}
+@media (min-width: 768px) {
+  .media.mediaSplit {
+    aspect-ratio: var(--layout-project-split-mediaRatio);
+    max-height: var(--layout-project-split-mediaMaxHeight);
+  }
+}
+
 /* reference ≤991px: card margin-bottom 60px, padding-top 12px, title row margin 12px */
 @media (max-width: 991px) {
   .card {
@@ -98,6 +162,10 @@
   .lineWrap,
   .head {
     margin-bottom: 12px;
+  }
+  .split {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--layout-project-split-tabletGap);
   }
 }
 /* reference ≤479px: padding-top 14px, 17px gaps, list margin-bottom 80px */
@@ -124,5 +192,21 @@
   /* reference phone cards: 335 × 215 media; the stacked case cover uses the same box (framedRatio) */
   .media {
     aspect-ratio: var(--layout-project-phoneRatio);
+  }
+  /* presentation card: the image first, like every other card (the stacked case cover copies its
+     box), then the description */
+  .split {
+    grid-template-columns: 1fr;
+    gap: var(--layout-project-split-phoneGap);
+  }
+  .split > .mediaWrap {
+    order: -1;
+  }
+  .feature {
+    gap: var(--layout-project-split-phoneGap);
+  }
+  .featureTitle {
+    font-size: var(--layout-project-split-phoneTitleSize);
+    line-height: var(--layout-project-split-phoneTitleLine);
   }
 }

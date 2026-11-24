@@ -2,7 +2,7 @@
  * SITE CONTENT — Spanish (Argentina, voseo as on gotoxy.dev).
  * Same shape as `site.ts`; media paths and links are shared.
  */
-import { brand as brandEn, caseMedia, projects as projectsEn, type SiteContent } from './site'
+import { brand as brandEn, caseMedia, projects as projectsEn, type Project, type SiteContent } from './site'
 
 export const brand: SiteContent['brand'] = {
   ...brandEn,
@@ -47,10 +47,19 @@ const namesEs: Record<string, string> = {
   speech: 'Corrección de inglés en tiempo real',
 }
 
+const featuresEs: Record<string, NonNullable<Project['feature']>> = {
+  cam: {
+    title: 'Gestión académica, WhatsApp y pagos en una sola plataforma',
+    text: 'Instituto CAM acompaña a estudiantes brasileños que cursan en universidades de Paraguay. Gestionaba miles de alumnos con planillas, mensajes uno por uno y cargas manuales en el campus virtual. Desarrollamos una plataforma web a medida que centraliza toda la operación.',
+    cta: 'Ver caso',
+  },
+}
+
 export const projects: SiteContent['projects'] = projectsEn.map((p) => ({
   ...p,
   name: namesEs[p.id] ?? p.name,
   tags: tagsEs[p.id] ?? p.tags,
+  ...(p.feature ? { feature: featuresEs[p.id] ?? p.feature } : {}),
 }))
 
 export const clients: SiteContent['clients'] = {
@@ -361,11 +370,87 @@ export const caseStudies: SiteContent['caseStudies'] = [
         heading: 'Construido para bancar el volumen real, no una demo',
         paragraphs: [
           'Infraestructura en Cloudflare Workers y D1, sin servidores que mantener y sin un número personal que se banee. Cotejo automático contra la lista de la universidad, con revisión manual solo para las diferencias.',
-          'Después lo ampliamos hasta el panel propio del instituto, catorce pantallas: alta automática en Moodle, campañas, reenvíos, seguridad y auditoría. El instituto controla todo sin depender de nosotros.',
+          'Después lo ampliamos hasta el panel propio del instituto: alta automática en Moodle, campañas, reenvíos, pagos en tres monedas con varias cajeras, roles e historial de cambios. El instituto controla todo sin depender de nosotros.',
         ],
       },
     ],
     media: caseMedia('instituto-cam'),
+    showcase: {
+      id: 'cam',
+      boardLabel: 'Panel de Instituto CAM: alumnos, campaña de WhatsApp, informe de envíos, pagos, y el formulario de inscripción y los mensajes de WhatsApp del alumno',
+      story: {
+        label: 'La historia, paso a paso',
+        scenes: [
+          {
+            label: 'El problema',
+            title: 'Miles de alumnos, planillas y mensajes uno por uno',
+            text: 'Datos cargados a mano, duplicados y celulares sin formato. Cada acceso al campus y cada horario salía de a un mensaje.',
+          },
+          {
+            label: 'La solución',
+            title: 'Una plataforma que centraliza toda la operación',
+            text: 'Inscripción online, cotejo con la universidad, alta automática en Moodle, campañas de WhatsApp y pagos, en un solo panel.',
+          },
+          {
+            label: 'Resultados',
+            title: 'De tareas manuales a una operación diaria',
+            text: 'El equipo trabaja desde un solo panel. En el primer día de campaña salieron cerca de 2.000 mensajes.',
+          },
+        ],
+        steps: [
+          'Los alumnos se registran solos, desde el módulo de inscripción',
+          'Los operadores de CAM auditan los registros y cotejan a cada alumno, comisión por comisión',
+          'Con los alumnos cotejados, asignan campañas de WhatsApp que les mandan la información de sus clases en Moodle',
+          'También gestionan los pagos, en guaraníes, dólares y reales',
+          'En los reportes ven las estadísticas, los errores de las campañas y cada tipo de problema',
+        ],
+        words: ['Registro', 'Cotejo', 'Campañas', 'Pagos', 'Reportes'],
+        stats: [
+          { value: '3.000+', label: 'alumnos en un solo panel' },
+          { value: '≈2.000', label: 'mensajes el primer día de campaña' },
+          { value: '3', label: 'monedas, varias cajeras' },
+        ],
+        replay: 'Ver de nuevo',
+        pause: 'Pausar',
+        play: 'Reproducir',
+      },
+      outcomes: {
+        before: 'Antes',
+        after: 'Ahora',
+        items: [
+          {
+            icon: 'signup',
+            title: 'Inscripción',
+            before: 'Planillas cargadas a mano, con duplicados y datos faltantes',
+            after: 'Formulario online en portugués y español, con el celular validado según el país',
+          },
+          {
+            icon: 'campus',
+            title: 'Campus virtual',
+            before: 'Altas y comisiones cargadas una por una en Moodle',
+            after: 'Alta automática por comisión y control de diferencias entre el campus y el sistema',
+          },
+          {
+            icon: 'messages',
+            title: 'Comunicación',
+            before: 'Accesos y horarios enviados de a un mensaje',
+            after: 'Campañas a más de 3.000 alumnos con seguimiento de entrega, reenvíos y respuestas automáticas',
+          },
+          {
+            icon: 'payments',
+            title: 'Cobros',
+            before: 'Recibos en papel y cuentas separadas por moneda',
+            after: 'Guaraníes, dólares y reales, varias cajeras y el comprobante al alumno por WhatsApp',
+          },
+          {
+            icon: 'control',
+            title: 'Control',
+            before: 'Sin registro de quién cambió qué',
+            after: 'Usuarios, roles e historial de cambios; informes en PDF y Excel',
+          },
+        ],
+      },
+    },
     next: 'animageneris',
   },
   {

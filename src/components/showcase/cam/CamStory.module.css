@@ -1,0 +1,277 @@
+/*
+ * Instituto CAM story film. Controls on top, the film frame in the middle (a size container: the
+ * 3D world and its overlays scale with it, see story/Film.module.css), the caption below. Controls,
+ * HUD and caption are real text in px tokens so they stay legible on phones.
+ */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--layout-showcase-controlGap);
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  /* the case pager sits fixed over the bottom-left corner on desktop: keep the caption above it */
+  padding: var(--layout-showcase-storyPad) var(--layout-showcase-storyPad)
+    calc(var(--layout-caseStudy-pagerOffset) + var(--layout-tapMin) + var(--layout-showcase-controlGap));
+  overflow: hidden;
+  background:
+    radial-gradient(60% 55% at 70% 25%, var(--color-cam-stageGlow), transparent 70%),
+    linear-gradient(160deg, var(--color-cam-stage), var(--color-cam-stageDeep) 70%);
+  color: var(--color-cam-navyText);
+  font-family: var(--font-sans);
+}
+
+/* ---- controls: one segment per part of the film, play / pause / replay ---- */
+.controls {
+  display: flex;
+  align-items: center;
+  gap: var(--layout-showcase-controlGap);
+  flex: none;
+}
+.segments {
+  display: flex;
+  flex: 1;
+  gap: calc(var(--layout-showcase-controlGap) / 4);
+}
+.segment {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  min-height: var(--layout-tapMin);
+  padding: 0;
+}
+.track {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: calc(var(--layout-showcase-controlSize) / 4);
+  overflow: hidden;
+  border-radius: var(--layout-showcase-controlSize);
+  background: color-mix(in srgb, var(--color-cam-navyText) 30%, transparent);
+  transition: background-color var(--motion-duration-d300) var(--motion-ease-outQuart);
+}
+.fill {
+  position: absolute;
+  inset: 0;
+  background: var(--color-textStrong);
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--layout-showcase-controlGap) / 2);
+  min-height: var(--layout-tapMin);
+  padding: 0;
+  color: var(--color-textStrong);
+  font-size: var(--layout-showcase-controlSize);
+  letter-spacing: var(--type-tag-letterSpacing);
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: color var(--motion-duration-d300) var(--motion-ease-outQuart);
+}
+.icon {
+  width: 1.2em;
+  height: 1.2em;
+  fill: currentColor;
+}
+@media (hover: hover) {
+  .segment:hover .track {
+    background: color-mix(in srgb, var(--color-cam-navyText) 55%, transparent);
+  }
+  .toggle:hover {
+    color: var(--color-cam-card);
+  }
+}
+
+/* ---- the film frame ---- */
+.frame {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  container-type: size;
+  border-radius: calc(var(--layout-showcase-controlGap) / 2);
+  background:
+    radial-gradient(55% 45% at 50% 40%, var(--color-cam-stageGlow), transparent 75%),
+    linear-gradient(170deg, var(--color-cam-stageDeep), color-mix(in srgb, var(--color-cam-stageDeep) 55%, var(--color-bg)));
+  isolation: isolate;
+}
+.stage {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  user-select: none;
+}
+
+/*
+ * Band over the top of the film: the section title rests at its top-left, the step index and the
+ * running time sit at its top-right. Its scrim keeps both readable over any screen, and the camera
+ * frames every screen in the area below it (story/timeline.ts measures the band).
+ */
+.band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: calc(var(--layout-showcase-filmBandPad) * 2.6 + var(--layout-showcase-filmTitleSize));
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--color-cam-stageDeep) 94%, transparent) 60%,
+    transparent
+  );
+}
+.hud {
+  position: absolute;
+  right: var(--layout-showcase-filmBandPad);
+  top: var(--layout-showcase-filmBandPad);
+  display: flex;
+  align-items: center;
+  gap: calc(var(--layout-showcase-controlGap) / 2);
+  color: var(--color-cam-card);
+  font-size: var(--layout-showcase-filmHudSize);
+  letter-spacing: var(--type-tag-letterSpacing);
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/*
+ * Section title. Its resting state is the top-left of the band at filmTitleSize. --m (1 → 0) moves
+ * it from the centre of the frame to there and --sc scales it from the top-left corner, so a title
+ * is large in the centre, travels, then shrinks (timeline.ts writes both per frame). In the centre
+ * it carries its own soft shade (no full-frame overlay), which fades as it leaves (--m).
+ */
+.sectionTitle {
+  position: absolute;
+  left: var(--layout-showcase-filmBandPad);
+  top: var(--layout-showcase-filmBandPad);
+  max-width: calc(100% - var(--layout-showcase-filmBandPad) * 2);
+  --m: 0;
+  --sc: 1;
+  color: var(--color-cam-card);
+  font-size: var(--layout-showcase-filmTitleSize);
+  font-weight: var(--font-weight-regular);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transform-origin: 0 0;
+  transform: translate(
+      calc(var(--m) * (50cqw - var(--layout-showcase-filmBandPad) - var(--sc) * 50%)),
+      calc(var(--m) * (50cqh - var(--layout-showcase-filmBandPad) - var(--sc) * 50%))
+    )
+    scale(var(--sc));
+  opacity: 0;
+  visibility: hidden;
+}
+.sectionTitle::before {
+  content: '';
+  position: absolute;
+  inset: -0.35em -0.6em;
+  z-index: -1;
+  border-radius: 0.4em;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--color-cam-stageDeep) 85%, transparent), transparent);
+  backdrop-filter: blur(var(--layout-showcase-filmTitleScrimBlur));
+  opacity: var(--m);
+}
+.rec {
+  flex: none;
+  width: calc(var(--layout-showcase-filmHudSize) * 0.7);
+  height: calc(var(--layout-showcase-filmHudSize) * 0.7);
+  border-radius: 50%;
+  background: var(--color-cam-red);
+  animation: rec var(--motion-duration-d1000) steps(2, jump-none) infinite;
+}
+@keyframes rec {
+  to {
+    opacity: 0.25;
+  }
+}
+
+/* ---- caption: every variant sits in one grid cell, so the block never changes height ---- */
+.caption {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--layout-showcase-controlGap) / 2);
+  flex: none;
+  max-width: var(--layout-showcase-storyCaptionMax);
+}
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--layout-showcase-controlGap) / 2);
+  font-size: var(--layout-showcase-controlSize);
+  letter-spacing: var(--type-tag-letterSpacing);
+  text-transform: uppercase;
+}
+.rule {
+  flex: none;
+  width: var(--layout-showcase-controlGap);
+  height: calc(var(--layout-showcase-controlSize) / 12);
+  background: currentColor;
+}
+.stack {
+  display: grid;
+  min-width: 0;
+}
+.layer {
+  grid-area: 1 / 1;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--motion-duration-d400) var(--motion-ease-outQuart),
+    visibility var(--motion-duration-d400);
+}
+.layer[data-on] {
+  opacity: 1;
+  visibility: visible;
+}
+.title {
+  color: var(--color-textStrong);
+  font-size: var(--layout-showcase-captionTitleSize);
+  font-weight: var(--font-weight-light);
+  line-height: var(--type-body-lineHeight);
+}
+.text {
+  font-size: var(--layout-showcase-captionSize);
+  line-height: var(--type-caption-lineHeight);
+}
+
+/* ---- tablets and phones: full content width, auto height, square film ---- */
+@media (max-width: 991px) {
+  .root {
+    height: auto;
+    padding-bottom: var(--layout-showcase-storyPad);
+  }
+  .frame {
+    flex: none;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+  }
+}
+
+/* phones: the seven segments take the whole row (≥ 44 px each), the toggle gets its own */
+@media (max-width: 767px) {
+  .controls {
+    flex-wrap: wrap;
+    row-gap: 0;
+  }
+  .segments {
+    flex: 1 0 100%;
+    gap: calc(var(--layout-showcase-controlGap) / 8);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .layer,
+  .track,
+  .toggle {
+    transition: none;
+  }
+  .rec {
+    animation: none;
+  }
+}
