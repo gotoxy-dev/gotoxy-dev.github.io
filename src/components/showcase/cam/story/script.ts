@@ -54,9 +54,11 @@ export type FocusName =
   | 'sheet'
   | 'sheet-bad'
   | 'hook-group'
+  | 'hook-chat'
   | 'moodle'
   | 'moodle-submit'
   | 'paper'
+  | 'paper-total'
   | 'versions'
   | 'signup-phone'
   | 'signup-submit'
@@ -64,6 +66,9 @@ export type FocusName =
   | 'students-rows'
   | 'audit'
   | 'audit-flag'
+  | 'templates'
+  | 'tpl-mapping'
+  | 'tpl-list'
   | 'assign'
   | 'assign-send'
   | 'campaign'
@@ -92,6 +97,8 @@ export type Focus = (name: FocusName) => Box
 export interface View {
   height: number
   stats: number
+  /** Height of the problem beats' caption band at the bottom */
+  caption: number
 }
 
 interface Shot {
@@ -113,6 +120,12 @@ const s = (seg: number, offset: number) => SEG[seg] + offset
 const whipStart = (seg: number) => SEG[seg + 1] - WHIP
 
 const H = 0
+
+/**
+ * Problem beats (content time): a · the sheet typed by hand, b · one WhatsApp at a time, c · Moodle
+ * by hand, d · payments on paper (the day's cash book), e · copies of the list; each gets its caption.
+ */
+export const BEAT = [0, 4.2, 7.6, 11.2, 14.8]
 const R = 1
 const C = 2
 const W = 3
@@ -125,7 +138,7 @@ const F = 6
  * margin: about 62 % of the width or 88 % of the height under the title band, never above 1:1, so
  * text stays crisp); `d` overrides the distance. Offsets nudge the target.
  */
-type Aim = Partial<Omit<Pose, 'x' | 'y' | 'z' | 'd'>> & { k?: number; d?: number; dx?: number; dy?: number; dz?: number; stats?: boolean; fitW?: number }
+type Aim = Partial<Omit<Pose, 'x' | 'y' | 'z' | 'd'>> & { k?: number; d?: number; dx?: number; dy?: number; dz?: number; stats?: boolean; caption?: boolean; fitW?: number }
 
 /** Share of the view a focus fills at rest */
 const FIT_W = 0.62
@@ -136,11 +149,13 @@ function shotList(focus: Focus, view: View): Shot[] {
   const on = (name: FocusName, a: Aim = {}): Pose => {
     const box = focus(name)
     // results: keep the platform above the stats band (the target moves down, the content up)
-    const height = a.stats ? view.height - view.stats : view.height
+    // keep the target above a band at the bottom: the results' stats or the problem beats' caption
+    const reserve = a.stats ? view.stats : a.caption ? view.caption : 0
+    const height = view.height - reserve
     const fit = Math.min(((a.fitW ?? FIT_W) * 100) / Math.max(1, box.w), (FIT_H * height) / Math.max(1, box.h))
     const scale = Math.min(1, fit * (a.k ?? 1))
     const d = a.d ?? persp / scale - persp
-    const lift = a.stats ? view.stats / 2 / scale : 0
+    const lift = reserve / 2 / scale
     return {
       x: box.x + (a.dx ?? 0),
       y: box.y + (a.dy ?? 0) + lift,
@@ -167,24 +182,27 @@ function shotList(focus: Focus, view: View): Shot[] {
   ]
 
   // resting framings
-  const sheet = on('sheet', { yaw: 4, pitch: -3, roll: -1, shake: 0.6 })
+  const sheet = on('sheet', { yaw: 4, pitch: -3, roll: -1, shake: 0.6, caption: true })
   const students = on('students', { yaw: 2 })
   const audit = on('audit', { yaw: -4, pitch: 4 })
-  const assign = on('assign', { yaw: 6 })
   const payment = on('payment', { yaw: 2, pitch: -4 })
   const report = on('report', { yaw: 4 })
   const incidents = on('incidents', { yaw: 6 })
 
   const shots: Shot[] = [
-    // 0 · problem, five beats: the hand-typed sheet and its bad cells, one WhatsApp at a time,
-    // Moodle accounts by hand, payments on paper, copies of the list nobody can trace
-    shot(0, 1.6, on('sheet', { k: 0.9, yaw: 10, pitch: -6, roll: -2, shake: 0.8 }), sheet, out),
-    ...detail(1.6, sheet, on('sheet-bad', { k: 0.7, yaw: -4, shake: 0.4 }), 0.9),
-    shot(3.4, 6.8, on('hook-group', { k: 0.92, yaw: -16, pitch: 4, roll: 2, shake: 0.6 }), on('hook-group', { yaw: -4, pitch: 1, shake: 0.6 }), io1),
-    shot(6.8, 8.6, on('moodle', { k: 0.9, yaw: 14, pitch: -4, shake: 0.4 }), on('moodle', { yaw: 4, shake: 0.4 }), io),
-    ...detail(8.6, on('moodle', { yaw: 4, shake: 0.4 }), on('moodle-submit', { k: 0.8, shake: 0.4 }), 0.6),
-    shot(10.2, 13.2, on('paper', { k: 0.9, yaw: -10, pitch: -34, roll: -5, shake: 0.4 }), on('paper', { yaw: 6, pitch: -18, shake: 0.4 }), io),
-    shot(13.2, whipStart(H), on('versions', { k: 0.92, yaw: -22, dy: -8, shake: 0.5 }), on('versions', { yaw: 12, dy: 6, shake: 0.5 }), io),
+    // 0 · problem, five beats, each framed above its caption: the hand-typed sheet and its bad
+    // cells, one WhatsApp at a time, Moodle accounts by hand, the cash book whose total never adds up,
+    // three copies of the list with the same cell changed
+    shot(0, 2.45, on('sheet', { k: 0.9, yaw: 10, pitch: -6, roll: -2, shake: 0.8, caption: true }), sheet, out),
+    ...detail(2.45, sheet, on('sheet-bad', { d: 25, dx: -30, yaw: -4, shake: 0.4, caption: true }), 0.8),
+    shot(BEAT[1], BEAT[1] + 1, on('hook-group', { k: 0.92, yaw: -16, pitch: 4, roll: 2, shake: 0.6, caption: true }), on('hook-group', { yaw: -8, pitch: 2, shake: 0.6, caption: true }), io1),
+    ...detail(BEAT[1] + 1, on('hook-group', { yaw: -8, pitch: 2, shake: 0.6, caption: true }), on('hook-chat', { d: 40, shake: 0.4, caption: true }), 0.75),
+    shot(BEAT[1] + 2.7, BEAT[2], on('hook-group', { yaw: -8, pitch: 2, shake: 0.6, caption: true }), on('hook-group', { k: 1.03, yaw: -2, shake: 0.6, caption: true }), io1),
+    shot(BEAT[2], BEAT[2] + 1.9, on('moodle', { k: 0.9, yaw: 14, pitch: -4, shake: 0.4, caption: true }), on('moodle', { yaw: 4, shake: 0.4, caption: true }), io),
+    ...detail(BEAT[2] + 1.9, on('moodle', { yaw: 4, shake: 0.4, caption: true }), on('moodle-submit', { d: 34, dx: -22, shake: 0.4, caption: true }), 0.75),
+    shot(BEAT[3], BEAT[3] + 1.8, on('paper', { k: 0.9, yaw: -8, pitch: -10, roll: -2, shake: 0.3, caption: true, fitW: 0.85 }), on('paper', { yaw: 3, pitch: -3, shake: 0.3, caption: true, fitW: 0.85 }), io),
+    ...detail(BEAT[3] + 1.8, on('paper', { yaw: 3, pitch: -3, shake: 0.3, caption: true, fitW: 0.85 }), on('paper-total', { d: 22, shake: 0.3, caption: true }), 0.85),
+    shot(BEAT[4], whipStart(H), on('versions', { k: 0.92, yaw: -14, dy: -6, shake: 0.4, caption: true }), on('versions', { yaw: 8, dy: 4, shake: 0.4, caption: true }), io),
     // 1 · signup: the phone fills the form and sends it, the record lands in the students panel
     shot(s(R, 0), s(R, 2.4), on('signup-phone', { k: 0.94, yaw: -20, pitch: 3, roll: -2 }), on('signup-phone', { yaw: 8, pitch: -2, roll: 1 }), io),
     ...detail(s(R, 2.4), on('signup-phone', { yaw: 8, pitch: -2, roll: 1 }), on('signup-submit', { k: 0.85, yaw: 4 }), 0.6, on('students', { k: 0.9, yaw: -6 })),
@@ -194,12 +212,17 @@ function shotList(focus: Focus, view: View): Shot[] {
     shot(s(C, 0), s(C, 3.4), on('audit', { k: 0.9, yaw: -16, pitch: 8 }), audit, io),
     ...detail(s(C, 3.4), audit, on('audit-flag', { k: 0.6 }), 1),
     shot(s(C, 5.35), whipStart(C), audit, on('audit', { k: 0.94, yaw: 8, pitch: -2 }), io),
-    // 3 · campaigns: assign and send, the progress runs, the burst, a quick reveal, one student's phone
-    shot(s(W, 0), s(W, 2.1), on('assign', { k: 0.9, yaw: -14, pitch: 3 }), assign, out),
-    ...detail(s(W, 2.1), assign, on('assign-send', { k: 0.6 }), 0.4),
-    shot(s(W, 3.45), s(W, 5.6), on('campaign', { k: 1.05 }), on('campaign', { k: 0.9, yaw: 6 }), out),
-    shot(s(W, 5.6), s(W, 6.4), on('campaign', { k: 0.9, yaw: 6 }), on('ring-all', { yaw: 20, pitch: -8 }), crash),
-    shot(s(W, 6.4), whipStart(W), on('ring-hero', { k: 0.85, yaw: -10, pitch: -3 }), on('ring-hero', { yaw: 0 }), io),
+    // 3 · campaigns: choose the templates, map the variables (the links), assign and send, the burst,
+    // a quick reveal of every phone, one student's phone with the links, back to the delivery counters
+    shot(s(W, 0), s(W, 2), on('templates', { k: 0.9, yaw: -10, pitch: 3 }), on('templates', { yaw: 3 }), io),
+    ...detail(s(W, 2), on('templates', { yaw: 3 }), on('tpl-list', { k: 0.95 }), 0.6),
+    shot(s(W, 3.55), s(W, 3.9), on('templates', { yaw: 3 }), on('templates', { yaw: 3 }), none),
+    ...detail(s(W, 3.9), on('templates', { yaw: 3 }), on('tpl-mapping', { k: 0.9 }), 0.6),
+    shot(s(W, 5.45), s(W, 7.6), on('assign', { k: 0.9, yaw: -12, pitch: 3 }), on('assign', { yaw: 5 }), out),
+    shot(s(W, 7.6), s(W, 9.6), on('campaign', { k: 1.05 }), on('campaign', { k: 0.92, yaw: 6 }), out),
+    shot(s(W, 9.6), s(W, 10.3), on('campaign', { k: 0.92, yaw: 6 }), on('ring-all', { yaw: 20, pitch: -8 }), crash),
+    shot(s(W, 10.3), s(W, 12.3), on('ring-hero', { k: 0.88, yaw: -10, pitch: -3 }), on('ring-hero', { yaw: 0 }), io),
+    shot(s(W, 12.3), whipStart(W), on('campaign', { k: 0.96, yaw: -4 }), on('campaign', { yaw: 2 }), out),
     // 4 · payments: crane down as the payments drop in, push to the save button, follow the receipt
     shot(s(P, 0), s(P, 3), on('payment', { k: 0.9, yaw: -8, pitch: -20, dy: -12 }), payment, io),
     ...detail(s(P, 3), payment, on('pay-save', { k: 0.75 }), 1),
@@ -337,7 +360,7 @@ export function playbackTime(t: number) {
 
 /** Segment buttons seek to their cut; reduced-motion stills hold on a composed frame of each (playback time) */
 export const SEEK = PSEG.slice(0, SEGMENTS)
-export const HOLD = [2.8, s(R, 6.6), s(C, 8.6), s(W, 8.9), s(P, 8.2), s(I, 8.6), TOTAL].map(playbackTime)
+export const HOLD = [3.2, s(R, 6.6), s(C, 8.6), s(W, 11.6), s(P, 8.2), s(I, 8.6), TOTAL].map(playbackTime)
 
 /** Particle window: records converge into the students panel */
 export const RECORDS_WINDOW = { start: s(R, 4.4), end: s(R, 8.6) }

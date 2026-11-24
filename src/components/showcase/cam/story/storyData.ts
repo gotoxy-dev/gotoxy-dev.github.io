@@ -1,4 +1,4 @@
-import type { Tone } from '../camData'
+import { camSheet, type Tone } from '../camData'
 
 /**
  * Invented data for the story film (S7): names, figures and messages are made up so the scenes read
@@ -96,6 +96,38 @@ export const storyMessages = [
   { title: 'Zoom', text: 'Prova parcial: sexta às 09:00' },
 ]
 
+/** Links the campaign sends (invented, reserved .example domain) and the preview cards WhatsApp draws for them */
+export const storyLinks = {
+  moodle: { url: 'https://campus.cam-edu.example/login', title: 'Campus virtual · Instituto CAM', site: 'campus.cam-edu.example' },
+  zoom: { url: 'https://zoom.cam-edu.example/j/2a1-1530', title: 'Reunión de Zoom · 2A-1 · quarta 15:30', site: 'zoom.cam-edu.example' },
+}
+
+/** Campaign step 1: the approved Meta templates, two picked in order, one previewed with its variables mapped */
+export const storyTemplates = {
+  title: 'Plantillas de WhatsApp',
+  hint: 'Aprobadas por Meta · se envían en orden',
+  list: [
+    { name: 'credenciales_moodle_pt', label: 'Credenciales de Moodle', meta: 'Utilidad · pt_BR', state: 'Aprobada', pick: 1 },
+    { name: 'acceso_zoom_pt', label: 'Acceso a clase por Zoom', meta: 'Utilidad · pt_BR', state: 'Aprobada', pick: 2 },
+    { name: 'horario_examen_pt', label: 'Horario de examen', meta: 'Utilidad · pt_BR', state: 'Aprobada', pick: 0 },
+    { name: 'recordatorio_asistencia_b1', label: 'Recordatorio de asistencia', meta: 'Marketing · pt_BR', state: 'En revisión', pick: 0 },
+  ],
+  sequence: 'Secuencia',
+  preview: {
+    title: 'Vista previa',
+    header: 'Acesso ao campus virtual',
+    body: ['Olá, ', '{{1}}', '! Seu usuário do Moodle é ', '{{2}}', '. Entre no campus: ', '{{3}}'],
+    footer: 'Instituto CAM · mensagem automática',
+    buttons: ['Abrir campus', 'Preciso de ajuda'],
+  },
+  mappingTitle: 'Variables → columnas',
+  mapping: [
+    { v: '{{1}}', to: 'Nombre' },
+    { v: '{{2}}', to: 'Usuario' },
+    { v: '{{3}}', to: storyLinks.moodle.url },
+  ],
+}
+
 /** Quick replies under the campaign's template message */
 export const storyReplies = ['Confirmar presença', 'Preciso de ajuda']
 
@@ -150,20 +182,97 @@ export const storyMoodleForm = {
   counter: 'Usuarios creados',
 }
 
-/** Problem: payments noted on paper, in three currencies */
-export const storyPaper = [
-  { amount: 'Gs. 220.000', note: 'Bruno · cuota 2' },
-  { amount: 'R$ 300', note: 'Camila ¿PIX?' },
-  { amount: 'US$ 40', note: 'Diego · efectivo' },
-  { amount: 'Gs. 650.000', note: '¿Eduarda?' },
-  { amount: 'R$ 180', note: 'Felipe' },
-  { amount: 'US$ 95', note: 'Ana · falta' },
+/*
+ * Problem: the tools the team used, as Excel-like windows (invented data, the product's own Spanish).
+ * Rows are the sheet's rows from 2 on (row 1 is the header); a cell can carry a tone the window draws.
+ */
+export type XlTone = 'dup' | 'err' | 'total' | 'missing' | 'diff'
+export interface XlCell {
+  v: string
+  tone?: XlTone
+}
+export interface XlSheet {
+  file: string
+  nameBox: string
+  formula: string
+  header: string[]
+  /** grid-template-columns of the data columns (em of the window) */
+  widths: string
+  rows: (string | XlCell)[][]
+  /** Selected cell: [row index in rows, column index] */
+  selected?: [number, number]
+  /** Note bubble on the selected cell */
+  note?: string
+  sheets?: string[]
+  status?: string
+}
+
+/** a · the list typed by hand: duplicates and phones with no format */
+export const storyListSheet: XlSheet = {
+  file: camSheet.title,
+  nameBox: 'B3',
+  formula: '(sin dato)',
+  header: camSheet.columns,
+  widths: '10.5em 8.5em 7em 6em 6.5em',
+  rows: camSheet.rows,
+  selected: [1, 1],
+  sheets: ['Alumnos', 'Alumnos (2)', 'Hoja1'],
+}
+
+/** d · the payments: three currencies added up as plain numbers, a missing currency, a duplicate, a broken cell */
+export const storyCashSheet: XlSheet = {
+  file: 'Caja_cobros_FINAL.xlsx',
+  nameBox: 'E10',
+  formula: '=SUMA(E2:E9)',
+  header: ['Fecha', 'Alumno', 'Concepto', 'Moneda', 'Importe', 'Cajera'],
+  widths: '5em 7.5em 7em 5em 6.5em 5.5em',
+  rows: [
+    ['03/03', 'Bruno T.', 'Cuota 2', 'Gs', '220.000', 'Lucía'],
+    ['03/03', 'Camila D.', 'Matrícula', 'R$', '300', 'Lucía'],
+    ['04/03', 'Diego F.', 'Cuota 2', { v: '', tone: 'missing' }, '40', 'Marta'],
+    [
+      { v: '04/03', tone: 'dup' },
+      { v: 'Eduarda P.', tone: 'dup' },
+      { v: 'Certificado', tone: 'dup' },
+      { v: 'Gs', tone: 'dup' },
+      { v: '650.000', tone: 'dup' },
+      { v: 'Marta', tone: 'dup' },
+    ],
+    [
+      { v: '04/03', tone: 'dup' },
+      { v: 'Eduarda P.', tone: 'dup' },
+      { v: 'Certificado', tone: 'dup' },
+      { v: 'Gs', tone: 'dup' },
+      { v: '650.000', tone: 'dup' },
+      { v: 'Marta', tone: 'dup' },
+    ],
+    ['05/03', 'Felipe A.', 'Cuota 3', 'R$', '180', 'Lucía'],
+    ['05/03', 'Ana B.', 'Cuota 1', 'US$', '95', 'Marta'],
+    ['06/03', 'Gabriela V.', 'Cuota 2', 'Gs', '220.000', 'Lucía'],
+    ['', '', '', 'TOTAL', { v: '1.740.615', tone: 'total' }, ''],
+    ['', '', '', 'En Gs.', { v: '#¡VALOR!', tone: 'err' }, ''],
+  ],
+  selected: [8, 4],
+  note: '¿? no cuadra: Gs + US$ + R$',
+  sheets: ['Marzo', 'Abril', 'Copia de Abril'],
+}
+
+/** d · the calculator: the operator adds the total again by hand (expression line, result line) */
+export const storyCalcSteps = [
+  { expr: '', result: '220.000', keys: ['2', '0'] },
+  { expr: '220.000 +', result: '220.000', keys: ['+'] },
+  { expr: '220.000 +', result: '650.000', keys: ['6', '5', '0'] },
+  { expr: '220.000 + 650.000 +', result: '870.000', keys: ['+'] },
+  { expr: '220.000 + 650.000 +', result: '300', keys: ['3', '0'] },
+  { expr: '220.000 + 650.000 + 300 =', result: '870.300', keys: ['='] },
 ]
 
-/** Problem: the same list in many copies, and nobody knows who changed what */
+/** e · three copies of the list, tiled like Excel's "Organizar todo": the same cell holds three values */
+export const storyVersionHeader = ['Nombre', 'Teléfono', 'Comisión']
+export const storyVersionRow = ['Camila D. Reis', '11 9•••-4410']
+export const storyWho = { status: 'Última modificación: ¿?', note: '¿quién lo cambió?', author: 'Nota' }
 export const storyVersions = [
-  { file: 'alumnos_2026.xlsx', edited: '¿?' },
-  { file: 'alumnos_2026_FINAL.xlsx', edited: '¿?' },
-  { file: 'alumnos_FINAL_v2.xlsx', edited: '¿?' },
-  { file: 'alumnos_FINAL_v3 (1).xlsx', edited: '¿?' },
+  { file: 'alumnos_FINAL.xlsx', value: '3C-1' },
+  { file: 'alumnos_FINAL_v2.xlsx', value: '2A-1' },
+  { file: 'alumnos_FINAL_v2 (1).xlsx', value: '3C-2' },
 ]

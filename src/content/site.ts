@@ -143,6 +143,8 @@ export interface CaseShowcase {
     steps: string[]
     /** One big word per step, cut on screen as the step starts (kinetic type) */
     words: string[]
+    /** One line per beat of the problem chapter, shown in the film while the beat plays */
+    problemBeats: string[]
     /** Figures shown in the results scene */
     stats: { value: string; label: string }[]
     replay: string
@@ -654,11 +656,18 @@ export const caseStudies: CaseStudy[] = [
         steps: [
           'Students sign up on their own, through the registration module',
           'CAM’s operators audit the records and cross-check every student, commission by commission',
-          'Once checked, they assign WhatsApp campaigns that send each student their Moodle class details',
+          'Once checked, they pick the WhatsApp templates, add the Moodle and Zoom links and send the campaign to each commission',
           'They also manage the payments, in guaraníes, dollars and reais',
           'Reports show the statistics, campaign errors and every kind of issue',
         ],
         words: ['Signup', 'Cross-check', 'Campaigns', 'Payments', 'Reports'],
+        problemBeats: [
+          'Spreadsheets typed by hand: duplicates and phones with no format',
+          'Every login and every class schedule, one WhatsApp at a time',
+          'Moodle accounts created by hand, one student at a time',
+          'Payments noted in Excel sheets, in guaraníes, dollars and reais',
+          'Copies of the list, and nobody knows who changed what',
+        ],
         stats: [
           { value: '3,000+', label: 'students in one panel' },
           { value: '≈2,000', label: 'messages on the first campaign day' },

@@ -400,11 +400,18 @@ export const caseStudies: SiteContent['caseStudies'] = [
         steps: [
           'Los alumnos se registran solos, desde el módulo de inscripción',
           'Los operadores de CAM auditan los registros y cotejan a cada alumno, comisión por comisión',
-          'Con los alumnos cotejados, asignan campañas de WhatsApp que les mandan la información de sus clases en Moodle',
+          'Con los alumnos cotejados, eligen las plantillas de WhatsApp, cargan los enlaces de Moodle y Zoom y envían la campaña a cada comisión',
           'También gestionan los pagos, en guaraníes, dólares y reales',
           'En los reportes ven las estadísticas, los errores de las campañas y cada tipo de problema',
         ],
         words: ['Registro', 'Cotejo', 'Campañas', 'Pagos', 'Reportes'],
+        problemBeats: [
+          'Planillas cargadas a mano: duplicados y celulares sin formato',
+          'Cada acceso y cada horario de clase, un WhatsApp a la vez',
+          'Altas en Moodle a mano, de a un alumno',
+          'Cobros anotados en planillas de Excel, en guaraníes, dólares y reales',
+          'Copias de la lista y nadie sabe quién cambió qué',
+        ],
         stats: [
           { value: '3.000+', label: 'alumnos en un solo panel' },
           { value: '≈2.000', label: 'mensajes el primer día de campaña' },

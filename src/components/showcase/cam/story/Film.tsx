@@ -8,7 +8,6 @@ import {
   PaymentScreen,
   Phone,
   ReportScreen,
-  Sheet,
   SignupForm,
   StudentsScreen,
   WaBubble,
@@ -18,19 +17,22 @@ import {
   WaHeader,
 } from '../CamUi'
 import { seeded, setX } from './script'
-import { storyHookTarget, storyPaper, storyVersions } from './storyData'
+import { storyCashSheet, storyHookTarget, storyListSheet, storyVersions } from './storyData'
 import {
   AssignCard,
   AuditScreen,
   IncidentsScreen,
   MessageCard,
   MoodleForm,
-  PaperSlip,
+  ExcelCopy,
+  ExcelWindow,
   RecordCard,
   ReceiptCard,
   RingPhone,
+  TemplatesScreen,
   Ticket,
-  VersionCard,
+  WhoNote,
+  WinCalculator,
 } from './StoryScreens'
 import styles from './Film.module.css'
 
@@ -133,18 +135,8 @@ const TICKETS = Array.from({ length: 6 }, (_, i) => ({
   z: 10 + rand() * 70,
   rz: (rand() - 0.5) * 50,
 }))
-const PAPER = storyPaper.map((_, i) => ({
-  x: layout.paper.x + ((i % 3) - 1) * 52 + (rand() - 0.5) * 8,
-  y: (i < 3 ? -24 : 26) + (rand() - 0.5) * 6,
-  z: i * 3,
-  rz: (rand() - 0.5) * 34,
-}))
-const VERSIONS = storyVersions.map((_, i) => ({
-  x: layout.versions.x + (i - 1.5) * 16,
-  y: (i - 1.5) * 20,
-  z: -i * 26,
-  rz: (rand() - 0.5) * 8,
-}))
+/** Problem, copies of the list: tiled one under the other (Excel's "Organizar todo"), the note beside them */
+const VERSIONS = storyVersions.map((_, i) => ({ x: layout.versions.x, y: (i - 1) * 24, z: 0 }))
 
 /** Where a ring phone stands (its message lands there) */
 export const ringSpot = (i: number) => RING[i % RING.length]
@@ -185,6 +177,14 @@ export const Film = memo(function Film({ story }: FilmProps) {
 
       <canvas className={styles.canvas} data-film="canvas" />
 
+      <div className={styles.beats} data-film="beats">
+        {story.problemBeats.map((text, i) => (
+          <span key={`${i}-${text}`} className={styles.beat} data-film="beat">
+            {text}
+          </span>
+        ))}
+      </div>
+
       <div className={styles.stats} data-film="stats">
         {story.stats.map((stat) => (
           <span key={`${stat.value}-${stat.label}`} className={styles.stat} data-film="stat">
@@ -205,8 +205,8 @@ export const Film = memo(function Film({ story }: FilmProps) {
 function ProblemSet() {
   return (
     <FilmSet index={0}>
-      <Place {...layout.sheet} fs={3.4} film="hook-sheet" screen>
-        <Sheet className={styles.sheet} />
+      <Place {...layout.sheet} fs={3.2} film="hook-sheet" screen>
+        <ExcelWindow sheet={storyListSheet} />
       </Place>
 
       <Place {...layout.hookPhone} ry={-12} w={PHONE.w} h={PHONE.h} fs={PHONE.fs} film="hook-phone" screen>
@@ -246,19 +246,23 @@ function ProblemSet() {
         <MoodleForm />
       </Place>
 
-      {PAPER.map((p, i) => (
-        <Place key={i} {...p} fs={2.6} film="paper">
-          <PaperSlip index={i} />
-        </Place>
-      ))}
-      <Place {...layout.paper} box={[150, 90]} film="focus-paper" />
+      <Place x={layout.paper.x - 14} fs={3} film="xl-cash" screen>
+        <ExcelWindow sheet={storyCashSheet} />
+      </Place>
+      <Place x={layout.paper.x + 48} y={-10} z={8} fs={2.2} film="win-calc">
+        <WinCalculator />
+      </Place>
+      <Place x={layout.paper.x + 4} box={[134, 76]} film="focus-paper" />
 
       {VERSIONS.map((v, i) => (
-        <Place key={i} {...v} fs={2.2} film="version">
-          <VersionCard index={i} />
+        <Place key={i} {...v} fs={2.4} film="version" screen>
+          <ExcelCopy index={i} />
         </Place>
       ))}
-      <Place {...layout.versions} box={[120, 110]} film="focus-versions" />
+      <Place x={layout.versions.x + 44} y={0} z={0} rz={3} fs={2.2} film="who-note">
+        <WhoNote />
+      </Place>
+      <Place x={layout.versions.x + 10} box={[86, 72]} film="focus-versions" />
     </FilmSet>
   )
 }
@@ -313,6 +317,9 @@ function CampaignSet() {
       ))}
       <Place w={PANEL.w} h={PANEL.h} fs={PANEL.fs} film="campaign" screen>
         <CampaignScreen className={styles.fill} />
+      </Place>
+      <Place w={PANEL.w} h={PANEL.h} fs={PANEL.fs} film="templates" screen>
+        <TemplatesScreen className={styles.fill} />
       </Place>
       <Place z={-30} box={[520, 230]} film="focus-ring" />
       <Place {...layout.assign} ry={16} fs={2} film="assign" screen>

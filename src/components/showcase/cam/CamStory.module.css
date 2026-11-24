@@ -1,7 +1,8 @@
 /*
- * Instituto CAM story film. Controls on top, the film frame in the middle (a size container: the
- * 3D world and its overlays scale with it, see story/Film.module.css), the caption below. Controls,
- * HUD and caption are real text in px tokens so they stay legible on phones.
+ * Instituto CAM story film. Controls on top, the film frame below (a size container: the 3D world
+ * and its overlays scale with it, see story/Film.module.css); the caption is for screen readers
+ * unless motion is reduced. Controls, HUD and caption are real text in px tokens so they stay
+ * legible on phones.
  */
 
 .root {
@@ -221,13 +222,30 @@
   }
 }
 
-/* ---- caption: every variant sits in one grid cell, so the block never changes height ---- */
+/*
+ * ---- caption: every variant sits in one grid cell, so the block never changes height ----
+ * The film already shows each section's title and subtitle on its entry card, so with motion on
+ * the caption is only for screen readers (visually hidden, still in the accessibility tree). With
+ * reduced motion there are no entry cards: the caption shows under the film.
+ */
 .caption {
   display: flex;
   flex-direction: column;
   gap: calc(var(--layout-showcase-controlGap) / 2);
   flex: none;
   max-width: var(--layout-showcase-storyCaptionMax);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .caption {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
 }
 .eyebrow {
   display: flex;

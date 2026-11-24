@@ -7,9 +7,19 @@
   height: 100%;
   overflow: hidden;
   container-type: size;
+}
+/* the square's own background (it fades out when the hover opens the frame) */
+.backdrop {
+  position: absolute;
+  inset: 0;
   background:
     radial-gradient(60% 55% at 70% 30%, var(--color-cam-stageGlow), transparent 70%),
     linear-gradient(160deg, var(--color-cam-stage), var(--color-cam-stageDeep));
+}
+/* holds the stage; with the hover it reaches past the square (see .interactive) */
+.bleed {
+  position: absolute;
+  inset: 0;
 }
 .stage {
   position: absolute;
@@ -22,20 +32,98 @@
   pointer-events: none;
   user-select: none;
 }
+/* hover zoom layer (home card): GSAP moves and scales it about its top-left, see CamBoard */
+.zoom {
+  position: absolute;
+  inset: 0;
+}
 .board {
   position: absolute;
   left: 50%;
   top: 50%;
   display: grid;
-  grid-template-columns: 22em 60em 50em;
+  /* phones one size, web screens one size: even rows, columns and gaps */
+  grid-template-columns: 22em 55em 55em;
   grid-template-rows: 44em 44em;
   gap: 3.6em;
   /* nudged right and down so the student's phones (first column) stay in the frame */
-  transform: translate(-40%, -47%) var(--layout-showcase-tilt);
+  transform: var(--layout-showcase-boardTilt);
   transform-style: preserve-3d;
 }
 .screen,
 .phone {
   height: 100%;
   min-width: 0;
+}
+
+/*
+ * Home card (`zoomOnHover`). At rest the square clips the board as above. On hover (`data-open`)
+ * the clip opens past the square, the square's background fades out and the board straightens;
+ * the part beyond the square fades out towards the bleed's edges (mask), so nothing is cut hard
+ * and the description beside the image stays readable. `data-snap` drops every transition (a
+ * press returns to rest at once, before the view transition captures the card).
+ */
+.interactive {
+  overflow: visible;
+  clip-path: inset(0);
+  transition: clip-path calc(var(--motion-showcase-boardOpenSec) * 1s) var(--motion-showcase-boardOpenEase);
+}
+.interactive .bleed {
+  inset: calc(-1 * var(--layout-showcase-boardBleedY)) calc(-1 * var(--layout-showcase-boardBleedX));
+  /* opaque over the square, fading to nothing across the bleed (boardMask*: where the square starts) */
+  mask-image:
+    linear-gradient(
+      to right,
+      transparent,
+      #000 var(--layout-showcase-boardMaskX),
+      #000 calc(100% - var(--layout-showcase-boardMaskX)),
+      transparent
+    ),
+    linear-gradient(
+      to bottom,
+      transparent,
+      #000 var(--layout-showcase-boardMaskY),
+      #000 calc(100% - var(--layout-showcase-boardMaskY)),
+      transparent
+    );
+  mask-composite: intersect;
+}
+.interactive .backdrop {
+  transition: opacity calc(var(--motion-showcase-boardOpenSec) * 0.7s) linear;
+}
+.interactive .board {
+  transition: transform calc(var(--motion-showcase-boardOpenSec) * 1s) var(--motion-showcase-boardOpenEase);
+}
+.interactive[data-open] {
+  clip-path: inset(calc(-1 * var(--layout-showcase-boardBleedY)) calc(-1 * var(--layout-showcase-boardBleedX)));
+}
+.interactive[data-open] .backdrop {
+  opacity: 0;
+}
+.interactive[data-open] .board {
+  transform: var(--layout-showcase-boardFlat);
+}
+.interactive[data-snap],
+.interactive[data-snap] .backdrop,
+.interactive[data-snap] .board {
+  transition: none;
+}
+
+/*
+ * Case cover (`cover`): the 3 × 2 grid flat and pulled back further; the depth of each screen
+ * (scale, opacity, blur, float, parallax) is set by CamBoard. Card → case (`showcase:prepare` on the
+ * card, `intro` on the cover): `data-layout` row is the flat, level, pulled-back grid both ends of
+ * the view transition share (GSAP Flip moves each screen there on the card); dropping it on the
+ * cover eases the board to the cover's scale.
+ */
+.cover .board {
+  transform: var(--layout-showcase-boardCover);
+  transition: transform calc(var(--motion-showcase-boardIntroSec) * 1s) var(--motion-showcase-boardOpenEase);
+}
+.frame[data-layout='row'] .board {
+  transform: var(--layout-showcase-boardRow);
+  transition: none;
+}
+.frame[data-snap] .board {
+  transition: none;
 }

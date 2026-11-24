@@ -252,6 +252,177 @@
   white-space: nowrap;
 }
 
+/* ---- links in received messages: the preview card and the blue URL ---- */
+.linkCard {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin: -0.1em -0.3em 0.15em;
+  padding: 0.4em;
+  border-radius: 0.45em;
+  background: var(--color-cam-waPanel);
+}
+.linkThumb {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 2.4em;
+  height: 2.4em;
+  border-radius: 0.35em;
+  background: var(--color-cam-navy);
+  font-size: 0.8em;
+}
+.linkText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  font-size: 0.86em;
+  line-height: 1.25;
+}
+.linkText b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.linkText span {
+  color: var(--color-cam-waMeta);
+}
+.linkUrl {
+  color: var(--color-cam-waLink);
+  text-decoration: underline;
+  overflow-wrap: anywhere;
+}
+
+/* ---- campaign step 1: WhatsApp templates ---- */
+.tplSplit {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 1em;
+  flex: 1;
+  min-height: 0;
+}
+.tplRow {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  padding: 0.5em 0.6em;
+  border: 0.08em solid var(--color-cam-line);
+  border-radius: 0.5em;
+}
+.tplBadge {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 1.6em;
+  height: 1.6em;
+  border: 0.1em solid var(--color-cam-faint);
+  border-radius: 50%;
+  color: var(--color-cam-card);
+  font-size: 0.85em;
+  font-weight: 700;
+}
+.tplName {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+}
+.tplName b {
+  font-size: 0.92em;
+}
+.tplSequence {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5em;
+  margin-top: 0.3em;
+}
+.tplStep {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: 0.88em;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.tplStepIndex {
+  display: grid;
+  place-items: center;
+  width: 1.5em;
+  height: 1.5em;
+  border-radius: 50%;
+  background: var(--color-cam-blue);
+  color: var(--color-cam-card);
+  font-size: 0.85em;
+}
+.tplArrow {
+  color: var(--color-cam-muted);
+}
+.tplSide {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6em;
+  min-width: 0;
+}
+.tplPreview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+  padding: 0.8em;
+  border-radius: 0.6em;
+  background: var(--color-cam-waWallpaper);
+}
+.tplBubble {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+  padding: 0.55em 0.7em;
+  border-radius: 0 0.65em 0.65em 0.65em;
+  background: var(--color-cam-card);
+  font-size: 0.88em;
+  line-height: 1.35;
+  box-shadow: 0 0.06em 0.1em var(--color-cam-shadow);
+}
+.tplFooter {
+  color: var(--color-cam-waMeta);
+  font-size: 0.85em;
+}
+.tplButton {
+  padding: 0.4em;
+  border-radius: 0.65em;
+  background: var(--color-cam-card);
+  color: var(--color-cam-waLink);
+  font-size: 0.85em;
+  font-weight: 600;
+  text-align: center;
+  box-shadow: 0 0.06em 0.1em var(--color-cam-shadow);
+}
+.tplVar {
+  padding: 0 0.3em;
+  border-radius: 0.3em;
+  background: var(--color-cam-blueSoft);
+  color: var(--color-cam-blue);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.tplMapping {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35em;
+  padding: 0.7em 0.8em;
+  border: 0.08em solid var(--color-cam-line);
+  border-radius: 0.6em;
+  background: var(--color-cam-card);
+  font-size: 0.88em;
+}
+.tplMap {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5em;
+  min-width: 0;
+}
+
 /* ---- phone in the campaign ring ---- */
 .ringPhone {
   width: 100%;
@@ -394,62 +565,326 @@
   white-space: nowrap;
 }
 
-/* ---- problem: payments on paper ---- */
-.paper {
+/* ---- problem: an Excel-like window (Windows 11) ---- */
+.xl {
   display: flex;
   flex-direction: column;
-  gap: 0.3em;
-  width: 15em;
-  padding: 1em 1.1em 1.4em;
-  background:
-    repeating-linear-gradient(to bottom, transparent 0 1.6em, var(--color-cam-sheetGrid) 1.6em 1.68em),
-    var(--color-cam-amberSoft);
-  color: var(--color-cam-text);
-  font-family: var(--font-sans);
-  font-style: italic;
-  line-height: 1.6;
-  box-shadow: 0 1em 2em var(--color-cam-shadow);
-}
-.paperAmount {
-  font-size: 1.4em;
-}
-.paperNote {
-  color: var(--color-cam-muted);
-}
-
-/* ---- problem: copies of the list ---- */
-.version {
-  display: flex;
-  align-items: center;
-  gap: 0.9em;
-  width: 32em;
-  padding: 1em 1.2em;
-  border-radius: 0.8em;
+  overflow: hidden;
+  border: 0.06em solid var(--color-cam-winBorder);
+  border-radius: 0.55em;
   background: var(--color-cam-card);
-  color: var(--color-cam-text);
+  color: var(--color-cam-winText);
   font-family: var(--font-sans);
   line-height: 1.3;
-  box-shadow: 0 1.5em 3em var(--color-cam-shadow);
+  box-shadow: 0 2em 4em var(--color-cam-shadow);
 }
-.versionIcon {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 2.6em;
-  height: 2.6em;
-  border-radius: 0.4em;
-  background: var(--color-cam-green);
+.xlTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  padding: 0.45em 0 0.45em 0.8em;
+  background: var(--color-cam-xlGreen);
   color: var(--color-cam-card);
-  font-weight: 800;
+  font-size: 0.85em;
 }
-.versionWho {
+.xlIcon {
+  flex: none;
+  width: 1.3em;
+  height: 1.3em;
+}
+.xlIcon rect {
+  fill: var(--color-cam-card);
+}
+.xlIcon path {
+  fill: none;
+  stroke: var(--color-cam-xlGreen);
+  stroke-width: 1.4;
+}
+.xlFile {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.winControls {
+  display: flex;
+  flex: none;
+}
+.winControls svg {
+  width: 3.2em;
+  height: 0.8em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1;
+}
+.xlRibbon {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35em;
+  padding: 0.35em 0.8em 0.45em;
+  border-bottom: 0.06em solid var(--color-cam-winBorder);
+  background: var(--color-cam-winMica);
+  font-size: 0.78em;
+}
+.xlTabs {
+  display: flex;
+  gap: 1.1em;
+  color: var(--color-cam-winMuted);
+  white-space: nowrap;
+}
+.xlTabOn {
+  color: var(--color-cam-xlGreen);
+  font-weight: 700;
+  box-shadow: 0 0.18em 0 var(--color-cam-xlGreen);
+}
+.xlTools {
+  display: flex;
+  gap: 0.6em;
+}
+.xlToolGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  padding: 0.2em 0.6em;
+  border-radius: 0.3em;
+  background: var(--color-cam-card);
+  color: var(--color-cam-winText);
+}
+.xlSwatch {
+  width: 0.9em;
+  height: 0.9em;
+  border-bottom: 0.25em solid var(--color-cam-amber);
+}
+.xlLines {
+  width: 1em;
+  height: 0.7em;
+  background: repeating-linear-gradient(to bottom, var(--color-cam-winMuted) 0 0.1em, transparent 0.1em 0.3em);
+}
+.xlFormula {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  padding: 0.3em 0.6em;
+  border-bottom: 0.06em solid var(--color-cam-winBorder);
+  font-size: 0.82em;
+}
+.xlNameBox {
+  width: 4.5em;
+  padding: 0.1em 0.4em;
+  border: 0.06em solid var(--color-cam-winBorder);
+}
+.xlFx {
+  color: var(--color-cam-winMuted);
+}
+.xlFormulaText {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.xlGrid {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.82em;
+}
+.xlRow {
+  display: grid;
+}
+.xlRow > span {
+  position: relative;
+  min-height: 1.75em;
+  padding: 0.2em 0.45em;
+  border-right: 0.06em solid var(--color-cam-xlGrid);
+  border-bottom: 0.06em solid var(--color-cam-xlGrid);
+  white-space: nowrap;
+}
+.xlLetters > span,
+.xlNum {
+  background: var(--color-cam-winMica);
+  color: var(--color-cam-winMuted);
+  text-align: center;
+}
+.xlHeader > span:not(.xlNum) {
+  font-weight: 700;
+}
+.xl_dup {
+  background: var(--color-cam-redSoft);
+}
+.xl_missing {
+  background: var(--color-cam-amberSoft);
+}
+.xl_err {
+  color: var(--color-cam-red);
+  font-weight: 700;
+}
+.xl_total {
+  color: var(--color-cam-red);
+  font-weight: 700;
+}
+.xl_diff {
+  background: var(--color-cam-amberSoft);
+  color: var(--color-cam-red);
+  font-weight: 700;
+}
+.xlRow > .xlSelected {
+  overflow: visible;
+  outline: 0.16em solid var(--color-cam-xlGreen);
+  outline-offset: -0.08em;
+}
+/* the fill handle at the selection's corner */
+.xlRow > .xlSelected::after {
+  content: '';
+  position: absolute;
+  right: -0.25em;
+  bottom: -0.25em;
+  width: 0.4em;
+  height: 0.4em;
+  background: var(--color-cam-xlGreen);
+  border: 0.06em solid var(--color-cam-card);
+}
+/* a note bubble with its red corner marker, as the spreadsheet shows notes */
+.xlNote {
+  position: absolute;
+  right: calc(100% + 0.9em);
+  top: -0.4em;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1em;
+  width: 11em;
+  padding: 0.45em 0.6em;
+  border: 0.06em solid var(--color-cam-winBorder);
+  border-radius: 0.3em;
+  background: var(--color-cam-xlNote);
+  color: var(--color-cam-red);
+  font-weight: 700;
+  white-space: normal;
+  box-shadow: 0 0.4em 1em var(--color-cam-shadow);
+}
+.xlNote b {
+  color: var(--color-cam-winMuted);
+  font-size: 0.8em;
+}
+.xlSelected:has(.xlNote)::before {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  border-top: 0.5em solid var(--color-cam-red);
+  border-left: 0.5em solid transparent;
+}
+.xlNoteLoose {
+  position: static;
+  width: 9em;
+  font-family: var(--font-sans);
+  font-size: 1.1em;
+  line-height: 1.25;
+}
+.xlSheets {
+  display: flex;
+  align-items: center;
+  gap: 1.2em;
+  padding: 0.35em 0.8em;
+  border-top: 0.06em solid var(--color-cam-winBorder);
+  background: var(--color-cam-winMica);
+  color: var(--color-cam-winMuted);
+  font-size: 0.78em;
+  white-space: nowrap;
+}
+.xlSheetOn {
+  color: var(--color-cam-xlGreen);
+  font-weight: 700;
+  box-shadow: 0 0.18em 0 var(--color-cam-xlGreen);
+}
+.xlPlus {
+  font-size: 1.2em;
+}
+.xlStatus {
+  padding: 0.3em 0.8em;
+  border-top: 0.06em solid var(--color-cam-winBorder);
+  background: var(--color-cam-winMica);
+  color: var(--color-cam-red);
+  font-size: 0.78em;
+  font-weight: 700;
+}
+
+/* ---- problem: a Windows 11-style calculator (Mica surface, rounded keys, accent "=") ---- */
+.calc {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+  width: 21em;
+  padding: 0 0.45em 0.45em;
+  border: 0.06em solid var(--color-cam-winBorder);
+  border-radius: 0.6em;
+  background: var(--color-cam-winMica);
+  color: var(--color-cam-winText);
+  font-family: var(--font-sans);
+  box-shadow: 0 2em 4em var(--color-cam-shadow);
+}
+.calcTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5em 0 0.2em 0.4em;
+  font-size: 0.72em;
+}
+.calcMode {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  padding: 0 0.4em;
+  font-size: 1.05em;
+}
+.calcMode svg {
+  width: 1em;
+  height: 1em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.3;
+  stroke-linecap: round;
+}
+.calcHistory {
+  margin-left: auto;
+}
+.calcExpr {
+  min-height: 1.4em;
+  padding: 0 0.4em;
+  color: var(--color-cam-winMuted);
+  font-size: 0.85em;
+  text-align: right;
+  white-space: nowrap;
+}
+.calcResult {
+  padding: 0 0.3em 0.2em;
+  font-size: 2.6em;
+  font-weight: 600;
+  line-height: 1.1;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.calcKeys {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.2em;
+}
+.calcKey {
   display: grid;
   place-items: center;
-  flex: none;
-  width: 2.4em;
-  height: 2.4em;
-  border-radius: 50%;
-  background: var(--color-cam-redSoft);
-  color: var(--color-cam-red);
-  font-weight: 800;
+  height: 2.3em;
+  border: 0.06em solid var(--color-cam-winBorder);
+  border-radius: 0.35em;
+  background: var(--color-cam-winKey);
+  font-size: 0.85em;
+}
+.calcDigit {
+  background: var(--color-cam-card);
+  font-weight: 600;
+}
+.calcEquals {
+  border-color: var(--color-cam-winAccent);
+  background: var(--color-cam-winAccent);
+  color: var(--color-cam-card);
 }

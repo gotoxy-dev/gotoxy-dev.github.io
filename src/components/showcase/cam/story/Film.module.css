@@ -74,9 +74,6 @@
   position: absolute;
   inset: 0;
 }
-.sheet {
-  width: 43em;
-}
 
 /* problem: the operator's WhatsApp (CamUi Wa*), the slow counter and the clock */
 .hookCount {
@@ -153,6 +150,30 @@
   width: 100%;
   height: 100%;
   pointer-events: none;
+}
+
+/* problem beats: one caption per beat, in a band at the bottom of the frame (the camera frames above it) */
+.beats {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: grid;
+  padding: calc(var(--layout-showcase-filmBeatPad) * 2.4) var(--layout-showcase-filmBeatPad) var(--layout-showcase-filmBeatPad);
+  background: linear-gradient(to top, color-mix(in srgb, var(--color-cam-stageDeep) 88%, transparent) 55%, transparent);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+}
+.beat {
+  grid-area: 1 / 1;
+  max-width: 34em;
+  color: var(--color-cam-card);
+  font-family: var(--font-sans);
+  font-size: var(--layout-showcase-filmBeatSize);
+  line-height: 1.3;
+  opacity: 0;
+  visibility: hidden;
 }
 
 .stats {

@@ -11,7 +11,7 @@ import { CamStory } from './cam/CamStory'
  * - Outcomes: before / after of the daily operation (chapter 3). Plays its entrance when `active`.
  */
 export interface ShowcaseVisuals {
-  Board: ComponentType<{ label: string; className?: string }>
+  Board: ComponentType<{ label: string; className?: string; zoomOnHover?: boolean; intro?: boolean; cover?: boolean }>
   Story: ComponentType<{ story: CaseShowcase['story']; active: boolean; className?: string }>
   Outcomes: ComponentType<{ outcomes: CaseShowcase['outcomes']; active: boolean; className?: string }>
 }

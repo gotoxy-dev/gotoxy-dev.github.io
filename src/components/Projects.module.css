@@ -146,6 +146,11 @@
     transform: translate(2px, -2px);
   }
 }
+/* the presentation board clips itself and opens past its square on hover (CamBoard `zoomOnHover`) */
+.media.mediaSplit {
+  overflow: visible;
+  background: none;
+}
 @media (min-width: 768px) {
   .media.mediaSplit {
     aspect-ratio: var(--layout-project-split-mediaRatio);

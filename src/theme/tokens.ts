@@ -90,6 +90,17 @@ export const tokens = {
       waLink: '#027eb5',
       waPanel: '#f0f2f5',
       waChip: '#e1f2fb',
+      /* desktop tools in the problem chapter (Windows 11 light): spreadsheet green, Mica surfaces, accent blue */
+      xlGreen: '#107c41',
+      xlGrid: '#e1e1e1',
+      xlNote: '#fff4c2',
+      winMica: '#f3f3f3',
+      winKey: '#f9f9f9',
+      winKeyPress: '#dadada',
+      winBorder: '#e0e0e0',
+      winText: '#1b1b1b',
+      winMuted: '#616161',
+      winAccent: '#005fb8',
       sheetHead: '#e9edf3',
       sheetGrid: '#d5dbe5',
       phone: '#0e1117',
@@ -215,6 +226,30 @@ export const tokens = {
       /** Presentation board: the grid of screens, tilted */
       tilt: 'perspective(240em) rotateX(22deg) rotateZ(-14deg)',
       /**
+       * Home card hover (CamBoard `zoomOnHover`): the board straightens from `boardTilt` to
+       * `boardFlat` (same function list, so it interpolates), and the frame's clip opens by
+       * `boardBleedX` / `boardBleedY` beyond its square, the overflow fading out at the edges.
+       */
+      boardTilt: 'translate(-40%, -47%) perspective(240em) rotateX(22deg) rotateZ(-14deg) scale(1)',
+      boardFlat: 'translate(-50%, -50%) perspective(240em) rotateX(0deg) rotateZ(0deg) scale(0.74)',
+      /** Opening the case from the card: the 3 × 2 grid flat, level and pulled back (same function list) */
+      boardRow: 'translate(-50%, -50%) perspective(240em) rotateX(0deg) rotateZ(0deg) scale(0.56)',
+      /**
+       * Case cover: the flat grid pulled back further, faint and with depth. Depth per screen
+       * (0 far … 1 near, in board order): opacity range [far, near], blur below
+       * `boardBlurBelow` up to `boardBlurMax` em.
+       */
+      boardCover: 'translate(-50%, -50%) perspective(240em) rotateX(0deg) rotateZ(0deg) scale(0.5)',
+      boardDepths: [0.85, 0.35, 0.7, 0.55, 1, 0.15],
+      boardCoverOpacity: [0.6, 0.9],
+      boardBlurBelow: 0.45,
+      boardBlurMax: 0.15,
+      boardBleedX: '9%',
+      boardBleedY: '5%',
+      /** where the square starts inside the bleed box: bleed / (100% + 2 × bleed) → 9/118, 5/110 */
+      boardMaskX: '7.6%',
+      boardMaskY: '4.5%',
+      /**
        * Story film: the 3D world is drawn in em where 1em = 1 % of the frame's width, and the
        * camera's perspective is in those em. Overlays (section title, band, stats) use cq units
        * and px. Each section's title enters large in the centre, travels to the top-left band and
@@ -225,6 +260,9 @@ export const tokens = {
       filmWorldTop: '56%',
       filmWhipBlur: 0.9,
       filmTitleSize: 'clamp(20px, 4.6cqw, 40px)',
+      /** Problem beats' caption (lower third, inside the frame): at least 14 px on phones, 16+ on desktop */
+      filmBeatSize: 'clamp(14px, calc(1.4cqw + 8px), 20px)',
+      filmBeatPad: 'clamp(12px, 2.5cqw, 22px)',
       /** Scale of the title in the centre, capped so the word keeps a margin inside the frame */
       filmTitleBig: 2.6,
       /** Subtitle under the big title on the entry card (the section's caption) */
@@ -445,15 +483,38 @@ export const tokens = {
      */
     showcase: {
       /** Story film segments, seconds: problem, signup, cross-check, campaigns, payments, reports, results */
-      filmSegmentsSec: [16, 9.5, 9.5, 10, 9.5, 9.5, 8],
+      filmSegmentsSec: [18, 9.5, 9.5, 13.5, 9.5, 9.5, 8],
       /** Whip pan between sets (it ends on the next cut); a cut between screens fades the old one out, then the new one in (no flash) */
       filmWhipSec: 0.3,
       filmCutFadeSec: 0.25,
       /** Section title: enters large in the centre, holds, travels to the top-left, then shrinks; leaves as the next section starts */
       /** Section entry: a full-frame white or black card fades in, the title holds large on it, then the card wipes open while the title travels */
       filmCardInSec: 0.3,
+      /** Problem beats' captions: fade in with the beat, crossfade at each beat change */
+      filmBeatFadeSec: 0.3,
       filmTitleInSec: 0.3,
       filmTitleHoldSec: 0.8,
+      /** Home card board: hover zoom onto the screen nearest the cursor (CamBoard) */
+      /** the board straightens and the frame opens (s); the cursor zoom starts once it has */
+      boardOpenSec: 1.1,
+      boardOpenEase: 'cubic-bezier(0.22, 1, 0.36, 1)',
+      /**
+       * Card → case: from whatever the board shows (resting, or zoomed on a hover) the screens
+       * travel into one row before the view transition; the case cover starts on that row and,
+       * once the transition is over, the screens go back to the grid and the board tilts.
+       */
+      boardRowSec: 0.75,
+      boardRowEase: 'power3.inOut',
+      boardIntroDelaySec: 1.15,
+      boardIntroSec: 0.9,
+      /** Case cover depth: each screen floats (yPercent, seconds per swing) */
+      boardDriftPercent: 3,
+      boardDriftSec: 7,
+      boardZoomSec: 0.9,
+      boardZoomEase: 'power3.out',
+      /** share of the frame the zoomed screen fills, and the zoom cap */
+      boardZoomFill: 0.74,
+      boardZoomMax: 2.6,
       /** Each section's entry card holds this much longer so its subtitle can be read (the content waits under it) */
       filmEntryExtraSec: 0.5,
       /** The subtitle under the big title comes in this long after it */

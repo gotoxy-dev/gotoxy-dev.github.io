@@ -784,7 +784,7 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
           style={{ viewTransitionName: caseOpen.visual }}
           {...enter}
         >
-          <visuals.Board label={showcase.boardLabel} />
+          <visuals.Board label={showcase.boardLabel} cover intro={viaCard} />
         </div>
       )
     }
@@ -961,7 +961,7 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
         <section className={styles.section} style={cssVars({ zIndex: 1 })}>
           {visuals && showcase ? (
             <div className={styles.bg} data-visual="0" style={{ viewTransitionName: caseOpen.visual }}>
-              <visuals.Board label={showcase.boardLabel} />
+              <visuals.Board label={showcase.boardLabel} cover intro={viaCard} />
             </div>
           ) : study.media.screenshot ? (
             <div className={`${styles.bg} ${styles.bgFramed}`} data-visual="0" style={{ viewTransitionName: caseOpen.visual }}>

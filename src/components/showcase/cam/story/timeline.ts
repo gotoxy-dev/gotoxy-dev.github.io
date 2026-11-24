@@ -18,6 +18,7 @@ import {
   setVisible,
   TOTAL,
   worldTransform,
+  BEAT,
   SECTION_TONE,
   type Box,
   type Focus,
@@ -26,7 +27,7 @@ import {
   type Script,
   type View,
 } from './script'
-import { storyAssign, storyAuditTotals, storyMoodleForm } from './storyData'
+import { storyAssign, storyAuditTotals, storyCalcSteps, storyMoodleForm } from './storyData'
 
 /**
  * Builds the film's GSAP timeline and its `sync(t)`.
@@ -117,20 +118,21 @@ export function buildFilm(
   const pulse = (el: Element | null, at: number, scale = 0.9) =>
     tl.to(el, { scale, duration: 0.12, repeat: 1, yoyo: true, ease: 'sine.inOut' }, at)
 
-  /* ---- 0 · problem ---- */
+  /* ---- 0 · problem (beat starts in script.ts BEAT) ---- */
+  const [, bWa, bMoodle, bPaper, bCopies] = BEAT
   // a · the sheet typed by hand: duplicates and empty or badly formatted phones light up
-  const sheetRows = all(film('hook-sheet'), '[data-cam="sheet-row"]')
-  tl.fromTo(sheetRows, { autoAlpha: 0, xPercent: -4 }, { autoAlpha: 1, xPercent: 0, duration: 0.25, stagger: 0.14 }, 0.1)
+  const sheetRows = films('xl-row', film('hook-sheet'))
+  tl.fromTo(sheetRows, { autoAlpha: 0, xPercent: -4 }, { autoAlpha: 1, xPercent: 0, duration: 0.25, stagger: 0.14 }, 1.6)
   const duplicates = sheetRows.filter((row) => row.textContent?.includes('Eduarda'))
-  tl.to(duplicates, { backgroundColor: C.redSoft, duration: 0.25 }, 1.6)
-  tl.to(duplicates, { x: 6, duration: 0.06, repeat: 7, yoyo: true, ease: 'none' }, 2.3)
+  tl.to(duplicates, { backgroundColor: C.redSoft, duration: 0.25 }, 2.6)
+  tl.to(duplicates, { x: 6, duration: 0.06, repeat: 7, yoyo: true, ease: 'none' }, 3.1)
   const badCells = sheetRows
     .flatMap((row) => Array.from(row.children).slice(1) as HTMLElement[])
     .filter((cell) => !cell.textContent || cell.textContent.startsWith('(') || cell.textContent.startsWith('¿'))
-  tl.to(badCells, { backgroundColor: C.amber, duration: 0.2, repeat: 7, yoyo: true, ease: 'sine.inOut' }, 1.8)
+  tl.to(badCells, { backgroundColor: C.amber, duration: 0.2, repeat: 7, yoyo: true, ease: 'sine.inOut' }, 2.8)
   // b · one WhatsApp at a time, against the target of 3.000
   const pages = films('hook-page')
-  const pageAt = (i: number) => 3.5 + i * 1.05
+  const pageAt = (i: number) => bWa + 0.1 + i * 1.05
   const sendAt = pages.map((_, i) => pageAt(i) + 0.45)
   gsap.set(pages.slice(1), { autoAlpha: 0 })
   pages.forEach((page, i) => {
@@ -143,13 +145,13 @@ export function buildFilm(
   const hour = film('hook-hour')
   const minute = film('hook-minute')
   gsap.set([hour, minute], { rotation: 0, svgOrigin: '20 20' })
-  tl.to(minute, { rotation: 360 * 4, duration: 3.4, ease: 'none' }, 3.4).to(hour, { rotation: 120, duration: 3.4, ease: 'none' }, 3.4)
+  tl.to(minute, { rotation: 360 * 4, duration: bMoodle - bWa, ease: 'none' }, bWa).to(hour, { rotation: 120, duration: bMoodle - bWa, ease: 'none' }, bWa)
   // c · Moodle accounts by hand: one form, one student, then the next
   const moodle = film('moodle')
-  const moodleClear = 9.75
+  const moodleClear = bMoodle + 2.85
   films('moodle-field', moodle).forEach((el, i) => {
     const value = el.dataset.value ?? ''
-    const at = 7 + i * 0.42
+    const at = bMoodle + 0.2 + i * 0.36
     const next = i === 0 ? storyMoodleForm.fields[0].value.replace(/^\w+/, 'bruno') : ''
     writers.push({
       el,
@@ -157,19 +159,41 @@ export function buildFilm(
       text: (t) => (t < moodleClear ? typed(value, t, at, 0.3) : next ? typed(next, t, moodleClear + 0.1, 0.25) : blank),
     })
   })
-  pulse(film('moodle-submit', moodle), 9.25)
+  pulse(film('moodle-submit', moodle), bMoodle + 2.35)
   const moodleCount = film('moodle-count', moodle)
-  if (moodleCount) writers.push({ el: moodleCount, reset: '0', text: (t) => (t >= 9.4 ? '1' : '0') })
-  // d · payments noted on paper, three currencies
-  films('paper').forEach((slip, i) => {
-    tl.fromTo(slip, { autoAlpha: 0, '--z': 70, '--s': 1.3 }, { autoAlpha: 1, '--z': i * 3, '--s': 1, duration: 0.35, ease: 'power3.in' }, 10.35 + i * 0.36)
-  })
-  // e · copies of the list, and nobody knows who changed what
-  films('version').forEach((card, i) => {
+  if (moodleCount) writers.push({ el: moodleCount, reset: '0', text: (t) => (t >= bMoodle + 2.5 ? '1' : '0') })
+  // d · payments in a spreadsheet: three currencies summed as plain numbers, and the calculator to check it by hand
+  const cash = film('xl-cash')
+  tl.fromTo(films('xl-row', cash), { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.2, stagger: 0.1 }, bPaper + 0.1)
+  pulse(film('xl-err', cash), bPaper + 1.2, 1.15)
+  tl.fromTo(film('xl-note', cash), { autoAlpha: 0, scale: 0.8 }, { autoAlpha: 1, scale: 1, duration: 0.3, ease: pop }, bPaper + 1.4)
+  const calc = film('win-calc')
+  const calcExpr = film('calc-expr', calc)
+  const calcResult = film('calc-result', calc)
+  const stepAt = storyCalcSteps.map((_, k) => bPaper + 0.25 + k * 0.28)
+  const stepOf = (t: number) => {
+    let k = -1
+    stepAt.forEach((at, i) => {
+      if (t >= at) k = i
+    })
+    return k
+  }
+  if (calcExpr) writers.push({ el: calcExpr, reset: blank, text: (t) => storyCalcSteps[stepOf(t)]?.expr || blank })
+  if (calcResult) writers.push({ el: calcResult, reset: '0', text: (t) => storyCalcSteps[stepOf(t)]?.result ?? '0' })
+  storyCalcSteps.forEach((step, k) =>
+    step.keys.forEach((key, j) => {
+      const el = calc?.querySelector<HTMLElement>(`[data-key="${key}"]`) ?? null
+      tl.to(el, { backgroundColor: C.winKeyPress, duration: 0.06, repeat: 1, yoyo: true, ease: 'none' }, stepAt[k] - 0.2 + j * 0.06)
+    }),
+  )
+  // e · three copies of the list: the same cell holds three values, and nobody knows who changed it
+  films('version').forEach((sheet, i) => {
     const x = versionSpots[i]?.x ?? 0
-    tl.fromTo(card, { autoAlpha: 0, '--x': x + 40 }, { autoAlpha: 1, '--x': x, duration: 0.4, ease: crash }, 13.3 + i * 0.3)
-    pulse(film('version-who', card), 14.7 + i * 0.12, 1.35)
+    tl.fromTo(sheet, { autoAlpha: 0, '--x': x + 30 }, { autoAlpha: 1, '--x': x, duration: 0.35, ease: crash }, bCopies + i * 0.25)
+    pulse(film('version-cell', sheet), bCopies + 1.3 + i * 0.25, 1.15)
+    pulse(film('version-who', sheet), bCopies + 2 + i * 0.12, 1.4)
   })
+  tl.fromTo(film('who-note'), { autoAlpha: 0, '--s': 0.6 }, { autoAlpha: 1, '--s': 1, duration: 0.35, ease: pop }, bCopies + 2.2)
 
   /* ---- 1 · signup: the form fills itself, signups pour into the panel ---- */
   const s1 = SEG[1]
@@ -233,24 +257,37 @@ export function buildFilm(
     writers.push({ el: diff, reset: '0', text: (t) => String(found.filter((at) => t >= at).length - fixAt.filter((at) => t >= at).length) })
   }
 
-  /* ---- 3 · campaigns: assign, send, burst of messages to every phone ---- */
+  /* ---- 3 · campaigns: templates, variables and links, assign, send, the phones, delivery ---- */
   const s3 = SEG[3]
+  // 1 · the operator picks the two templates in order; the preview and the variables appear
+  const templates = film('templates')
+  films('tpl-row', templates).forEach((row) => {
+    const order = Number(row.dataset.pick ?? 1)
+    const at = s3 + 1.5 + order * 0.7
+    tl.to(row, { backgroundColor: C.blueSoft, borderColor: C.blue, duration: 0.2 }, at)
+    tl.fromTo(one(row, '[data-film="tpl-badge"]'), { backgroundColor: C.card, scale: 0.6 }, { backgroundColor: C.blue, scale: 1, duration: 0.25, ease: pop }, at)
+  })
+  tl.fromTo(films('tpl-step', templates), { autoAlpha: 0, x: -10 }, { autoAlpha: 1, x: 0, duration: 0.3, stagger: 0.7 }, s3 + 2.3)
+  tl.fromTo(film('tpl-preview', templates), { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.35 }, s3 + 2.4)
+  tl.fromTo(films('tpl-map', templates), { autoAlpha: 0, x: -8 }, { autoAlpha: 1, x: 0, duration: 0.25, stagger: 0.25 }, s3 + 3.2)
+  // 2 · assign to the commissions and send
   const assign = film('assign')
-  tl.fromTo(films('assign-on', assign), { autoAlpha: 0, scale: 0.7 }, { autoAlpha: 1, scale: 1, duration: 0.22, ease: pop, stagger: 0.25 }, s3 + 0.5)
-  counter(film('assign-audience', assign), storyAssign.audience, s3 + 0.55, 1.6)
-  pulse(film('assign-send', assign), s3 + 2.5)
+  tl.fromTo(films('assign-on', assign), { autoAlpha: 0, scale: 0.7 }, { autoAlpha: 1, scale: 1, duration: 0.22, ease: pop, stagger: 0.2 }, s3 + 5.7)
+  counter(film('assign-audience', assign), storyAssign.audience, s3 + 5.75, 1.2)
+  pulse(film('assign-send', assign), s3 + 7.2)
+  // 3 · the campaign runs: progress and counters, the burst of messages to every phone
   const campaign = film('campaign')
   const progress = one(campaign, '[data-cam="progress"]')
   gsap.set(progress, { scaleX: 0 })
-  tl.to(progress, { scaleX: camCampaign.sent / camCampaign.total, duration: 2.8, ease: 'power2.out' }, s3 + 3.1)
-  counter(one(campaign, '[data-cam="sent"]'), camCampaign.sent, s3 + 3.1, 2.8)
-  counter(one(campaign, '[data-cam="delivered"]'), camCampaign.delivered, s3 + 3.3, 2.8)
-  counter(one(campaign, '[data-cam="read"]'), camCampaign.read, s3 + 3.6, 3)
-  const burstAt = s3 + 4.5
+  tl.to(progress, { scaleX: camCampaign.sent / camCampaign.total, duration: 2, ease: 'power2.out' }, s3 + 7.8)
+  counter(one(campaign, '[data-cam="sent"]'), camCampaign.sent, s3 + 7.8, 2)
+  counter(one(campaign, '[data-cam="delivered"]'), camCampaign.delivered, s3 + 7.9, 5.2)
+  counter(one(campaign, '[data-cam="read"]'), camCampaign.read, s3 + 8.2, 5.2)
+  const burstAt = s3 + 8.1
   films('message').forEach((card, i) => {
     const m = messageSpots[i]
     const to = ringSpot(m.to)
-    const at0 = burstAt + i * 0.12
+    const at0 = burstAt + i * 0.1
     tl.fromTo(
       card,
       { autoAlpha: 0, '--x': 0, '--y': -6, '--z': 12, '--s': 0.4, '--rz': 0 },
@@ -259,11 +296,14 @@ export function buildFilm(
     )
     tl.to(card, { autoAlpha: 0, '--s': 0.3, '--z': to.z, duration: 0.3, ease: 'power2.in' }, at0 + 0.9)
   })
+  // 4 · every phone receives the two messages with their links
   const rings = films('ring')
   rings.forEach((ring, k) => {
-    const bubble = one(ring, '[data-cam="ring-bubble"]')
-    tl.fromTo(bubble, { autoAlpha: 0, yPercent: 30 }, { autoAlpha: 1, yPercent: 0, duration: 0.25, ease: pop }, burstAt + k * 0.12 + 1)
-    if (k === RING_HERO) pulse(bubble, s3 + 8, 1.06)
+    const first = one(ring, '[data-cam="ring-bubble"]')
+    const second = one(ring, '[data-cam="ring-bubble-2"]')
+    tl.fromTo(first, { autoAlpha: 0, yPercent: 30 }, { autoAlpha: 1, yPercent: 0, duration: 0.25, ease: pop }, burstAt + k * 0.1 + 0.9)
+    tl.fromTo(second, { autoAlpha: 0, yPercent: 30 }, { autoAlpha: 1, yPercent: 0, duration: 0.25, ease: pop }, burstAt + k * 0.1 + 1.3)
+    if (k === RING_HERO) pulse(second, s3 + 11, 1.04)
   })
 
   /* ---- 4 · payments: three currencies drop in, the receipt goes out by WhatsApp ---- */
@@ -353,9 +393,11 @@ export function buildFilm(
     sheet: () => film('hook-sheet'),
     'sheet-bad': () => duplicates[0] ?? film('hook-sheet'),
     'hook-group': () => film('focus-hook-mid'),
+    'hook-chat': () => one(pages[0], '[data-cam="hook-sent"]') ?? film('hook-phone'),
     moodle: () => moodle,
     'moodle-submit': () => film('moodle-submit', moodle),
     paper: () => film('focus-paper'),
+    'paper-total': () => film('xl-total', cash) ?? cash,
     versions: () => film('focus-versions'),
     'signup-phone': () => signupPhone,
     'signup-submit': () => one(signupPhone, '[data-cam="submit"]') ?? signupPhone,
@@ -363,6 +405,9 @@ export function buildFilm(
     'students-rows': () => studentRows[0]?.parentElement ?? null,
     audit: () => audit,
     'audit-flag': () => flagged[0] ?? audit,
+    templates: () => templates,
+    'tpl-mapping': () => film('tpl-mapping', templates) ?? templates,
+    'tpl-list': () => film('tpl-row', templates)?.parentElement ?? templates,
     assign: () => assign,
     'assign-send': () => film('assign-send', assign) ?? assign,
     campaign: () => campaign,
@@ -420,13 +465,14 @@ export function buildFilm(
   /* ---- the visible area under the band: the world centres there and the camera fits screens in it ---- */
   const band = one(root, '[data-film="band"]')
   const statsBand = film('stats')
+  const beatBand = film('beats')
   const viewOf = (): View => {
     const em = lens ? parseFloat(getComputedStyle(lens).fontSize) || 0 : 0
     const h = frame.clientHeight
     const top = band?.offsetHeight ?? 0
     lens?.style.setProperty('--film-center', `${top + (h - top) / 2}px`)
-    if (!em) return { height: 60, stats: 15 }
-    return { height: (h - top) / em, stats: (statsBand?.offsetHeight ?? 0) / em }
+    if (!em) return { height: 60, stats: 15, caption: 10 }
+    return { height: (h - top) / em, stats: (statsBand?.offsetHeight ?? 0) / em, caption: (beatBand?.offsetHeight ?? 0) / em }
   }
   let script: Script = createScript(measure(), viewOf())
 
@@ -451,31 +497,71 @@ export function buildFilm(
   }
 
   /* ---- one screen in focus: every other screen is hidden outside its own shots; cuts fade out, then in ---- */
-  const windows: { el: HTMLElement; from: number; to: number; shown: string }[] = []
+  const windows: { el: HTMLElement; ranges: [number, number][]; shown: string }[] = []
+  /** A screen is shown during [from, to); calling it again for the same screen adds another range */
   const show = (place: HTMLElement | null, from: number, to: number) => {
     const el = place?.firstElementChild as HTMLElement | null | undefined
-    if (el) windows.push({ el, from, to, shown: '' })
+    if (!el) return
+    const known = windows.find((w) => w.el === el)
+    if (known) known.ranges.push([from, to])
+    else windows.push({ el, ranges: [[from, to]], shown: '' })
   }
   const always = -Infinity
-  show(film('hook-sheet'), always, 3.4)
-  ;['hook-phone', 'hook-counter', 'hook-clock'].forEach((name) => show(film(name), 3.4, 6.8))
-  show(moodle, 6.8, 10.2)
-  films('paper').forEach((slip) => show(slip, 10.2, 13.2))
-  films('version').forEach((card) => show(card, 13.2, Infinity))
+  show(film('hook-sheet'), always, bWa)
+  ;['hook-phone', 'hook-counter', 'hook-clock'].forEach((name) => show(film(name), bWa, bMoodle))
+  show(moodle, bMoodle, bPaper)
+  ;[cash, calc].forEach((el) => show(el, bPaper, bCopies))
+  ;[...films('version'), film('who-note')].forEach((el) => show(el, bCopies, Infinity))
   show(signupPhone, always, s1 + 4)
   show(film('students'), s1 + 3.4, Infinity)
   show(badge, s1 + 3.4, Infinity)
-  show(assign, always, s3 + 3.45)
-  show(campaign, s3 + 3.45, s3 + 6.4)
-  rings.forEach((ring) => show(ring, s3 + 4.4, Infinity))
+  show(templates, always, s3 + 5.45)
+  show(assign, s3 + 5.45, s3 + 7.6)
+  show(campaign, s3 + 7.6, s3 + 10.3)
+  show(campaign, s3 + 12.3, Infinity)
+  rings.forEach((ring) => show(ring, s3 + 8, Infinity))
   show(payment, always, s4 + 5.9)
   show(payPhone, s4 + 4.95, Infinity)
   show(report, always, s5 + 4.75)
   show(incidents, s5 + 4.4, Infinity)
   const fade = M.filmCutFadeSec
+  /* ---- problem beats' captions (content time): one per beat, crossfading at the beat changes ---- */
+  const beatBandEl = film('beats')
+  const beatEls = films('beat')
+  const beatFade = M.filmBeatFadeSec
+  // the first caption waits for the problem's entry card to open (it opens in playback time)
+  const firstCaption = contentTime(PSEG[0] + M.filmTitleInSec + M.filmTitleHoldSec + M.filmEntryExtraSec + M.filmTitleMoveSec)
+  const beatWindows = beatEls.map((_, i) => ({
+    from: i === 0 ? firstCaption : BEAT[i] - beatFade / 2,
+    to: i < BEAT.length - 1 ? BEAT[i + 1] + beatFade / 2 : SEG[1] - M.filmCardInSec,
+  }))
+  const beatState = beatEls.map(() => '')
+  let beatBandState = ''
+  const syncBeats = (t: number) => {
+    let band = 0
+    beatEls.forEach((el, i) => {
+      const w = beatWindows[i]
+      const opacity = reduced
+        ? t >= w.from && t < w.to ? 1 : 0
+        : clamp01((t - w.from) / beatFade) * clamp01((w.to - t) / beatFade)
+      band = Math.max(band, opacity)
+      const state = opacity <= 0 ? 'hidden' : opacity.toFixed(3)
+      if (state === beatState[i]) return
+      beatState[i] = state
+      el.style.visibility = state === 'hidden' ? '' : 'visible'
+      el.style.opacity = state === 'hidden' ? '' : state
+    })
+    const bandState = band <= 0 ? 'hidden' : band.toFixed(3)
+    if (beatBandEl && bandState !== beatBandState) {
+      beatBandState = bandState
+      beatBandEl.style.visibility = bandState === 'hidden' ? '' : 'visible'
+      beatBandEl.style.opacity = bandState === 'hidden' ? '' : bandState
+    }
+  }
+
   const syncWindows = (t: number) => {
     for (const w of windows) {
-      const opacity = clamp01(Math.min((t - w.from) / fade, (w.to - t) / fade))
+      const opacity = Math.max(...w.ranges.map(([from, to]) => clamp01(Math.min((t - from) / fade, (to - t) / fade))))
       const shown = opacity >= 1 ? '' : opacity <= 0 ? 'hidden' : opacity.toFixed(3)
       if (shown === w.shown) continue
       w.shown = shown
@@ -625,6 +711,7 @@ export function buildFilm(
       world.style.setProperty('--cy', String(cam.y))
     }
     syncWindows(t)
+    syncBeats(t)
     syncTitles(T)
     syncSubtitles(T)
     syncCard(T)
@@ -700,6 +787,8 @@ export function buildFilm(
       for (const sub of subtitles) sub.removeAttribute('style')
       if (timecode) timecode.textContent = clock(0)
       card?.removeAttribute('style')
+      beatBandEl?.removeAttribute('style')
+      for (const el of beatEls) el.removeAttribute('style')
       lens?.style.removeProperty('--film-center')
     },
   }

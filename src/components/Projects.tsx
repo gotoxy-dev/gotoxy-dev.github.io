@@ -1,14 +1,16 @@
 import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from 'react'
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import type { Project } from '@/content/site'
 import { useContent } from '@/i18n'
 import { useReveal } from '@/hooks/useReveal'
 import { useInView } from '@/hooks/useInView'
 import { useScrub, type ScrubOptions } from '@/hooks/useScrub'
+import { prefersReducedMotion } from '@/theme/motion'
 import { tokens } from '@/theme/tokens'
 import { caseOpen, markCaseOpen, RETURN_NAME_MS, returningSlug, supportsViewTransitions } from '@/transitions'
 import { BrowserFrame, hostOf } from './BrowserFrame'
 import { showcases } from './showcase'
+import { SHOWCASE_PREPARE, type ShowcasePrepareEvent } from './showcase/events'
 import styles from './Projects.module.css'
 
 export function Projects() {
@@ -85,6 +87,7 @@ function ProjectCard({ project }: { project: Project }) {
   const framed = !Board && study?.media.screenshot ? study : undefined
   const feature = project.feature
   const lineRef = useReveal<HTMLDivElement>({ offset: 50 })
+  const navigate = useNavigate()
   const scrubRef = useScrub<HTMLAnchorElement>(buildCardScrub, CARD_SCRUB)
   const { ref: mediaRef, inView } = useInView<HTMLDivElement>({ rootMargin: '200px 0px', threshold: 0.01 })
   const videoRef = useRef<HTMLVideoElement | null>(null)
@@ -98,6 +101,17 @@ function ProjectCard({ project }: { project: Project }) {
     // a name can only be used once per page: drop any left on a card that just came back
     document.querySelectorAll<HTMLElement>('[data-case-name]').forEach((el) => nameCard(el, null, false))
     nameCard(mediaRef.current, browserRef.current)
+    // a showcase board first brings itself into the state the case cover starts from, then we navigate
+    const board = mediaRef.current?.querySelector<HTMLElement>('[data-showcase-board]')
+    if (board && study && !prefersReducedMotion()) {
+      e.preventDefault()
+      const ready = () => {
+        markCaseOpen()
+        navigate({ to: '/projects/$slug', params: { slug: study.slug } })
+      }
+      board.dispatchEvent(new CustomEvent(SHOWCASE_PREPARE, { detail: { ready } }) satisfies ShowcasePrepareEvent)
+      return
+    }
     markCaseOpen()
   }
 
@@ -129,7 +143,7 @@ function ProjectCard({ project }: { project: Project }) {
     <div className={styles.mediaWrap} data-scrub="media">
       <div ref={mediaRef} className={`${styles.media} ${feature ? styles.mediaSplit : ''}`}>
         {Board && study?.showcase ? (
-          <Board label={study.showcase.boardLabel} />
+          <Board label={study.showcase.boardLabel} zoomOnHover />
         ) : framed ? (
           <div className={styles.framed}>
             <img className={styles.ambient} src={framed.media.background} alt="" aria-hidden="true" loading="lazy" decoding="async" />
