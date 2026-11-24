@@ -1,15 +1,16 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
-import { Link, useNavigate } from '@tanstack/react-router'
+import { Link, useBlocker, useNavigate } from '@tanstack/react-router'
 import type { CaseJourneyStep, CaseStudy as CaseStudyContent } from '@/content/site'
 import { useLanguage } from '@/i18n'
 import { useReveal } from '@/hooks/useReveal'
 import { useSnapScroll, writeSectionHash } from '@/hooks/useSnapScroll'
 import { gsap, offsetToStart, ScrollTrigger } from '@/theme/motion'
 import { tokens } from '@/theme/tokens'
-import { caseOpen, clearCaseOpen, enteredFromCard, markCaseClose } from '@/transitions'
+import { caseOpen, clearCaseOpen, enteredFromCard, markCaseClose, supportsViewTransitions } from '@/transitions'
 import { BrowserFrame, hostOf } from './BrowserFrame'
 import { DeviceFrame } from './DeviceFrame'
 import { showcases } from './showcase'
+import { prepareBoards } from './showcase/events'
 import styles from './CaseStudy.module.css'
 
 const ArrowIcon = () => (
@@ -749,6 +750,22 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
       tween.kill()
     }
   }, [viaCard])
+
+  /*
+   * Back to the home, however it happens (X, Escape, the browser's Back): the router holds the
+   * navigation while a showcase cover eases back to the state the home card returns on, so the
+   * view transition is a plain move both ways (showcase/events.ts); then it goes on.
+   */
+  useBlocker({
+    shouldBlockFn: ({ next }) => {
+      const root = rootRef.current
+      if (next.pathname !== '/' || !root || !supportsViewTransitions()) return false
+      return new Promise<boolean>((resolve) => {
+        if (!prepareBoards(root, () => resolve(false))) resolve(false)
+      })
+    },
+    enableBeforeUnload: false,
+  })
 
   // Escape closes the case, like the X.
   useEffect(() => {

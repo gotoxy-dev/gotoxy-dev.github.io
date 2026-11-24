@@ -10,7 +10,7 @@ import { tokens } from '@/theme/tokens'
 import { caseOpen, markCaseOpen, RETURN_NAME_MS, returningSlug, supportsViewTransitions } from '@/transitions'
 import { BrowserFrame, hostOf } from './BrowserFrame'
 import { showcases } from './showcase'
-import { SHOWCASE_PREPARE, type ShowcasePrepareEvent } from './showcase/events'
+import { SHOWCASE_PREPARE, SHOWCASE_RETURN, type ShowcasePrepareEvent } from './showcase/events'
 import styles from './Projects.module.css'
 
 export function Projects() {
@@ -121,6 +121,8 @@ function ProjectCard({ project }: { project: Project }) {
     const media = mediaRef.current
     if (!study || !media || returningSlug() !== study.slug) return
     nameCard(media, browserRef.current)
+    // a showcase board starts on the state the case cover closed on, then settles (showcase/events.ts)
+    media.querySelector('[data-showcase-board]')?.dispatchEvent(new CustomEvent(SHOWCASE_RETURN))
     media.scrollIntoView({ block: 'center', behavior: 'instant' })
     const clear = window.setTimeout(() => nameCard(media, browserRef.current, false), RETURN_NAME_MS)
     return () => window.clearTimeout(clear)

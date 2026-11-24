@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef } from 'react'
 import { Flip } from 'gsap/Flip'
 import { gsap, prefersReducedMotion } from '@/theme/motion'
 import { tokens } from '@/theme/tokens'
-import { SHOWCASE_PREPARE, type ShowcasePrepareEvent } from '../events'
+import { SHOWCASE_PREPARE, SHOWCASE_RETURN, type ShowcasePrepareEvent } from '../events'
 import { CampaignScreen, Chat, PaymentScreen, Phone, ReportScreen, SignupForm, StudentsScreen } from './CamUi'
 import styles from './CamBoard.module.css'
 
@@ -61,8 +61,13 @@ export function CamBoard({
   const zoomRef = useRef<HTMLDivElement>(null)
   const boardRef = useRef<HTMLDivElement>(null)
 
-  // Card → case, on the card: hover state (if any) → straight row → `ready` (navigates)
-  useEffect(() => {
+  /*
+   * Home card ⇄ case. Opening: hover state (if any) → the shared flat, pulled-back grid → `ready`
+   * (navigates). Coming back (`showcase:return`): start on that shared grid, so the view transition
+   * is a plain move, then ease back to the tilted rest. A layout effect, so its listeners exist before
+   * the card's own layout effect sends `showcase:return`.
+   */
+  useLayoutEffect(() => {
     const frame = frameRef.current
     const zoom = zoomRef.current
     const board = boardRef.current
@@ -70,6 +75,18 @@ export function CamBoard({
     const M = tokens.motion.showcase
     const items = Array.from(board.children) as HTMLElement[]
     let flip: gsap.core.Timeline | null = null
+    let back = 0
+    const onReturn = () => {
+      if (prefersReducedMotion()) return
+      frame.dataset.snap = ''
+      frame.dataset.layout = 'row'
+      back = window.setTimeout(() => {
+        delete frame.dataset.snap
+        void frame.offsetWidth
+        delete frame.dataset.layout // .interactive transition: the board tilts back to rest
+      }, M.boardIntroDelaySec * 1000)
+    }
+    frame.addEventListener(SHOWCASE_RETURN, onReturn)
     const onPrepare = (event: Event) => {
       const { ready } = (event as ShowcasePrepareEvent).detail
       if (frame.dataset.layout === 'row') return // already on its way
@@ -94,6 +111,8 @@ export function CamBoard({
     frame.addEventListener(SHOWCASE_PREPARE, onPrepare)
     return () => {
       frame.removeEventListener(SHOWCASE_PREPARE, onPrepare)
+      frame.removeEventListener(SHOWCASE_RETURN, onReturn)
+      window.clearTimeout(back)
       flip?.kill()
     }
   }, [zoomOnHover])
@@ -149,7 +168,24 @@ export function CamBoard({
       drift()
     }
 
+    // closing the case (X, Escape): back to the crisp pulled-back grid the home card returns on, then `ready`
+    const onPrepare = (event: Event) => {
+      const { ready } = (event as ShowcasePrepareEvent).detail
+      if (reduced) return ready()
+      if (frame.dataset.closing !== undefined) return
+      frame.dataset.closing = ''
+      window.clearTimeout(timer)
+      settle?.kill()
+      float?.kill()
+      frame.dataset.layout = 'row' // .cover[data-closing] transition: to the shared scale
+      gsap.to(zoom, { yPercent: 0, duration: M.boardRowSec, ease: M.boardRowEase })
+      gsap.to(items, { opacity: 1, filter: 'blur(0em)', duration: M.boardRowSec, ease: M.boardRowEase, onComplete: ready })
+    }
+    frame.addEventListener(SHOWCASE_PREPARE, onPrepare)
+
     return () => {
+      frame.removeEventListener(SHOWCASE_PREPARE, onPrepare)
+      delete frame.dataset.closing
       window.clearTimeout(timer)
       settle?.kill()
       float?.kill()

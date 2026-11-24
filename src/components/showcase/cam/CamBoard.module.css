@@ -127,3 +127,7 @@
 .frame[data-snap] .board {
   transition: none;
 }
+/* closing the case: the cover eases to the shared pulled-back grid before the view transition */
+.cover[data-closing][data-layout='row'] .board {
+  transition: transform calc(var(--motion-showcase-boardRowSec) * 1s) var(--motion-showcase-boardOpenEase);
+}

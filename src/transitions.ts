@@ -23,8 +23,9 @@ export const caseOpen = {
 /** The case page counts as opened from a card while it mounts this long after the click (ms):
     room for the route to load when it was not preloaded on hover. */
 const OPEN_WINDOW_MS = 5000
-/** The home counts as returning from a case while it mounts this long after the case unmounts (ms). */
-const CLOSE_WINDOW_MS = 1000
+/** The home counts as returning from a case while it mounts this long after the case unmounts (ms):
+    room for a slow frame between the case unmounting and the home mounting. */
+const CLOSE_WINDOW_MS = 2500
 const CASE_PATH = /^\/projects\/([^/]+)\/?$/
 
 let openedAt = Number.NEGATIVE_INFINITY
