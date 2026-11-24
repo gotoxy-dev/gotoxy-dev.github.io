@@ -289,6 +289,20 @@ export function worldTransform(p: Pose, t: number): string {
   )
 }
 
+/**
+ * Entry card tone per section: the tone its screens mostly show once the card opens. White when the
+ * section is made of light UI (panels, forms, chats), black when it is mostly the dark backdrop.
+ */
+export const SECTION_TONE: ('light' | 'dark')[] = [
+  'light', // problem: the white spreadsheet, the operator's chat, Moodle's white form, paper slips, white list copies
+  'light', // signup: the white signup form, then the white students panel
+  'light', // cross-check: the white audit panel and its commission columns
+  'light', // campaigns: the white assign card and campaign panel, then the students' beige chats
+  'light', // payments: the white payment screen, then the beige chat with the receipt
+  'light', // reports: the white report and incidents panels
+  'dark', // results: three small screens on the near-black backdrop above the dark stats band
+]
+
 /** Segment buttons seek to their cut; reduced-motion stills hold on a composed frame of each */
 export const SEEK = SEG.slice(0, SEGMENTS)
 export const HOLD = [2.8, s(R, 6.6), s(C, 8.6), s(W, 8.9), s(P, 8.2), s(I, 8.6), TOTAL]

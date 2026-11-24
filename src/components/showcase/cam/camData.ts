@@ -91,15 +91,45 @@ export const camSignup = {
   submit: 'Enviar cadastro',
 }
 
-/** WhatsApp messages the student receives (template text, invented values) */
+/** A WhatsApp message the student receives from the institute (invented values) */
+export interface CamChatMessage {
+  time: string
+  /** Template message: bold header, body, footer and quick-reply buttons under the bubble */
+  header?: string
+  body: string
+  footer?: string
+  buttons?: string[]
+  /** Link with its preview card */
+  link?: { url: string; title: string; site: string }
+  /** Attached document (the payment receipt) */
+  file?: { name: string; meta: string }
+}
+
+/** The student's WhatsApp chat with the institute, as WhatsApp (Android, light) shows it */
 export const camChat = {
   contact: 'Instituto CAM',
+  status: 'Conta comercial',
+  day: 'HOJE',
+  composer: 'Mensagem',
   messages: [
-    'Olá, Camila! Seu acesso ao campus virtual: usuário camila.reis · senha enviada só para você.',
-    'Sua aula de quarta é às 15:30 pelo Zoom. Link: zoom.us/j/•••••••',
-    'Recebemos seu pagamento de Gs. 650.000. Comprovante: Recibo N° 100482.',
-  ],
-  time: ['09:41', '09:41', '17:06'],
+    {
+      time: '09:41',
+      header: 'Acesso ao campus virtual',
+      body: 'Olá, Camila! Seu usuário do Moodle é camila.reis. A senha foi enviada só para você.',
+      footer: 'Instituto CAM · mensagem automática',
+      buttons: ['Confirmar presença', 'Preciso de ajuda'],
+    },
+    {
+      time: '09:42',
+      body: 'Sua aula de quarta é às 15:30 pelo Zoom.',
+      link: { url: 'zoom.us/j/•••••••', title: 'Aula 2A-1 · Zoom', site: 'zoom.us' },
+    },
+    {
+      time: '17:06',
+      body: 'Recebemos seu pagamento de Gs. 650.000.',
+      file: { name: 'Recibo_100482.pdf', meta: '1 página · PDF' },
+    },
+  ] as CamChatMessage[],
 }
 
 /** The spreadsheet the team used before: rows typed by hand (problem scene) */

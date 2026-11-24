@@ -1,7 +1,22 @@
 import { memo, type CSSProperties, type ReactNode } from 'react'
 import type { CaseShowcase } from '@/content/site'
 import { camStudents } from '../camData'
-import { CampaignScreen, Chat, PaymentScreen, Phone, ReportScreen, Sheet, SignupForm, StudentsScreen } from '../CamUi'
+import { camChat } from '../camData'
+import {
+  CampaignScreen,
+  Chat,
+  PaymentScreen,
+  Phone,
+  ReportScreen,
+  Sheet,
+  SignupForm,
+  StudentsScreen,
+  WaBubble,
+  WaChat,
+  WaComposer,
+  WaDay,
+  WaHeader,
+} from '../CamUi'
 import { seeded, setX } from './script'
 import { storyHookTarget, storyPaper, storyVersions } from './storyData'
 import {
@@ -196,21 +211,17 @@ function ProblemSet() {
 
       <Place {...layout.hookPhone} ry={-12} w={PHONE.w} h={PHONE.h} fs={PHONE.fs} film="hook-phone" screen>
         <Phone className={styles.fill}>
-          {hookContacts.map((name) => (
-            <div key={name} className={`${styles.cover} ${styles.chat}`} data-film="hook-page">
-              <div className={styles.chatHead}>
-                <span className={styles.avatar}>{name[0]}</span>
-                {name}
-              </div>
-              <div className={styles.chatBody}>
-                <span className={styles.bubbleOut} data-film="hook-sent">
+          {hookContacts.map((name, i) => (
+            <div key={name} className={styles.cover} data-film="hook-page">
+              <WaChat
+                header={<WaHeader name={name} status="online" initial={name[0]} />}
+                composer={<WaComposer text=" " hook="hook-composer" sending />}
+              >
+                <WaDay label={camChat.day} />
+                <WaBubble out tail time={`09:${String(40 + i).padStart(2, '0')}`} hook="hook-sent">
                   {hookMessage(name)}
-                  <span className={styles.bubbleTime}>✓</span>
-                </span>
-              </div>
-              <div className={styles.composer} data-film="hook-composer">
-                {' '}
-              </div>
+                </WaBubble>
+              </WaChat>
             </div>
           ))}
         </Phone>
@@ -330,7 +341,7 @@ function PaymentSet() {
       ))}
       <Place {...layout.payPhone} ry={-14} w={PHONE.w} h={PHONE.h} fs={PHONE.fs} film="pay-phone" screen>
         <Phone className={styles.fill}>
-          <Chat />
+          <Chat typing />
         </Phone>
       </Place>
       <Place x={40} y={28} z={20} fs={2} film="receipt">

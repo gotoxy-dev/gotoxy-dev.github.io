@@ -78,65 +78,7 @@
   width: 43em;
 }
 
-/* hook: the operator's WhatsApp, one chat per student */
-.chat {
-  display: flex;
-  flex-direction: column;
-  background: var(--color-cam-chatBg);
-}
-.chatHead {
-  display: flex;
-  align-items: center;
-  gap: 0.7em;
-  padding: 2.2em 1em 0.8em;
-  background: var(--color-cam-chatHead);
-  color: var(--color-cam-card);
-  font-weight: 600;
-  white-space: nowrap;
-}
-.avatar {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 2.2em;
-  height: 2.2em;
-  border-radius: 50%;
-  background: var(--color-cam-faint);
-  color: var(--color-cam-navy);
-  font-size: 0.9em;
-}
-.chatBody {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  padding: 1em 0.9em;
-}
-.bubbleOut {
-  align-self: flex-end;
-  max-width: 88%;
-  padding: 0.6em 0.8em 0.4em;
-  border-radius: 0.9em 0.2em 0.9em 0.9em;
-  background: var(--color-cam-chatOut);
-  font-size: 0.88em;
-  box-shadow: 0 0.1em 0.2em var(--color-cam-shadow);
-}
-.bubbleTime {
-  display: block;
-  margin-top: 0.2em;
-  color: var(--color-cam-muted);
-  font-size: 0.75em;
-  text-align: right;
-}
-.composer {
-  margin: 0 0.7em 1.2em;
-  padding: 0.7em 1em;
-  border-radius: 1.4em;
-  background: var(--color-cam-card);
-  font-size: 0.8em;
-  line-height: 1.35;
-  min-height: 4.1em;
-  overflow: hidden;
-}
+/* problem: the operator's WhatsApp (CamUi Wa*), the slow counter and the clock */
 .hookCount {
   display: block;
   color: var(--color-cam-card);

@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
-import { CamLogo, Kpi, Phone, Pill, Window } from '../CamUi'
+import { CamLogo, Kpi, Phone, Pill, WaAppIcon, WaBubble, WaButtons, WaChat, WaDay, WaHeader, Window } from '../CamUi'
+import { camChat } from '../camData'
 import {
   storyAssign,
   storyHookTarget,
@@ -10,6 +11,7 @@ import {
   storyAuditTotals,
   storyIncidents,
   storyMessages,
+  storyReplies,
   storyReceipt,
   storySignups,
   storyTickets,
@@ -118,36 +120,43 @@ export function AssignCard({ className, style }: { className?: string; style?: C
   )
 }
 
-/** One WhatsApp message on its way to a student */
+/** One WhatsApp message on its way to a student: the notification banner the phone shows */
 export function MessageCard({ index, className, style }: { index: number; className?: string; style?: CSSProperties }) {
   const m = storyMessages[index % storyMessages.length]
   return (
-    <div className={cx(styles.message, className)} style={style}>
-      <span className={styles.messageHead}>
-        <span className={styles.waDot} />
-        Instituto CAM · {m.title}
+    <div className={cx(styles.banner, className)} style={style}>
+      <WaAppIcon />
+      <span className={styles.bannerText}>
+        <span className={styles.bannerTop}>
+          <b>{camChat.contact}</b>
+          <span>agora</span>
+        </span>
+        <span className={styles.bannerBody}>
+          {m.title}: {m.text}
+        </span>
       </span>
-      <span>{m.text}</span>
-      <span className={styles.ticks}>✓✓</span>
     </div>
   )
 }
 
-/** A student's phone in the campaign ring: the chat, and the message that lands */
+/** A student's phone in the campaign ring: the institute's chat and the template message that lands */
 export function RingPhone({ index, className, style }: { index: number; className?: string; style?: CSSProperties }) {
   const s = storySignups[(index * 3) % storySignups.length]
   const m = storyMessages[index % storyMessages.length]
   return (
     <Phone className={cx(styles.ringPhone, className)} style={style}>
-      <div className={styles.ringChat}>
-        <span className={styles.ringHead}>
-          <CamLogo light />
+      <WaChat header={<WaHeader name={camChat.contact} status={camChat.status} verified />}>
+        <WaDay label={camChat.day} />
+        <span className={styles.ringGroup}>
+          <WaBubble tail time="09:41" hook="ring-bubble">
+            <b>{m.title}</b>
+            <span>
+              Olá, {s.name.split(' ')[0]}! {m.text}
+            </span>
+          </WaBubble>
+          <WaButtons labels={storyReplies} />
         </span>
-        <span className={styles.ringBubble} data-film="ring-bubble">
-          Olá, {s.name.split(' ')[0]}! {m.text}
-          <span className={styles.ticks}>✓✓</span>
-        </span>
-      </div>
+      </WaChat>
     </Phone>
   )
 }

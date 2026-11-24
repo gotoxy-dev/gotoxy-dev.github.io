@@ -56,7 +56,7 @@ export function CamStory({ story, active, className }: { story: CaseShowcase['st
     if (!root || !frame) return
     const built: { film?: FilmHandle } = {}
     const ctx = gsap.context(() => {
-      built.film = buildFilm(root, frame, story, setView, () => fillRefs.current)
+      built.film = buildFilm(root, frame, story, setView, () => fillRefs.current, reduced)
     }, root)
     const handle = built.film
     if (!handle) return () => ctx.revert()
@@ -154,7 +154,8 @@ export function CamStory({ story, active, className }: { story: CaseShowcase['st
               <span data-film="timecode">00:00</span>
             </span>
           </div>
-          {/* section titles: large in the centre, then to the top-left, then smaller (story/timeline.ts) */}
+          {/* section entry: a white or black card, the title large on it, then to the top-left and smaller (story/timeline.ts) */}
+          <span className={styles.entryCard} data-film="entry-card" />
           {labels.map((label, i) => (
             <span key={`${i}-${label}`} className={styles.sectionTitle} data-film="title">
               {label}

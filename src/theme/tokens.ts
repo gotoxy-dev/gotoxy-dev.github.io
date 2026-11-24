@@ -81,6 +81,15 @@ export const tokens = {
       chatOut: '#d9fdd3',
       chatHead: '#0f5d52',
       whatsapp: '#25d366',
+      /* WhatsApp on Android (light theme): teal header, beige wallpaper, its own greys and ticks */
+      waHead: '#008069',
+      waWallpaper: '#efeae2',
+      waDoodle: '#d9d1c4',
+      waMeta: '#667781',
+      waTick: '#53bdeb',
+      waLink: '#027eb5',
+      waPanel: '#f0f2f5',
+      waChip: '#e1f2fb',
       sheetHead: '#e9edf3',
       sheetGrid: '#d5dbe5',
       phone: '#0e1117',
@@ -215,7 +224,6 @@ export const tokens = {
       /** Scale of the title in the centre, capped so the word keeps a margin inside the frame */
       filmTitleBig: 2.6,
       filmTitleFit: 0.86,
-      filmTitleScrimBlur: '6px',
       filmBandPad: 'clamp(12px, 3cqw, 24px)',
       filmHudSize: '11px',
       filmStatSize: 'clamp(22px, 7.5cqmin, 88px)',
@@ -434,12 +442,15 @@ export const tokens = {
       filmWhipSec: 0.3,
       filmCutFadeSec: 0.25,
       /** Section title: enters large in the centre, holds, travels to the top-left, then shrinks; leaves as the next section starts */
-      filmTitleInSec: 0.35,
-      filmTitleHoldSec: 1,
-      filmTitleMoveSec: 0.7,
+      /** Section entry: a full-frame white or black card fades in, the title holds large on it, then the card wipes open while the title travels */
+      filmCardInSec: 0.3,
+      filmTitleInSec: 0.3,
+      filmTitleHoldSec: 0.8,
+      filmTitleMoveSec: 0.85,
       filmTitleShrinkSec: 0.35,
       filmTitleOutSec: 0.15,
       filmTitleMoveEase: 'expo.inOut',
+      filmCardWipeEase: 'power2.inOut',
       /** Hand-held shake on the hook shots, degrees */
       filmShakeDeg: 1.1,
       filmPopEase: 'back.out(2)',

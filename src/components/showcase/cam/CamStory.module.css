@@ -141,9 +141,27 @@
 /*
  * Section title. Its resting state is the top-left of the band at filmTitleSize. --m (1 → 0) moves
  * it from the centre of the frame to there and --sc scales it from the top-left corner, so a title
- * is large in the centre, travels, then shrinks (timeline.ts writes both per frame). In the centre
- * it carries its own soft shade (no full-frame overlay), which fades as it leaves (--m).
+ * is large in the centre, travels, then shrinks (timeline.ts writes both per frame). On a light
+ * entry card it starts dark and turns light as it travels (--c: 0 → 1), to rest on the dark band.
  */
+/*
+ * Section entry card: the whole frame turns white or black (the section's dominant tone,
+ * story/script.ts SECTION_TONE), then wipes open from the top as the title leaves the centre.
+ */
+.entryCard {
+  position: absolute;
+  inset: 0;
+  --wipe: 0;
+  clip-path: inset(calc(var(--wipe) * 100%) 0 0 0);
+  opacity: 0;
+  visibility: hidden;
+}
+.entryCard[data-tone="light"] {
+  background: var(--color-cam-card);
+}
+.entryCard[data-tone="dark"] {
+  background: var(--color-cam-stageDeep);
+}
 .sectionTitle {
   position: absolute;
   left: var(--layout-showcase-filmBandPad);
@@ -151,7 +169,8 @@
   max-width: calc(100% - var(--layout-showcase-filmBandPad) * 2);
   --m: 0;
   --sc: 1;
-  color: var(--color-cam-card);
+  --c: 1;
+  color: color-mix(in srgb, var(--color-cam-card) calc(var(--c) * 100%), var(--color-cam-stageDeep));
   font-size: var(--layout-showcase-filmTitleSize);
   font-weight: var(--font-weight-regular);
   line-height: 1;
@@ -166,16 +185,6 @@
     scale(var(--sc));
   opacity: 0;
   visibility: hidden;
-}
-.sectionTitle::before {
-  content: '';
-  position: absolute;
-  inset: -0.35em -0.6em;
-  z-index: -1;
-  border-radius: 0.4em;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--color-cam-stageDeep) 85%, transparent), transparent);
-  backdrop-filter: blur(var(--layout-showcase-filmTitleScrimBlur));
-  opacity: var(--m);
 }
 .rec {
   flex: none;

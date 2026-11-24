@@ -14,6 +14,7 @@ import {
   setVisible,
   TOTAL,
   worldTransform,
+  SECTION_TONE,
   segmentAt,
   type Box,
   type Focus,
@@ -85,6 +86,7 @@ export function buildFilm(
   story: CaseShowcase['story'],
   onView: (view: FilmView) => void,
   fills: () => (HTMLElement | null)[],
+  reduced = false,
 ): Film {
   const world = one(root, '[data-film="world"]')
   const lens = one(root, '[data-film="lens"]')
@@ -129,8 +131,8 @@ export function buildFilm(
   const sendAt = pages.map((_, i) => pageAt(i) + 0.45)
   gsap.set(pages.slice(1), { autoAlpha: 0 })
   pages.forEach((page, i) => {
-    typer(film('hook-composer', page), hookMessage(hookNames[i] ?? ''), pageAt(i) + 0.05, 0.35, sendAt[i])
-    tl.fromTo(film('hook-sent', page), { autoAlpha: 0, y: 12, scale: 0.94 }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.18, ease: pop }, sendAt[i])
+    typer(one(page, '[data-cam="hook-composer"]'), hookMessage(hookNames[i] ?? ''), pageAt(i) + 0.05, 0.35, sendAt[i])
+    tl.fromTo(one(page, '[data-cam="hook-sent"]'), { autoAlpha: 0, y: 12, scale: 0.94 }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.18, ease: pop }, sendAt[i])
     if (i > 0) tl.set(pages[i - 1], { autoAlpha: 0 }, pageAt(i)).set(page, { autoAlpha: 1 }, pageAt(i))
   })
   const count = film('hook-count')
@@ -256,7 +258,7 @@ export function buildFilm(
   })
   const rings = films('ring')
   rings.forEach((ring, k) => {
-    const bubble = film('ring-bubble', ring)
+    const bubble = one(ring, '[data-cam="ring-bubble"]')
     tl.fromTo(bubble, { autoAlpha: 0, yPercent: 30 }, { autoAlpha: 1, yPercent: 0, duration: 0.25, ease: pop }, burstAt + k * 0.12 + 1)
     if (k === RING_HERO) pulse(bubble, s3 + 8, 1.06)
   })
@@ -284,8 +286,16 @@ export function buildFilm(
   tl.to(receipt, { '--x': phone.x, '--y': phone.y + 10, '--z': phone.z + 16, '--ry': -14, '--s': 0.55, duration: 0.8, ease: 'power3.inOut' }, s4 + 5)
   tl.to(receipt, { autoAlpha: 0, '--s': 0.3, duration: 0.25 }, s4 + 5.9)
   const payPhone = film('pay-phone')
+  // the institute is typing, then the receipt lands in the student's chat
   const bubbles = all(payPhone, '[data-cam="bubble"]')
-  tl.fromTo(bubbles[bubbles.length - 1] ?? null, { autoAlpha: 0, y: 20 }, { autoAlpha: 1, y: 0, duration: 0.3, ease: pop }, s4 + 6.1)
+  const receiptBubble = bubbles[bubbles.length - 1] ?? null
+  const typing = one(payPhone, '[data-cam="typing"]')
+  gsap.set([typing, receiptBubble], { display: 'none' })
+  tl.set(typing, { display: 'flex' }, s4 + 5.2)
+  tl.fromTo(typing, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.25 }, s4 + 5.2)
+  tl.set(typing, { display: 'none' }, s4 + 6.1)
+  tl.set(receiptBubble, { display: 'flex' }, s4 + 6.1)
+  tl.fromTo(receiptBubble, { autoAlpha: 0, y: 20 }, { autoAlpha: 1, y: 0, duration: 0.3, ease: pop }, s4 + 6.1)
 
   /* ---- 5 · reports: the report assembles, the incidents break down ---- */
   const s5 = SEG[5]
@@ -471,8 +481,38 @@ export function buildFilm(
     }
   }
 
-  /* ---- section titles: large in the centre on their own shade, to the top-left, then smaller ---- */
+  /* ---- section entry: a white or black card with the title large in the centre, then to the top-left, smaller ---- */
   const titles = all(root, '[data-film="title"]')
+  const card = one(root, '[data-film="entry-card"]')
+  const cardWipe = gsap.parseEase(M.filmCardWipeEase) as (p: number) => number
+  let cardState = ''
+  /** The entry card: fades in over filmCardInSec before a section, holds with the title, wipes open from the top as the title travels */
+  const syncCard = (t: number) => {
+    let state = 'hidden'
+    if (card && !reduced) {
+      const i = segmentAt(t)
+      const next = i + 1
+      const moveAt = M.filmTitleInSec + M.filmTitleHoldSec
+      if (next < SEGMENTS && t > SEG[next] - M.filmCardInSec) {
+        state = `${SECTION_TONE[next]}|${clamp01((t - (SEG[next] - M.filmCardInSec)) / M.filmCardInSec).toFixed(3)}|0`
+      } else {
+        const wipe = cardWipe(clamp01((t - SEG[i] - moveAt) / M.filmTitleMoveSec))
+        if (wipe < 1) state = `${SECTION_TONE[i]}|1|${wipe.toFixed(4)}`
+      }
+    }
+    if (!card || state === cardState) return
+    cardState = state
+    if (state === 'hidden') {
+      card.style.visibility = ''
+      card.style.opacity = ''
+      return
+    }
+    const [tone, opacity, wipe] = state.split('|')
+    card.dataset.tone = tone
+    card.style.setProperty('--wipe', wipe)
+    card.style.opacity = opacity
+    card.style.visibility = 'visible'
+  }
   const titleIn = gsap.parseEase(M.filmCrashEase) as (p: number) => number
   const titleMove = gsap.parseEase(M.filmTitleMoveEase) as (p: number) => number
   const titleShrink = gsap.parseEase('power2.out') as (p: number) => number
@@ -495,7 +535,9 @@ export function buildFilm(
         const big = titleBig[i] ?? 1
         const sc = (big + (1 - big) * shrink) * (1 + 0.3 * (1 - titleIn(appear)))
         const out = i < SEGMENTS - 1 ? clamp01((SEG[i + 1] - t) / M.filmTitleOutSec) : 1
-        state = `${(1 - move).toFixed(4)}|${sc.toFixed(4)}|${(appear * out).toFixed(3)}`
+        // on a light card the title starts dark and turns light as it travels to the dark band
+        const ink = reduced || SECTION_TONE[i] === 'dark' ? 1 : move
+        state = `${(1 - move).toFixed(4)}|${sc.toFixed(4)}|${(appear * out).toFixed(3)}|${ink.toFixed(3)}`
       }
       if (state === titleState[i]) return
       titleState[i] = state
@@ -504,7 +546,8 @@ export function buildFilm(
         title.style.opacity = ''
         return
       }
-      const [m, sc, opacity] = state.split('|')
+      const [m, sc, opacity, ink] = state.split('|')
+      title.style.setProperty('--c', ink)
       title.style.setProperty('--m', m)
       title.style.setProperty('--sc', sc)
       title.style.opacity = opacity
@@ -542,6 +585,7 @@ export function buildFilm(
     }
     syncWindows(t)
     syncTitles(t)
+    syncCard(t)
     sets.forEach((set, i) => {
       const on = setVisible(i, t)
       if (on !== shown[i]) {
@@ -610,6 +654,7 @@ export function buildFilm(
         w.el.style.opacity = ''
       }
       for (const title of titles) title.removeAttribute('style')
+      card?.removeAttribute('style')
       lens?.style.removeProperty('--film-center')
     },
   }

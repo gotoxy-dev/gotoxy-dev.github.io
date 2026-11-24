@@ -371,18 +371,41 @@
   font-weight: 700;
 }
 
-/* ---- phone ---- */
+/* ---- phone: thin bezel, dynamic island, side buttons, status bar ---- */
 .phone {
-  padding: 0.55em;
-  border-radius: 2.6em;
+  position: relative;
+  padding: 0.38em;
+  border-radius: 2.9em;
   background: var(--color-cam-phone);
-  box-shadow: 0 2em 4em var(--color-cam-shadow);
+  box-shadow:
+    0 0 0 0.12em color-mix(in srgb, var(--color-cam-faint) 35%, var(--color-cam-phone)),
+    0 2em 4em var(--color-cam-shadow);
+}
+/* side buttons: volume on the left, power on the right */
+.phone::before,
+.phone::after {
+  content: '';
+  position: absolute;
+  width: 0.28em;
+  border-radius: 0.2em;
+  background: color-mix(in srgb, var(--color-cam-faint) 30%, var(--color-cam-phone));
+}
+.phone::before {
+  left: -0.24em;
+  top: 18%;
+  height: 12%;
+  box-shadow: 0 160% 0 color-mix(in srgb, var(--color-cam-faint) 30%, var(--color-cam-phone));
+}
+.phone::after {
+  right: -0.24em;
+  top: 26%;
+  height: 16%;
 }
 .phoneScreen {
   position: relative;
   overflow: hidden;
   height: 100%;
-  border-radius: 2.1em;
+  border-radius: 2.55em;
   background: var(--color-cam-card);
   color: var(--color-cam-text);
   font-family: var(--font-sans);
@@ -391,13 +414,52 @@
   text-transform: none;
   letter-spacing: 0;
 }
+.statusBar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 2.5em;
+  padding: 0 1.6em 0 2em;
+  color: var(--color-cam-text);
+  font-size: 0.78em;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.phoneScreen:has(.wa) .statusBar {
+  color: var(--color-cam-card);
+}
+.island {
+  position: absolute;
+  left: 50%;
+  top: 0.55em;
+  width: 7.2em;
+  height: 1.9em;
+  border-radius: 1em;
+  background: var(--color-cam-phone);
+  translate: -50% 0;
+}
+.statusIcons {
+  display: flex;
+  align-items: center;
+  gap: 0.35em;
+}
+.statusIcons svg {
+  height: 0.85em;
+  width: auto;
+  fill: currentColor;
+}
 
 /* signup form */
 .signup {
   display: flex;
   flex-direction: column;
   gap: 0.75em;
-  padding: 2.4em 1.4em 1.4em;
+  padding: 3.2em 1.4em 1.4em;
 }
 .signupTitle {
   margin-top: 0.4em;
@@ -422,61 +484,345 @@
   white-space: nowrap;
 }
 
-/* WhatsApp */
-.chat {
+/* ---- WhatsApp (Android, light): teal header, beige wallpaper with doodles, bubbles, composer ---- */
+.wa {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--color-cam-chatBg);
+  background-color: var(--color-cam-waWallpaper);
+  /* doodles drawn here: rings, dots and small strokes on a loose grid (not WhatsApp's artwork) */
+  background-image:
+    radial-gradient(circle, transparent 0.38em, var(--color-cam-waDoodle) 0.42em 0.52em, transparent 0.56em),
+    radial-gradient(circle, var(--color-cam-waDoodle) 0.16em, transparent 0.2em),
+    linear-gradient(35deg, transparent 47%, var(--color-cam-waDoodle) 47% 53%, transparent 53%),
+    radial-gradient(circle, transparent 0.2em, var(--color-cam-waDoodle) 0.23em 0.3em, transparent 0.33em);
+  background-size:
+    5.5em 5.5em,
+    3.7em 3.7em,
+    1.4em 1.4em,
+    4.3em 4.3em;
+  background-position:
+    0.6em 1.2em,
+    2.1em 0.4em,
+    3.6em 3.1em,
+    3em 2.4em;
+  background-repeat: repeat, repeat, no-repeat, repeat;
+  font-size: 0.86em;
 }
-.chatHead {
+.waIcon {
+  flex: none;
+  width: 1.35em;
+  height: 1.35em;
+  fill: currentColor;
+}
+.waHead {
   display: flex;
   align-items: center;
-  gap: 0.7em;
-  padding: 2.2em 1em 0.8em;
-  background: var(--color-cam-chatHead);
+  gap: 0.55em;
+  flex: none;
+  padding: 3.1em 0.8em 0.7em 0.5em;
+  background: var(--color-cam-waHead);
   color: var(--color-cam-card);
-  font-weight: 600;
 }
-.chatHead > span:last-child {
-  display: flex;
-  flex-direction: column;
+.waHead > .waIcon:first-child {
+  margin-right: -0.3em;
 }
-.chatStatus {
-  font-size: 0.75em;
-  font-weight: var(--font-weight-regular);
-  opacity: 0.75;
-}
-.avatar {
+.waAvatar {
   display: grid;
   place-items: center;
-  width: 2.4em;
-  height: 2.4em;
+  flex: none;
+  width: 2.5em;
+  height: 2.5em;
   border-radius: 50%;
   background: var(--color-cam-navy);
-  font-size: 0.8em;
+  color: var(--color-cam-card);
+  font-weight: 700;
 }
-.chatBody {
+.waAvatarInitial {
+  background: var(--color-cam-faint);
+  color: var(--color-cam-navy);
+}
+.waCap {
+  width: 1.45em;
+  height: auto;
+  fill: var(--color-cam-blue);
+}
+.waName {
   display: flex;
   flex-direction: column;
-  gap: 0.7em;
-  padding: 1em 0.9em;
+  flex: 1;
+  min-width: 0;
+  line-height: 1.2;
 }
-.bubble {
-  align-self: flex-start;
+.waNameRow {
+  display: flex;
+  align-items: center;
+  gap: 0.3em;
+  min-width: 0;
+  font-weight: 600;
+}
+.waNameText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.waVerified {
+  flex: none;
+  width: 0.95em;
+  height: 0.95em;
+  fill: var(--color-cam-whatsapp);
+}
+.waVerifiedTick {
+  fill: none;
+  stroke: var(--color-cam-card);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.waStatus {
+  overflow: hidden;
+  font-size: 0.8em;
+  opacity: 0.85;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.waBody {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 0.35em;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0.6em 0.7em 0.5em;
+}
+.waDay {
+  align-self: center;
+  margin-bottom: 0.3em;
+  padding: 0.25em 0.75em;
+  border-radius: 0.6em;
+  background: var(--color-cam-waChip);
+  color: var(--color-cam-waMeta);
+  font-size: 0.78em;
+  font-weight: 600;
+  box-shadow: 0 0.06em 0.1em var(--color-cam-shadow);
+}
+.waGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2em;
   max-width: 88%;
-  padding: 0.6em 0.8em 0.4em;
-  border-radius: 0.2em 0.9em 0.9em 0.9em;
-  background: var(--color-cam-card);
-  font-size: 0.88em;
-  box-shadow: 0 0.1em 0.2em var(--color-cam-shadow);
 }
-.bubbleTime {
-  display: block;
-  margin-top: 0.2em;
-  color: var(--color-cam-muted);
-  font-size: 0.75em;
-  text-align: right;
+.waBubble {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15em;
+  padding: 0.4em 0.6em 0.3em;
+  border-radius: 0.65em;
+  color: var(--color-cam-text);
+  font-size: 0.92em;
+  line-height: 1.3;
+  box-shadow: 0 0.06em 0.1em var(--color-cam-shadow);
+}
+.waIn {
+  align-self: flex-start;
+  background: var(--color-cam-card);
+}
+.waOut {
+  align-self: flex-end;
+  background: var(--color-cam-chatOut);
+}
+/* the tail of the first bubble of a group */
+.waTail.waIn {
+  border-top-left-radius: 0;
+}
+.waTail.waOut {
+  border-top-right-radius: 0;
+}
+.waTail::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 0.6em;
+  height: 0.7em;
+  background: inherit;
+}
+.waTail.waIn::before {
+  left: -0.5em;
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+.waTail.waOut::before {
+  right: -0.5em;
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+}
+.waTime {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-end;
+  gap: 0.2em;
+  color: var(--color-cam-waMeta);
+  font-size: 0.72em;
+  font-variant-numeric: tabular-nums;
+}
+.waTicks {
+  width: 1.4em;
+  height: 0.9em;
+  fill: none;
+  stroke: var(--color-cam-waTick);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.waTplHead {
+  font-weight: 700;
+}
+.waFooter {
+  color: var(--color-cam-waMeta);
+  font-size: 0.82em;
+}
+.waLink {
+  color: var(--color-cam-waLink);
+  text-decoration: underline;
+}
+.waPreview {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin: -0.1em -0.3em 0.15em;
+  padding: 0.4em;
+  border-radius: 0.45em;
+  background: var(--color-cam-waPanel);
+}
+.waPreviewThumb,
+.waFileIcon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 2.3em;
+  height: 2.3em;
+  border-radius: 0.35em;
+  background: var(--color-cam-blue);
+  color: var(--color-cam-card);
+}
+.waFileIcon {
+  background: var(--color-cam-red);
+  font-size: 0.7em;
+  font-weight: 800;
+  width: 3.3em;
+  height: 3.3em;
+}
+.waPreviewText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  font-size: 0.86em;
+  line-height: 1.25;
+}
+.waPreviewText b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.waPreviewText span {
+  color: var(--color-cam-waMeta);
+}
+.waButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2em;
+}
+.waButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35em;
+  padding: 0.4em 0.6em;
+  border-radius: 0.65em;
+  background: var(--color-cam-card);
+  color: var(--color-cam-waLink);
+  font-size: 0.86em;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 0.06em 0.1em var(--color-cam-shadow);
+}
+.waButton .waIcon {
+  width: 1.1em;
+  height: 1.1em;
+}
+.waTyping {
+  flex-direction: row;
+  gap: 0.25em;
+  padding: 0.65em 0.75em;
+}
+.waTyping span {
+  width: 0.45em;
+  height: 0.45em;
+  border-radius: 50%;
+  background: var(--color-cam-waMeta);
+  opacity: 0.6;
+}
+.waTyping span:nth-child(2) {
+  opacity: 0.8;
+}
+.waTyping span:nth-child(3) {
+  opacity: 1;
+}
+.waComposer {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  flex: none;
+  padding: 0.35em 0.5em 1.5em;
+}
+.waInput {
+  display: flex;
+  align-items: center;
+  gap: 0.45em;
+  flex: 1;
+  min-width: 0;
+  padding: 0.5em 0.7em;
+  border-radius: 1.4em;
+  background: var(--color-cam-card);
+  color: var(--color-cam-waMeta);
+  box-shadow: 0 0.06em 0.1em var(--color-cam-shadow);
+}
+.waInputText {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 0.92em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.waMic {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 2.5em;
+  height: 2.5em;
+  border-radius: 50%;
+  background: var(--color-cam-waHead);
+  color: var(--color-cam-card);
+}
+.waMic .waIcon {
+  width: 1.2em;
+  height: 1.2em;
+}
+/* the messaging app's icon (notification banners) */
+.waApp {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 2.2em;
+  height: 2.2em;
+  border-radius: 0.55em;
+  background: linear-gradient(160deg, var(--color-cam-whatsapp), var(--color-cam-waHead));
+  color: var(--color-cam-card);
+}
+.waApp .waIcon {
+  width: 1.4em;
+  height: 1.4em;
 }
 
 /* ---- spreadsheet ---- */

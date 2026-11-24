@@ -96,6 +96,9 @@ export const storyMessages = [
   { title: 'Zoom', text: 'Prova parcial: sexta às 09:00' },
 ]
 
+/** Quick replies under the campaign's template message */
+export const storyReplies = ['Confirmar presença', 'Preciso de ajuda']
+
 /** Payments arriving, in the three currencies */
 export const storyTickets = [
   { method: 'PIX', amount: 'R$ 300' },
