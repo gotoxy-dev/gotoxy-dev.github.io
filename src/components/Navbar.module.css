@@ -38,6 +38,28 @@
   align-items: center;
   gap: clamp(28px, 4.2vw, 64px);
 }
+/*
+ * Desktop menu items on scroll (tokens.motion.nav). Scrolling down they all fade out at once in d500,
+ * without moving; once invisible they jump up by the shift. Scrolling up they drop back in one after
+ * another, left to right (move d400 outSine, fade d300 linear, stagger between items).
+ * Keyboard focus inside the menu brings them back so a focused link is never invisible.
+ */
+.item {
+  transition:
+    transform var(--motion-duration-d400) var(--motion-ease-outSine),
+    opacity var(--motion-duration-d300) linear;
+  transition-delay: calc(var(--i) * var(--motion-nav-stagger));
+}
+.itemsHidden:not(:focus-within) {
+  pointer-events: none;
+}
+.itemsHidden:not(:focus-within) .item {
+  transform: translateY(calc(-1 * var(--motion-nav-shift)));
+  opacity: 0;
+  transition:
+    opacity var(--motion-duration-d500) linear,
+    transform 0s linear var(--motion-duration-d500);
+}
 .link {
   color: var(--color-textStrong);
   font-size: var(--type-nav-size);

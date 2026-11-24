@@ -25,6 +25,38 @@ export function Navbar() {
     return () => window.removeEventListener('scroll', update)
   }, [])
 
+  // desktop menu items: hidden while scrolling down, back while scrolling up or near the top.
+  // They stay shown until the visitor first scrolls by hand, so a page that loads already scrolled
+  // (restored position, #anchor) still shows every item.
+  const [itemsHidden, setItemsHidden] = useState(false)
+  useEffect(() => {
+    const { hideAfter, hideDelta } = tokens.layout.nav
+    const inputs = ['wheel', 'touchstart', 'keydown', 'pointerdown'] as const
+    let armed = false
+    let last = window.scrollY
+    const arm = () => {
+      armed = true
+      inputs.forEach((type) => window.removeEventListener(type, arm))
+    }
+    const update = () => {
+      const y = window.scrollY
+      if (!armed || y <= hideAfter) {
+        setItemsHidden(false)
+        last = y
+        return
+      }
+      if (Math.abs(y - last) < hideDelta) return
+      setItemsHidden(y > last)
+      last = y
+    }
+    inputs.forEach((type) => window.addEventListener(type, arm, { passive: true }))
+    window.addEventListener('scroll', update, { passive: true })
+    return () => {
+      inputs.forEach((type) => window.removeEventListener(type, arm))
+      window.removeEventListener('scroll', update)
+    }
+  }, [])
+
   // Scroll lock while the menu is open. The page keeps its scroll offset (a fixed <body> would reset
   // it to 0 and rewind the scroll-scrubbed animations under the panel): <html> stops scrolling and
   // touch moves are cancelled, which also holds on iOS versions that ignore `overflow: hidden`.
@@ -70,9 +102,9 @@ export function Navbar() {
             <Logo />
           </Link>
 
-          <nav className={styles.menu} aria-label="Primary">
+          <nav className={`${styles.menu} ${itemsHidden ? styles.itemsHidden : ''}`} aria-label="Primary">
             {/* language switch, as on gotoxy.dev */}
-            <span className={styles.langs} role="group" aria-label="Language">
+            <span className={`${styles.langs} ${styles.item}`} style={{ '--i': 0 } as React.CSSProperties} role="group" aria-label="Language">
               {LANGS.map((l) => (
                 <button
                   key={l}
@@ -85,8 +117,14 @@ export function Navbar() {
                 </button>
               ))}
             </span>
-            {items.map((l) => (
-              <a key={l.label} href={l.href} className={`${styles.link} ulink`} {...external(l.href)}>
+            {items.map((l, i) => (
+              <a
+                key={l.label}
+                href={l.href}
+                className={`${styles.link} ${styles.item} ulink`}
+                style={{ '--i': i + 1 } as React.CSSProperties}
+                {...external(l.href)}
+              >
                 {l.label}
               </a>
             ))}
