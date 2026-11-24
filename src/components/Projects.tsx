@@ -7,7 +7,7 @@ import { useInView } from '@/hooks/useInView'
 import { useScrub, type ScrubOptions } from '@/hooks/useScrub'
 import { prefersReducedMotion } from '@/theme/motion'
 import { tokens } from '@/theme/tokens'
-import { caseOpen, markCaseOpen, RETURN_NAME_MS, returningSlug, supportsViewTransitions } from '@/transitions'
+import { caseOpen, clearCaseClose, markCaseOpen, RETURN_NAME_MS, returningSlug, supportsViewTransitions } from '@/transitions'
 import { BrowserFrame, hostOf } from './BrowserFrame'
 import { showcases } from './showcase'
 import { SHOWCASE_PREPARE, SHOWCASE_RETURN, type ShowcasePrepareEvent } from './showcase/events'
@@ -23,6 +23,10 @@ export function Projects() {
     const study = caseStudies.find((c) => c.slug === slug)
     const listed = study && projects.some((p) => p.featured && p.id === study.projectId)
     if (slug && !listed) sectionRef.current?.scrollIntoView({ block: 'start', behavior: 'instant' })
+    if (!slug) return
+    // the cards (whose effects ran first) and the router's scroll restoration have read it by then
+    const done = window.setTimeout(clearCaseClose, RETURN_NAME_MS)
+    return () => window.clearTimeout(done)
   }, [projects, caseStudies])
 
   return (

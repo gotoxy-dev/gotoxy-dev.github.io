@@ -6,7 +6,7 @@ import { useReveal } from '@/hooks/useReveal'
 import { useSnapScroll, writeSectionHash } from '@/hooks/useSnapScroll'
 import { gsap, offsetToStart, ScrollTrigger } from '@/theme/motion'
 import { tokens } from '@/theme/tokens'
-import { caseOpen, clearCaseOpen, enteredFromCard, markCaseClose, supportsViewTransitions } from '@/transitions'
+import { caseOpen, clearCaseClose, clearCaseOpen, enteredFromCard, markCaseClose, supportsViewTransitions } from '@/transitions'
 import { BrowserFrame, hostOf } from './BrowserFrame'
 import { DeviceFrame } from './DeviceFrame'
 import { showcases } from './showcase'
@@ -730,13 +730,14 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
   }, [study.slug])
 
   // Closing (X, Escape, back): the home's card for this case takes the visual back (src/transitions.ts).
-  // A layout cleanup, so it runs before the home's cards mount in the same commit.
+  // A layout cleanup, so it runs before the home's cards mount (which can be a second or more later).
   useLayoutEffect(() => () => markCaseClose(study.slug), [study.slug])
 
   // Opened from a home card: while the panel opens, its first page's lines rise in one after another.
   // Stacked layout: the cover morphs from the card meanwhile, and the first screen's lines rise the same way.
   useEffect(() => {
     clearCaseOpen()
+    clearCaseClose()
     const root = rootRef.current
     if (!viaCard || !root || !window.matchMedia(MOTION_OK).matches) return
     const lines = window.matchMedia(SPLIT).matches ? '[data-case="page-0"] [data-case-line]' : '[data-case="stack"] [data-case-line]'

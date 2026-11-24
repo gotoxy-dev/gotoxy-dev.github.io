@@ -23,9 +23,10 @@ export const caseOpen = {
 /** The case page counts as opened from a card while it mounts this long after the click (ms):
     room for the route to load when it was not preloaded on hover. */
 const OPEN_WINDOW_MS = 5000
-/** The home counts as returning from a case while it mounts this long after the case unmounts (ms):
-    room for a slow frame between the case unmounting and the home mounting. */
-const CLOSE_WINDOW_MS = 2500
+/** The home counts as returning from a case until it has handled the return (`clearCaseClose`), or
+    at most this long after the case unmounts (ms): the view transition can hold the home's mount
+    back over a second on a slow or throttled page. */
+const CLOSE_WINDOW_MS = 10000
 const CASE_PATH = /^\/projects\/([^/]+)\/?$/
 
 let openedAt = Number.NEGATIVE_INFINITY
@@ -75,6 +76,11 @@ export function clearCaseOpen() {
 /** Called by the case page as it unmounts. */
 export function markCaseClose(slug: string) {
   closed = { slug, at: now() }
+}
+
+/** Called once the home has handled a return, and by the next case page, so a later visit is plain. */
+export function clearCaseClose() {
+  closed = null
 }
 
 /** Slug of the case page that just closed, while the home mounts right after it (else null). */
