@@ -261,40 +261,6 @@ export const projects: Project[] = [
       cta: 'View case study',
     },
   },
-  {
-    id: 'animageneris',
-    name: 'Animageneris',
-    tags: ['Content operation', 'AI', 'Mobile app'],
-    video: '/assets/videos/project-03.webm',
-    poster: '/assets/videos/project-03.jpg',
-    href: '/projects/animageneris',
-  },
-  {
-    id: 'agents',
-    name: 'Tool-enabled AI agents',
-    tags: ['Operations', 'AI agents', 'Integrations'],
-    video: '/assets/videos/project-04.webm',
-    poster: '/assets/videos/project-04.jpg',
-    href: '/projects/ai-agents-operations',
-    featured: true,
-  },
-  {
-    id: 'inspection',
-    name: 'Site inspection reports',
-    tags: ['Health & safety', 'Custom software', 'AI'],
-    video: '/assets/videos/project-05.webm',
-    poster: '/assets/videos/project-05.jpg',
-    href: '/projects/site-inspection-reports',
-    featured: true,
-  },
-  {
-    id: 'speech',
-    name: 'Real-time English correction',
-    tags: ['iOS', 'Real-time speech', 'Low-latency AI'],
-    video: '/assets/videos/project-06.webm',
-    poster: '/assets/videos/project-06.jpg',
-    href: '/projects/english-conversation-app',
-  },
 ]
 
 /** "How we work" section: the three stages, as an accordion, plus the stack we connect. */
@@ -337,7 +303,6 @@ export const clients = {
   logos: [
     { id: 'l1', name: 'Japón in Box', src: '/assets/logos/client-japon-in-box.svg' },
     { id: 'l2', name: 'Instituto CAM', src: '/assets/logos/client-instituto-cam.png' },
-    { id: 'l3', name: 'Animageneris', src: '/assets/logos/client-animageneris.svg' },
     { id: 'l4', name: 'WhatsApp Business API', src: '/assets/logos/stack-whatsapp.svg' },
     { id: 'l5', name: 'Cloudflare Workers', src: '/assets/logos/stack-cloudflare.svg' },
     { id: 'l6', name: 'Mercado Libre', src: '/assets/logos/stack-mercado-libre.svg' },
@@ -374,19 +339,6 @@ export const awards = {
         { title: '0 delivery-app commissions on their own channel', year: '2025' },
       ],
     },
-    {
-      id: 'animageneris',
-      name: 'Animageneris',
-      image: '/assets/cases/animageneris/page-1.jpg',
-      entries: [
-        { title: '20 channels researched, produced and published by one system', year: '2025' },
-        { title: '40.4K followers and 2.1M likes on TikTok', year: '2025' },
-        { title: 'YouTube and TikTok scheduling and publishing from a phone', year: '2025' },
-      ],
-    },
-    { id: 'agents', name: 'Tool-enabled AI agents', entries: [] },
-    { id: 'inspection', name: 'Site inspection reports', entries: [] },
-    { id: 'speech', name: 'Real-time English correction', entries: [] },
   ] satisfies AwardGroup[],
 }
 
@@ -413,7 +365,7 @@ export const insights = {
       id: 'integrations',
       title: 'Integrations: connect the tools your team already uses.',
       category: 'Integrations',
-      image: '/assets/videos/project-04.jpg',
+      image: '/assets/cases/instituto-cam/page-3.jpg',
       href: brand.bookingUrl,
     },
     {
@@ -434,7 +386,7 @@ export const insights = {
       id: 'ai',
       title: 'AI agents connected to your data, rules and permissions, with human approval.',
       category: 'AI agents',
-      image: '/assets/cases/ai-agents-operations/page-3.jpg',
+      image: '/assets/cases/japon-in-box/page-3.jpg',
       href: brand.bookingUrl,
     },
   ] satisfies Insight[],
@@ -714,153 +666,6 @@ export const caseStudies: CaseStudy[] = [
         ],
       },
     },
-    next: 'animageneris',
-  },
-  {
-    slug: 'animageneris',
-    projectId: 'animageneris',
-    title: 'From posting by hand to running twenty channels',
-    summary:
-      'A content operation for Animageneris: a system that researches, writes, produces and publishes across twenty YouTube and TikTok channels, managed from a phone with the creator’s editorial control.',
-    table: [
-      { label: 'Client', value: 'Animageneris · Content operation' },
-      { label: 'Involvement', value: 'Process mapping, AI pipeline, publishing integrations, mobile app' },
-      { label: 'Scope', value: 'Research, scripts, voice, video, captions, scheduling, publishing, metrics' },
-      {
-        label: 'Results',
-        value: 'Twenty channels run by one system. 40.4K followers and 2.1M likes on TikTok. The creator keeps editorial control.',
-      },
-    ],
-    link: { label: 'Book a call', href: brand.bookingUrl },
-    pages: [
-      {
-        label: 'Goal',
-        heading: 'Publish more without adding hours of work to every piece.',
-        paragraphs: [
-          'Animageneris needed to publish more without adding hours of work to every piece. We started with its TikTok channel: we mapped how topics were chosen, written, produced and published, then built a system around that editorial judgment.',
-          'The platform researches, prepares scripts, generates voice, video and captions, schedules and publishes to YouTube and TikTok.',
-        ],
-      },
-      {
-        label: 'Results',
-        heading: 'Twenty channels, one operation, managed from a phone',
-        paragraphs: [
-          'The Animageneris app brings channels, publications and metrics together to manage the entire operation from a phone. The creator retains editorial control over every piece.',
-          'The system extended from one channel to twenty, with 40.4K followers and 2.1M likes on TikTok.',
-        ],
-      },
-    ],
-    media: caseMedia('animageneris'),
-    next: 'ai-agents-operations',
-  },
-  {
-    slug: 'ai-agents-operations',
-    projectId: 'agents',
-    title: 'An AI agent connected to each company’s daily work',
-    summary:
-      'An agent core adapted to each operation’s data, rules and permissions: it reads email and documents, retrieves banking information and prepares complete Mercado Libre purchases, with sensitive actions waiting for human approval.',
-    table: [
-      { label: 'Client', value: 'Operations teams in several companies · Finance, purchasing and back office' },
-      { label: 'Involvement', value: 'Agent core, tool integrations, permissions model, approval flows' },
-      { label: 'Scope', value: 'Email · documents · banking · Mercado Libre · internal systems' },
-      {
-        label: 'Results',
-        value: 'One agent core reused across operations. Context plus tools produce an action ready to approve; sensitive actions never run without a person.',
-      },
-    ],
-    link: { label: 'Book a call', href: brand.bookingUrl },
-    pages: [
-      {
-        label: 'Goal',
-        heading: 'Where AI helps: context, tools and a person who approves.',
-        paragraphs: [
-          'An AI agent is useful when it knows the context of the work and can connect to the right tools. For several operations we implemented an agent core adapted to their data, rules and permissions.',
-          'It can read email and documents, retrieve banking information and prepare a complete Mercado Libre purchase.',
-        ],
-      },
-      {
-        label: 'Results',
-        heading: 'Actions ready to approve, controls that stay with people',
-        paragraphs: [
-          'Sensitive actions wait for approval. The agent prepares the purchase, the transfer or the reply; the person confirms it.',
-          'AI participates where it adds value; the controls and critical decisions remain defined by people.',
-        ],
-      },
-    ],
-    media: caseMedia('ai-agents-operations'),
-    next: 'site-inspection-reports',
-  },
-  {
-    slug: 'site-inspection-reports',
-    projectId: 'inspection',
-    title: 'From a site inspection to a report ready for review',
-    summary:
-      'Custom software for a health-and-safety consulting firm: site photos become organized observations, recommendations and reports in Word, PDF and web, validated by the specialist before delivery.',
-    table: [
-      { label: 'Client', value: 'Health-and-safety consulting firm · Site inspections for construction and industry' },
-      { label: 'Involvement', value: 'Custom software, image pipeline, AI-assisted analysis, document generation' },
-      { label: 'Scope', value: 'Images · specialist review · Word · PDF · web' },
-      {
-        label: 'Results',
-        value: 'Inspection photographs turned into a report ready for review. The professional validates the analysis before delivering the document.',
-      },
-    ],
-    link: { label: 'Book a call', href: brand.bookingUrl },
-    pages: [
-      {
-        label: 'Goal',
-        heading: 'Receive the photos, organize them and prepare the report.',
-        paragraphs: [
-          'For a consulting firm we built software that receives site photos, organizes them, flags points for the specialist to review and prepares observations, recommendations and reports.',
-        ],
-      },
-      {
-        label: 'Results',
-        heading: 'The specialist validates, the system does the rest',
-        paragraphs: [
-          'The professional reviews the flagged points and validates the analysis before the document goes out, in Word, PDF or on the web.',
-          'Hours of manual assembly become a review step.',
-        ],
-      },
-    ],
-    media: caseMedia('site-inspection-reports'),
-    next: 'english-conversation-app',
-  },
-  {
-    slug: 'english-conversation-app',
-    projectId: 'speech',
-    title: 'An English conversation, corrected as it happens',
-    summary:
-      'An iOS app that transcribes speech in real time, suggests a clearer version without interrupting the conversation and preserves the audio if the connection drops.',
-    table: [
-      { label: 'Client', value: 'Language-learning product · iOS' },
-      { label: 'Involvement', value: 'App design, infrastructure, audio flow, low-latency AI' },
-      { label: 'Scope', value: 'iOS · real-time speech · low-latency AI' },
-      {
-        label: 'Results',
-        value: 'Speak naturally and receive a corrected version without stopping. The audio is preserved when the connection fails.',
-      },
-    ],
-    link: { label: 'Book a call', href: brand.bookingUrl },
-    pages: [
-      {
-        label: 'Goal',
-        heading: 'Speak naturally and get a clearer version, live.',
-        paragraphs: [
-          'A client came to us with a specific idea: speak naturally and receive a corrected version without interrupting the conversation.',
-          'We designed the app, infrastructure and audio flow.',
-        ],
-      },
-      {
-        label: 'Results',
-        heading: 'Real-time transcription that survives a bad connection',
-        paragraphs: [
-          'It transcribes in real time, suggests a clearer version and preserves the audio if the connection drops.',
-          '"I think this process is more slow" becomes "I think this process is slower" while the conversation continues.',
-        ],
-      },
-    ],
-    media: caseMedia('english-conversation-app'),
     next: 'japon-in-box',
   },
 ]

@@ -24,7 +24,7 @@
     <script type="module">
       /*
        * Generates every placeholder media asset of the site in the browser:
-       *   videos/project-0N.webm + .jpg  5 looping reels (device mockups with scrolling UI)
+       *   videos/project-0N.webm + .jpg  2 looping reels (device mockups with scrolling UI)
        *   cases/<slug>/page-1.jpg, device.png, reel.webm, reel.jpg, page-3.jpg
        * and downloads them as one zip (store method) to unpack into public/assets.
        */
@@ -45,10 +45,6 @@
         { n: 2, slug: 'instituto-cam', device: 'laptop', theme: { bg: ['#06101f', '#0f2a5c', '#020510'], glow: '#1c4fb8', accent: '#9fc0ff', ui: 'tiles' }, label: 'INSTITUTO CAM',
           screens: [1, 2, 3, 4].map((i) => `/assets/cases/instituto-cam/screens/cam-web-0${i}.jpg`), headerCut: 80,
           mobileScreens: [1, 2, 3, 4].map((i) => `/assets/cases/instituto-cam/screens-mobile/cam-mob-0${i}.jpg`), mobileHeaderCut: 100 },
-        { n: 3, slug: 'animageneris', device: 'phone', theme: { bg: ['#120812', '#3a0f3d', '#050205'], glow: '#d6336c', accent: '#ff7a59', ui: 'tiles' }, label: 'ANIMAGENERIS' },
-        { n: 4, slug: 'ai-agents-operations', device: 'laptop', theme: { bg: ['#07111a', '#0d1f2d', '#020406'], glow: '#2bb7a3', accent: '#67e8d5', ui: 'site' }, label: 'AI AGENTS' },
-        { n: 5, slug: 'site-inspection-reports', device: 'tablet', theme: { bg: ['#1a1408', '#4a3a14', '#0a0803'], glow: '#f0b35c', accent: '#ffe08a', ui: 'map' }, label: 'INSPECTION REPORTS' },
-        { n: 6, slug: 'english-conversation-app', device: 'phone', theme: { bg: ['#0a0a0a', '#1d1d1d', '#000'], glow: '#b8e02a', accent: '#d9ff5c', ui: 'site' }, label: 'ENGLISH CORRECTION' },
       ]
 
       /** Loads and stitches a list of captures into one tall offscreen canvas. */
