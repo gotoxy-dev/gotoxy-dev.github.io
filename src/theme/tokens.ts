@@ -122,6 +122,20 @@ export const tokens = {
     sans: "'Inter Tight', 'Helvetica Neue', Arial, sans-serif",
     /** Handwritten "Agency" word next to the logo. */
     script: "'Homemade Apple', 'Caveat', cursive",
+    /**
+     * Brand typefaces. gotoxy: the wordmark of our logo (also the cards' "View case study"). Clients:
+     * the face each brand sets its name in on its own site (project card titles, next to the logo).
+     */
+    brand: {
+      gotoxy: {
+        family: "'Inter Tight', 'Helvetica Neue', Arial, sans-serif",
+        weight: 400,
+        letterSpacing: '-0.02em',
+        textTransform: 'lowercase',
+      },
+      japonInBox: { family: "'DM Sans', Arial, sans-serif", weight: 700, letterSpacing: '0.015em' },
+      institutoCam: { family: "'Montserrat', Arial, sans-serif", weight: 700, letterSpacing: '0' },
+    },
     weight: {
       light: 300,
       regular: 400,
@@ -198,6 +212,8 @@ export const tokens = {
       inner: '0.833vw', // line → title row → media
       /** Card media of a website case: its capture in a browser window, over a blurred copy */
       browserWidth: '70%',
+      /** Height of the brand logo beside a card's title */
+      brandLogo: '22px',
       /** Phones (≤ 767 px): card media box (reference phone cards 335 × 215); the stacked case cover copies it */
       phoneRatio: '3 / 2',
       /**

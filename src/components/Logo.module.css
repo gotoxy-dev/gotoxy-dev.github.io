@@ -10,9 +10,9 @@
   width: 32px;
 }
 .word {
-  font-family: var(--font-sans);
+  font-family: var(--font-brand-gotoxy-family);
   font-size: 26px;
-  font-weight: var(--font-weight-regular);
-  letter-spacing: -0.02em;
-  text-transform: lowercase;
+  font-weight: var(--font-brand-gotoxy-weight);
+  letter-spacing: var(--font-brand-gotoxy-letterSpacing);
+  text-transform: var(--font-brand-gotoxy-textTransform);
 }

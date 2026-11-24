@@ -29,6 +29,15 @@ export interface Project {
    * right (the case's `showcase` board), instead of the full-width media.
    */
   feature?: ProjectFeature
+  /** The client's own logo and typeface, shown as the card's title (`tokens.font.brand`) */
+  brand?: ProjectBrand
+}
+
+export interface ProjectBrand {
+  logo: string
+  /** Aspect ratio of the logo's drawn area when the file has empty margins around it (cropped with object-fit) */
+  logoAspect?: string
+  font: 'japonInBox' | 'institutoCam'
 }
 
 export interface ProjectFeature {
@@ -251,6 +260,7 @@ export const projects: Project[] = [
     poster: '/assets/videos/project-01.jpg',
     href: '/projects/japon-in-box',
     featured: true,
+    brand: { logo: '/assets/logos/client-japon-isotipo.webp', font: 'japonInBox' },
   },
   {
     id: 'cam',
@@ -260,6 +270,7 @@ export const projects: Project[] = [
     poster: '/assets/videos/project-02.jpg',
     href: '/projects/instituto-cam',
     featured: true,
+    brand: { logo: '/assets/logos/client-instituto-cam.png', logoAspect: '434 / 129', font: 'institutoCam' },
     feature: {
       title: 'Academic management, WhatsApp and payments in one platform',
       text: 'Instituto CAM supports Brazilian students at universities in Paraguay. It ran thousands of students on spreadsheets, one-by-one messages and manual uploads to the virtual campus. We built a custom web platform that runs the whole operation.',

@@ -179,7 +179,28 @@ function ProjectCard({ project }: { project: Project }) {
         <div className="hairline" data-reveal="width" data-reveal-dur={tokens.motion.duration.d800} />
       </div>
       <div className={styles.head} data-scrub="head">
-        <span className={styles.name}>{project.name}</span>
+        {project.brand ? (
+          // the client's own logo and typeface
+          <span
+            className={`${styles.name} ${styles.brand}`}
+            style={{
+              fontFamily: `var(--font-brand-${project.brand.font}-family)`,
+              fontWeight: `var(--font-brand-${project.brand.font}-weight)`,
+              letterSpacing: `var(--font-brand-${project.brand.font}-letterSpacing)`,
+            }}
+          >
+            <img
+              className={styles.brandLogo}
+              src={project.brand.logo}
+              style={project.brand.logoAspect ? { aspectRatio: project.brand.logoAspect } : undefined}
+              alt=""
+              aria-hidden="true"
+            />
+            {project.name}
+          </span>
+        ) : (
+          <span className={styles.name}>{project.name}</span>
+        )}
         <span className={styles.tags}>
           {project.tags.map((t) => (
             <span key={t} className="pill">

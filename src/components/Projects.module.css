@@ -30,6 +30,18 @@
   text-transform: uppercase;
   letter-spacing: 0;
 }
+/* the client's logo beside its name, in the brand's own typeface (set inline from tokens.font.brand) */
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.brandLogo {
+  height: var(--layout-project-brandLogo);
+  width: auto;
+  /* with `logoAspect`, only the logo's drawn area shows (the file's margins are cut off) */
+  object-fit: cover;
+}
 .tags {
   display: flex;
   gap: 6px;
@@ -127,7 +139,11 @@
   color: var(--color-textMuted);
   font-size: var(--type-small-size);
   line-height: var(--type-small-lineHeight);
-  text-transform: uppercase;
+  /* set like the gotoxy logo's wordmark */
+  font-family: var(--font-brand-gotoxy-family);
+  font-weight: var(--font-brand-gotoxy-weight);
+  letter-spacing: var(--font-brand-gotoxy-letterSpacing);
+  text-transform: var(--font-brand-gotoxy-textTransform);
   transition: color var(--motion-duration-d300) linear;
 }
 .featureCta svg {
