@@ -150,6 +150,10 @@ export const tokens = {
       /** Phones: once the page has scrolled this far (px) the bar gets its blurred backdrop (color.navBg) */
       solidAfter: 8,
       blur: '14px',
+      /** Desktop menu items: always shown within this distance of the top (px); past it they hide while
+          scrolling down and come back while scrolling up, once the scroll has moved `hideDelta` px one way */
+      hideAfter: 80,
+      hideDelta: 6,
     },
     /** Minimum touch target (Apple HIG / WCAG 2.5.5); smaller controls get a larger hit area (`.tap-area`) */
     tapMin: '44px',
@@ -161,10 +165,6 @@ export const tokens = {
       canvasWidth: '127.7vw',
       canvasHeight: '63.9vw',
       canvasLeft: '-36.7vw',
-      /** Desktop menu items: always shown within this distance of the top (px); past it they hide while
-          scrolling down and come back while scrolling up, once the scroll has moved `hideDelta` px one way */
-      hideAfter: 80,
-      hideDelta: 6,
       canvasTop: '3.75vw',
       /**
        * Phones (≤ 767 px): the particle G's canvas is a square centred across the screen, its centre
@@ -532,6 +532,15 @@ export const tokens = {
       durationSec: 28,
     },
     /**
+     * Desktop menu items on scroll (Navbar): scrolling down they all fade out at once in duration.d500,
+     * without moving; scrolling up they drop back in from `shift` above, left to right, `stagger` apart.
+     * Entry move: duration.d400 outSine, fade: duration.d300 linear (the site's y-fade pairing).
+     */
+    nav: {
+      shift: '14px',
+      stagger: '150ms',
+    },
+    /**
      * Case-study page. Scrolling snaps natively (CSS scroll-snap, one section per gesture);
      * when the visible section changes, one short tween swaps the panel page, pager and phone screen.
      */
@@ -592,15 +601,6 @@ export const tokens = {
         /** Beat before each step; then the phone slides and the title opens together */
         startDelaySec: 0.12,
         slideSec: 0.45,
-    /**
-     * Desktop menu items on scroll (Navbar): scrolling down they all fade out at once in duration.d500,
-     * without moving; scrolling up they drop back in from `shift` above, left to right, `stagger` apart.
-     * Entry move: duration.d400 outSine, fade: duration.d300 linear (the site's y-fade pairing).
-     */
-    nav: {
-      shift: '14px',
-      stagger: '150ms',
-    },
         holdSec: 0.12,
         scrollSec: 0.55,
         tapSec: 0.4,
