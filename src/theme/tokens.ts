@@ -364,21 +364,19 @@ export const tokens = {
       textHeight: '14.236vw',
       textBottom: '2.778vw',
       textWidth: '55.5vw',
-      imageWidth: '26.389vw',
-      imageHeight: '14.792vw',
-      /** rest offsets of the hover interaction */
-      imageShift: '-27vw',
-      textShift: '-31vw',
-      /**
-       * Touch screens and tablets show every service with its image at rest (the desktop hover
-       * state): tablets beside the text at this width, phones above it, full width; desktop ratio.
-       */
-      imageRatio: '26.389 / 14.792',
-      tabletImageWidth: '36%',
-      tabletGap: '24px',
+      /** Line icon of each service (`ServiceIcon`): square side and hairline stroke */
+      iconSize: '6.944vw',
+      iconStroke: '1.25px',
+      /** rest offsets of the hover interaction (textShift = icon + gap to the text) */
+      iconShift: '-4vw',
+      textShift: '-10.417vw',
+      /** Touch screens and tablets show every service with its icon at rest (the desktop hover state) */
+      tabletIconSize: '64px',
+      tabletGap: '32px',
       phone: {
-        itemPad: '32px', // above the image and below the tag (the tablet item padding)
-        itemGap: '20px', // image → text (reference)
+        iconSize: '48px',
+        itemPad: '32px', // above the icon and below the tag (the tablet item padding)
+        itemGap: '20px', // icon → text
         moreTop: '40px', // last item → "Book a call" pill
       },
     },

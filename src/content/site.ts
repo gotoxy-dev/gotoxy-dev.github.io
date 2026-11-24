@@ -66,11 +66,14 @@ export interface AwardGroup {
   entries: AwardEntry[]
 }
 
+export type ServiceIconName = 'integrations' | 'software' | 'automation' | 'ai'
+
 export interface Insight {
   id: string
   title: string
   category: string
-  image: string
+  /** Line icon shown beside the service (`ServiceIcon`) */
+  icon: ServiceIconName
   href: string
 }
 
@@ -365,28 +368,28 @@ export const insights = {
       id: 'integrations',
       title: 'Integrations: connect the tools your team already uses.',
       category: 'Integrations',
-      image: '/assets/cases/instituto-cam/page-3.jpg',
+      icon: 'integrations',
       href: brand.bookingUrl,
     },
     {
       id: 'software',
       title: 'Custom software built around a specific operation.',
       category: 'Custom software',
-      image: '/assets/cases/instituto-cam/page-1.jpg',
+      icon: 'software',
       href: brand.bookingUrl,
     },
     {
       id: 'automation',
       title: 'Automation that removes manual work from daily tasks.',
       category: 'Automation',
-      image: '/assets/videos/project-01.jpg',
+      icon: 'automation',
       href: brand.bookingUrl,
     },
     {
       id: 'ai',
       title: 'AI agents connected to your data, rules and permissions, with human approval.',
       category: 'AI agents',
-      image: '/assets/cases/japon-in-box/page-3.jpg',
+      icon: 'ai',
       href: brand.bookingUrl,
     },
   ] satisfies Insight[],

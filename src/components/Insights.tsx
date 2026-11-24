@@ -1,6 +1,7 @@
 import { useContent } from '@/i18n'
 import { useReveal } from '@/hooks/useReveal'
 import { tokens } from '@/theme/tokens'
+import { ServiceIcon } from './ServiceIcon'
 import styles from './Insights.module.css'
 
 const { duration, distance } = tokens.motion
@@ -31,16 +32,16 @@ export function Insights() {
         </div>
 
         {/*
-          "insights-hover-IN/OUT": at rest the text sits over the image slot
-          (translateX(-31vw)) and the image is hidden at translateX(-27vw);
-          on hover both slide to 0 in 800ms ease and the image fades in 400ms.
+          "insights-hover-IN/OUT": at rest the text sits over the icon slot
+          (translateX(textShift)) and the icon is hidden at translateX(iconShift);
+          on hover both slide to 0 in 800ms ease and the icon fades in 400ms.
         */}
         <ul className={styles.list}>
           {insights.items.map((item) => (
             <li key={item.id}>
               <a href={item.href} target="_blank" rel="noreferrer" className={styles.item}>
                 <div className={styles.thumb}>
-                  <img src={item.image} alt="" loading="lazy" />
+                  <ServiceIcon name={item.icon} className={styles.icon} />
                 </div>
                 <div className={styles.text}>
                   <h3 className={`${styles.itemTitle} t-h3`}>{item.title}</h3>
