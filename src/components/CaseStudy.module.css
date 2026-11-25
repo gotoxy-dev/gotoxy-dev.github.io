@@ -332,6 +332,45 @@
   margin-top: auto;
   padding-top: var(--layout-caseStudy-space);
 }
+/* last page: the contact button on the left, the next project on the right, at the bottom */
+.pageEnd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--layout-caseStudy-space);
+  margin-top: auto;
+  padding-top: var(--layout-caseStudy-space);
+}
+/* contact button: an outlined pill, the one call to action of the case page */
+.contact {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--layout-tapMin);
+  padding: var(--layout-caseStudy-contactPad);
+  border: 1px solid var(--color-lineStrong);
+  border-radius: 999px;
+  font-size: var(--layout-caseStudy-valueSize);
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--color-textStrong);
+  transition:
+    background-color var(--motion-duration-d300) var(--motion-ease-outQuart),
+    border-color var(--motion-duration-d300) var(--motion-ease-outQuart),
+    color var(--motion-duration-d300) var(--motion-ease-outQuart);
+}
+.contact:focus-visible {
+  outline: 1px solid var(--color-textStrong);
+  outline-offset: 4px;
+}
+@media (hover: hover) {
+  .contact:hover {
+    background-color: var(--color-textStrong);
+    border-color: var(--color-textStrong);
+    color: var(--color-bg);
+  }
+}
 .caseLink {
   display: inline-flex;
   align-items: center;
@@ -547,6 +586,11 @@
     padding-top: var(--layout-caseStudy-stack-padTop);
     scroll-snap-align: start;
   }
+  /* journey chapter: its stage is exactly one screen and is the snap target; snapping on the
+     chapter start too would land with the stage pushed down by the label and cut at the bottom */
+  .stackChapterJourney {
+    scroll-snap-align: none;
+  }
   /* `#2` / `#3` deep links land a top padding below the edge, clear of the X (see useSnapScroll) */
   .stack [data-section] {
     scroll-margin-top: var(--layout-caseStudy-stack-padTop);
@@ -607,6 +651,11 @@
     display: flex;
     flex-direction: column;
   }
+  /* the contact button spans the column, like the landing's phone pill */
+  .stackContact .contact {
+    width: 100%;
+    font-size: var(--layout-caseStudy-stack-linkSize);
+  }
   /* links as in the panel (.caseLink: muted caps + ↗), right-aligned like .pageLink, a full tap tall */
   .stackLink {
     align-self: flex-end;
@@ -627,6 +676,8 @@
     align-items: flex-start;
     justify-content: center;
     height: 100svh;
+    /* the snap lands on the stage (see .stackChapterJourney), so the whole screen is the journey */
+    scroll-snap-align: start;
     padding-top: 6svh;
     overflow: hidden;
   }

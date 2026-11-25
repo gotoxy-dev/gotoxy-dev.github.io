@@ -119,8 +119,20 @@ const riseAttrs = (delaySec = 0) => {
  * waits for the scroll instead of playing with the page's first screen). `section` marks the block
  * that opens a chapter, for `#2` / `#3` deep links (see useSnapScroll).
  */
-function StackReveal({ className, section, children }: { className?: string; section?: number; children: ReactNode }) {
-  const ref = useReveal<HTMLDivElement>({ offset: tokens.motion.caseStudy.stack.offset })
+function StackReveal({
+  className,
+  section,
+  offset = tokens.motion.caseStudy.stack.offset,
+  children,
+}: {
+  className?: string
+  section?: number
+  /** Percent of the viewport the block must enter before it rises in. 0 for the blocks that end a
+      chapter: with the chapter snapped they rest near the bottom edge and would never reach more. */
+  offset?: number
+  children: ReactNode
+}) {
+  const ref = useReveal<HTMLDivElement>({ offset })
   return (
     <div ref={ref} className={className} data-section={section} {...riseAttrs()}>
       {children}
@@ -173,14 +185,20 @@ function setupChapterSwaps(root: HTMLElement, count: number, animate: boolean, o
   const zoomOrigin = zoomEl?.dataset.zoomOrigin ?? '50% 50%'
   const { closingZoomSec, closingZoomDelaySec } = tokens.motion.caseStudy
   let zoomTween: gsap.core.Tween | null = null
-  const zoomIn = () => {
+  /** Back to the zoomed state: at once when the page is placed; eased when the chapter is left,
+      since the capture is still on screen while the previous visual uncovers */
+  const zoomIn = (eased = false) => {
     if (!zoomEl) return
     zoomTween?.kill()
-    gsap.set(zoomEl, { scale: zoomScale, transformOrigin: zoomOrigin })
+    if (!eased || !animate) return void gsap.set(zoomEl, { scale: zoomScale, transformOrigin: zoomOrigin })
+    zoomTween = gsap.to(zoomEl, { scale: zoomScale, transformOrigin: zoomOrigin, duration: swapSec, ease: swapEase })
   }
-  const pullBack = () => {
+  /** Pulls back to the whole view: from the zoomed state when placed (`reset`), from wherever the
+      capture is when its chapter is entered again mid-way */
+  const pullBack = (reset = true) => {
     if (!zoomEl) return
-    zoomIn()
+    if (reset) zoomIn()
+    else zoomTween?.kill()
     zoomTween = gsap.to(zoomEl, {
       scale: 1,
       duration: animate ? closingZoomSec : 0,
@@ -213,8 +231,8 @@ function setupChapterSwaps(root: HTMLElement, count: number, animate: boolean, o
     const from = active
     const dir = index > from ? 1 : -1
     swap?.kill()
-    if (index === last) pullBack()
-    else if (from === last) zoomIn()
+    if (index === last) pullBack(false)
+    else if (from === last) zoomIn(true)
     active = index
     range(count).forEach((i) => {
       if (i !== from && i !== index) gsap.set([pages[i], labels[i]], { autoAlpha: 0 })
@@ -388,7 +406,9 @@ function createPhonePlayer(
   })
   resize.observe(screen)
 
-  // Live screens load only around the current step.
+  // Live screens load only around the current step. Each one is a document of its own: loading
+  // it is main-thread work, so the first two wait until the card transition has played
+  // (`preloadDelaySec`) unless the journey is shown before that (playStep loads its own).
   const load = (i: number) => {
     const frame = contents[i]
     if (frame instanceof HTMLIFrameElement && !frame.src && frame.dataset.src) frame.src = frame.dataset.src
@@ -492,8 +512,10 @@ function createPhonePlayer(
     return tl
   }
 
-  load(0)
-  load(1)
+  const preload = window.setTimeout(() => {
+    load(0)
+    load(1)
+  }, cfg.preloadDelaySec * 1000)
 
   return {
     show,
@@ -504,6 +526,7 @@ function createPhonePlayer(
     pause: () => play?.pause(),
     resume: () => play?.resume(),
     destroy: () => {
+      window.clearTimeout(preload)
       play?.kill()
       resize.disconnect()
     },
@@ -666,7 +689,13 @@ function setupMobileJourney(root: HTMLElement, steps: CaseJourneyStep[], animate
 }
 
 export function CaseStudy({ study }: { study: CaseStudyContent }) {
-  const { content: { caseStudies }, lang } = useLanguage()
+  const { content: { caseStudies, cta }, lang } = useLanguage()
+  /** Contact button that closes every case (the landing's CTA button: same label and link) */
+  const contact = (
+    <a href={cta.button.href} target="_blank" rel="noreferrer" className={`${styles.contact} tap-area`}>
+      {cta.button.label}
+    </a>
+  )
   const navigate = useNavigate()
   const nextLabel = lang === 'es' ? 'Siguiente proyecto' : 'Next project'
   const replayLabel = lang === 'es' ? 'Ver de nuevo' : 'Watch again'
@@ -971,14 +1000,16 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
 
         <div className={styles.page} data-case={`page-${resultsIndex}`}>
           {textPage(resultsIndex, results.label, results.heading, results.paragraphs)}
-          {next && (
-            <div className={styles.pageLink}>
+          {/* the case ends on the contact button, with the next project beside it */}
+          <div className={styles.pageEnd}>
+            {contact}
+            {next && (
               <Link to="/projects/$slug" params={{ slug: next.slug }} className={styles.caseLink}>
                 {nextLabel}
                 <ArrowIcon />
               </Link>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
 
@@ -1084,7 +1115,8 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
             </a>
           </div>
         </section>
-        <section className={styles.stackChapter}>
+        {/* the journey chapter snaps on its one-screen stage, not on its label */}
+        <section className={`${styles.stackChapter}${hasJourney ? ` ${styles.stackChapterJourney}` : ''}`}>
           {visuals && showcase && (
             <>
               <StackReveal section={1}>
@@ -1184,8 +1216,11 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
           ) : (
             <StackReveal>{stackVisual(true)}</StackReveal>
           )}
+          <StackReveal className={styles.stackContact} offset={0}>
+            {contact}
+          </StackReveal>
           {next && (
-            <StackReveal className={styles.stackLink}>
+            <StackReveal className={styles.stackLink} offset={0}>
               <Link to="/projects/$slug" params={{ slug: next.slug }} className={styles.caseLink}>
                 {nextLabel}
                 <ArrowIcon />
