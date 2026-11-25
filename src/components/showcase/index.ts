@@ -7,7 +7,7 @@ import { CamStory } from './cam/CamStory'
 /**
  * Product visuals drawn in code, by `CaseStudy.showcase.id`:
  * - Board: the presentation image (home card, chapter 1 cover). Covers its box.
- * - Story: the animated explainer (chapter 2). Restarts whenever `active` turns true, pauses when false.
+ * - Story: the animated explainer (chapter 2). Plays from the start the first time `active` turns true, pauses when false, resumes when true again.
  * - Outcomes: before / after of the daily operation (chapter 3). Plays its entrance when `active`.
  */
 export interface ShowcaseVisuals {

@@ -1,7 +1,7 @@
 /*
  * Instituto CAM, case chapter 3: before (by hand) → now (one panel), one row per area.
  * This file is the final state: CamOutcomes.tsx only animates *from* it, so the block is never
- * blank while its chapter is inactive or under reduced motion.
+ * blank under reduced motion; with motion allowed the rows wait hidden until their chapter is active.
  * The root is a size container: the base size (layout.showcase.outcomeSize) is in cqi and applies
  * on .inner, the first descendant that can resolve it; everything inside is in em of that size.
  */

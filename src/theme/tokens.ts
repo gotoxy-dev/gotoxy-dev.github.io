@@ -502,8 +502,8 @@ export const tokens = {
   motion: {
     /**
      * Product visuals drawn in code (src/components/showcase). Story: a 3D film in code, seven
-     * segments (problem, the five process steps, results) ≈ 72 s in all, restarted each time
-     * its chapter is entered; a virtual camera cuts between the panel screens floating in 3D.
+     * segments (problem, the five process steps, results) ≈ 81 s of playback, paused when its chapter
+     * is left and resumed when it is entered again; a virtual camera cuts between the panel screens floating in 3D.
      * Outcomes: the before / after items rise one after another and their illustrations draw in.
      */
     showcase: {
@@ -528,10 +528,12 @@ export const tokens = {
        * travel into one row before the view transition; the case cover starts on that row and,
        * once the transition is over, the screens go back to the grid and the board tilts.
        */
-      boardRowSec: 0.75,
+      boardRowSec: 0.5,
       boardRowEase: 'power3.inOut',
       boardIntroDelaySec: 1.15,
       boardIntroSec: 0.9,
+      /** Story film: built this long after the case page mounts (past the card transition and the cover settling), or as soon as its chapter is in focus */
+      filmBuildDelaySec: 2.4,
       /** Case cover depth: each screen floats (yPercent, seconds per swing) */
       boardDriftPercent: 3,
       boardDriftSec: 7,

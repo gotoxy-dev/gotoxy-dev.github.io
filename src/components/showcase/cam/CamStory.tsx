@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { CaseShowcase } from '@/content/site'
 import { gsap, prefersReducedMotion } from '@/theme/motion'
+import { tokens } from '@/theme/tokens'
 import { HOLD, SEEK, SEGMENTS } from './story/script'
 import { Film } from './story/Film'
 import { buildFilm, type Film as FilmHandle, type FilmView } from './story/timeline'
@@ -19,8 +20,8 @@ import styles from './CamStory.module.css'
  * 6. Results: the whole platform, `story.stats` counting up.
  *
  * Every visible state is a function of the timeline's time (story/timeline.ts), so a seek or a
- * restart lands on the right frame. `active` restarts it from 0 each time it turns true and pauses
- * it when false. With reduced motion nothing plays: each segment shows a composed still and the
+ * restart lands on the right frame. `active` plays it from 0 the first time it turns true, pauses
+ * it when false and resumes from that frame when it turns true again (from 0 once it has ended). With reduced motion nothing plays: each segment shows a composed still and the
  * segment buttons switch between them.
  */
 
@@ -33,6 +34,7 @@ export function CamStory({ story, active, className }: { story: CaseShowcase['st
   const fillRefs = useRef<(HTMLSpanElement | null)[]>([])
   const filmRef = useRef<FilmHandle | null>(null)
   const activeRef = useRef(active)
+  const startedRef = useRef(false)
   const [view, setView] = useState<FilmView>({ segment: 0, ended: false })
   const [playing, setPlaying] = useState(false)
   const [reduced] = useState(prefersReducedMotion)
@@ -46,14 +48,69 @@ export function CamStory({ story, active, className }: { story: CaseShowcase['st
     if (play) film.tl.play()
     setPlaying(play)
   }
-  const start = () => (reduced ? seek(HOLD[0], false) : seek(0, true))
+  const start = () => {
+    if (!filmRef.current) return // not built yet: the build starts it if the chapter is in focus
+    startedRef.current = true
+    if (reduced) seek(HOLD[0], false)
+    else seek(0, true)
+  }
+  /** Back in focus: carry on from where it was left; from the start the first time or once it has ended */
+  const resume = () => {
+    const tl = filmRef.current?.tl
+    if (!tl || !startedRef.current || (!reduced && tl.progress() >= 1)) return start()
+    if (reduced) return
+    tl.play()
+    setPlaying(true)
+  }
+
+  /*
+   * Building the film is a long task (about a second), and the case page mounts inside the card's
+   * view transition, which waits for it. So the film is only built once its frame is laid out (the
+   * case page renders a split and a stacked copy, one of them hidden) and either its chapter is in
+   * focus or the page has been idle for `filmBuildDelaySec`, after the transition has played.
+   */
+  const [laidOut, setLaidOut] = useState(false)
+  const [idle, setIdle] = useState(false)
+  const [armed, setArmed] = useState(false)
+  useEffect(() => {
+    const frame = frameRef.current
+    if (!frame) return
+    const observer = new ResizeObserver(([entry]) => setLaidOut(entry.contentRect.width > 0))
+    observer.observe(frame)
+    return () => observer.disconnect()
+  }, [])
+  useEffect(() => {
+    let idleId = 0
+    const timer = window.setTimeout(() => {
+      if ('requestIdleCallback' in window) idleId = window.requestIdleCallback(() => setIdle(true))
+      else setIdle(true)
+    }, tokens.motion.showcase.filmBuildDelaySec * 1000)
+    return () => {
+      window.clearTimeout(timer)
+      if (idleId) window.cancelIdleCallback(idleId)
+    }
+  }, [])
+  useEffect(() => {
+    if (laidOut && (active || idle)) setArmed(true)
+  }, [laidOut, active, idle])
+
+  // Leaving the page: the film's DOM goes with it, so its animations are killed, not reverted
+  // (reverting restores every inline style, another long task inside the closing transition).
+  // Declared before the build effect: cleanups run in this order.
+  const unmountingRef = useRef(false)
+  useLayoutEffect(() => {
+    unmountingRef.current = false
+    return () => {
+      unmountingRef.current = true
+    }
+  }, [])
 
   // Build the film once per story (copy and figures); declared before the `active` effect so a
   // rebuilt film picks up the current focus.
   useLayoutEffect(() => {
     const root = rootRef.current
     const frame = frameRef.current
-    if (!root || !frame) return
+    if (!armed || !root || !frame) return
     const built: { film?: FilmHandle } = {}
     const ctx = gsap.context(() => {
       built.film = buildFilm(root, frame, story, setView, () => fillRefs.current, reduced)
@@ -63,6 +120,7 @@ export function CamStory({ story, active, className }: { story: CaseShowcase['st
     handle.tl.eventCallback('onComplete', () => setPlaying(false))
     filmRef.current = handle
     handle.resize()
+    startedRef.current = false // a rebuilt film (new copy) plays from its start
     const observer = new ResizeObserver(() => handle.resize())
     observer.observe(frame)
     if (reduced || activeRef.current) start()
@@ -71,17 +129,19 @@ export function CamStory({ story, active, className }: { story: CaseShowcase['st
     return () => {
       observer.disconnect()
       filmRef.current = null
+      if (unmountingRef.current) return ctx.kill()
       handle.dispose()
       ctx.revert()
     }
     // `start` only reads refs and `reduced` (fixed for the component's life)
-  }, [story])
+  }, [story, armed])
 
-  // Focus: each time the chapter becomes active it plays from the start; leaving it pauses.
+  // Focus: the first time the chapter becomes active it plays from the start; leaving it pauses,
+  // and coming back carries on from that frame.
   useEffect(() => {
     if (activeRef.current === active) return
     activeRef.current = active
-    if (active) start()
+    if (active) resume()
     else if (!reduced) {
       filmRef.current?.tl.pause()
       setPlaying(false)
@@ -143,9 +203,10 @@ export function CamStory({ story, active, className }: { story: CaseShowcase['st
         )}
       </div>
 
-      <div ref={frameRef} className={styles.frame}>
+      <div ref={frameRef} className={styles.frame} data-built={armed || undefined}>
         <div className={styles.stage} aria-hidden="true">
-          <Film story={story} />
+          {/* the film's DOM (every screen of every set) mounts with its build, not with the page */}
+          {armed && <Film story={story} />}
           {/* band: the section title rests at its top-left, step index and running time at its top-right */}
           <div className={styles.band} data-film="band">
             <span className={styles.hud}>

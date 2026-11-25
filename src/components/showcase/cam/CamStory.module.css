@@ -106,6 +106,10 @@
   pointer-events: none;
   user-select: none;
 }
+/* until the film is built (CamStory builds it after the card transition) its raw layout stays hidden */
+.frame:not([data-built]) .stage {
+  visibility: hidden;
+}
 
 /*
  * Band over the top of the film: the section title rests at its top-left, the step index and the

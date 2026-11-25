@@ -123,9 +123,9 @@ const art: Record<CaseOutcomeIcon, { before: ReactNode; after: ReactNode }> = {
 
 /**
  * Chapter 3 of the Instituto CAM case: what the team did by hand before and what it does now,
- * one row per area, each with a before → after line drawing. The CSS holds the final state;
- * every time `active` turns true the rows rise in and the drawings draw from the start, and
- * when it turns false (or on unmount) the animation is reverted to that final state.
+ * one row per area, each with a before → after line drawing. The CSS holds the final state,
+ * shown as is under reduced motion. Otherwise the rows wait hidden while `active` is false, and
+ * every time it turns true they rise in and the drawings draw from the start.
  */
 export function CamOutcomes({
   outcomes,
@@ -140,10 +140,12 @@ export function CamOutcomes({
 
   useLayoutEffect(() => {
     const root = rootRef.current
-    if (!active || !root || prefersReducedMotion()) return
+    if (!root || prefersReducedMotion()) return
     const m = tokens.motion.showcase
     const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ defaults: { ease: m.ease } })
+      // built paused while inactive: every `fromTo` renders its start at once, so the rows wait
+      // hidden and the entrance never begins with the finished block flashing
+      const tl = gsap.timeline({ paused: !active, defaults: { ease: m.ease } })
       root.querySelectorAll<HTMLElement>('[data-outcome]').forEach((row, i) => {
         const at = i * m.outcomeStaggerSec
         const before = row.querySelector('[data-art="before"]')
