@@ -194,9 +194,25 @@
   .section {
     padding-bottom: 20px;
   }
+  /* the list starts at the top of the screen: the first card clears the fixed bar by itself */
+  .section.section {
+    scroll-margin-top: 0;
+  }
+  /*
+   * Each card fills one screen (`svh`: the screen with the browser bars shown, stable while they
+   * slide away; `vh` for browsers without it). Its line starts under the fixed bar and the media
+   * takes the height the text leaves, so the next card starts where this one ends. A card whose
+   * content is taller than the screen grows (a minimum height, never a fixed one).
+   */
   .card {
-    padding-top: 14px;
-    margin-bottom: 60px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100svh;
+    padding-top: calc(var(--layout-navHeightMobile) + 14px);
+    /* also holds the media's resting offset of the scroll animation (motion.distance.phone) */
+    padding-bottom: var(--layout-gutter);
+    margin-bottom: 0;
   }
   .lineWrap {
     margin-bottom: 17px;
@@ -210,18 +226,40 @@
   .arrow {
     display: block;
   }
-  /* reference phone cards: 335 × 215 media; the stacked case cover uses the same box (framedRatio) */
+  /*
+   * The media is at least the reference phone box (335 × 215, the stacked case cover's ratio) and
+   * grows from there to fill the card's screen
+   */
+  .mediaWrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
   .media {
+    flex: 1 0 auto;
     aspect-ratio: var(--layout-project-phoneRatio);
   }
-  /* presentation card: the image first, like every other card (the stacked case cover copies its
-     box), then the description */
+  /* in a screen-tall media the window is wider than on the stacked case cover: it grows from
+     the cover's size when the case closes and shrinks into it when it opens */
+  .browser {
+    width: var(--layout-project-phoneBrowserWidth);
+  }
+  /* presentation card: the image first, like every other card, then the description; the image
+     row takes the height the description leaves */
   .split {
+    flex: 1;
     grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto;
     gap: var(--layout-project-split-phoneGap);
   }
   .split > .mediaWrap {
     order: -1;
+  }
+  /* beside its description the image may be shorter than the reference box, so the card still
+     fits a short screen; it never gets shorter than this */
+  .media.mediaSplit {
+    aspect-ratio: auto;
+    min-height: var(--layout-project-split-phoneMediaMin);
   }
   .feature {
     gap: var(--layout-project-split-phoneGap);

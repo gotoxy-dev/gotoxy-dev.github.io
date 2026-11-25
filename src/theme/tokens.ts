@@ -212,6 +212,8 @@ export const tokens = {
       inner: '0.833vw', // line → title row → media
       /** Card media of a website case: its capture in a browser window, over a blurred copy */
       browserWidth: '70%',
+      /** Phones: the card is one screen tall, so its window fills more of the media than on the stacked case cover (which keeps `browserWidth`) */
+      phoneBrowserWidth: '90%',
       /** Height of the brand logo beside a card's title */
       brandLogo: '22px',
       /** Phones (≤ 767 px): card media box (reference phone cards 335 × 215); the stacked case cover copies it */
@@ -226,6 +228,8 @@ export const tokens = {
         mediaRatio: '1 / 1',
         /** …never taller than the screen below the navbar, so the whole slide fits in one view */
         mediaMaxHeight: 'calc(100svh - 2 * var(--layout-navHeight))',
+        /** Phones: the presentation card's image may be shorter than the reference box so the card fits a short screen; never shorter than this */
+        phoneMediaMin: '160px',
         titleSize: 'clamp(32px, 3.75vw, 64px)',
         titleLine: 1,
         textSize: 'clamp(15px, 1.25vw, 20px)',
@@ -306,6 +310,8 @@ export const tokens = {
       storyPad: 'clamp(20px, 2.5vw, 40px)',
       /** Story caption: readable line length */
       storyCaptionMax: '36em',
+      /** Scroll-driven story (split layout, motion allowed): screens of scroll that play the whole film while its chapter stays pinned */
+      filmScrollScreens: 8,
       /** Results illustrations: base size grows with the visual's width */
       outcomeSize: 'clamp(13px, 1.55cqi, 17px)',
       outcomeIcon: '3.4em',
@@ -534,6 +540,9 @@ export const tokens = {
       boardIntroSec: 0.9,
       /** Story film: built this long after the case page mounts (past the card transition and the cover settling), or as soon as its chapter is in focus */
       filmBuildDelaySec: 2.4,
+      /** Scroll-driven story: how long the film takes to catch up with the scroll (GSAP scrub), and one swing of the scroll hint */
+      filmScrubSec: 0.5,
+      filmHintSec: 1.6,
       /** Case cover depth: each screen floats (yPercent, seconds per swing) */
       boardDriftPercent: 3,
       boardDriftSec: 7,

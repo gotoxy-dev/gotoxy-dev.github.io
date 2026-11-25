@@ -45,10 +45,10 @@ export function Projects() {
  *   title wrapper: y 40px → 0 (50%) → 20px (100%), opacity 0 → 1 (33%)
  *   media wrapper: y 80px → 0 (50%) → 40px (100%), opacity 0 → 1 (33%)
  * Desktop and tablets scrub while the card crosses the middle of the screen (`top 50%` →
- * `bottom 50%`). A phone card is a third of the screen tall, so that window left the lower half
- * of the screen empty: on phones the same keyframes run while the card's top travels from the
- * bottom edge to the middle (shown as it enters, settled above the middle), with the travel
- * scaled to the phone media (`motion.distance.phone`).
+ * `bottom 50%`). A phone card fills the screen, so that window would keep it hidden until its
+ * top reached the middle: on phones the same keyframes run while the card's top travels from the
+ * bottom edge to the middle (shown as it enters, settled once it covers half the screen), with
+ * the travel scaled to the phone media (`motion.distance.phone`).
  */
 const CARD_SCRUB: ScrubOptions = { phone: { start: 'top bottom', end: 'top 50%' } }
 
@@ -128,7 +128,11 @@ function ProjectCard({ project }: { project: Project }) {
     nameCard(media, browserRef.current)
     // a showcase board starts on the state the case cover closed on, then settles (showcase/events.ts)
     media.querySelector('[data-showcase-board]')?.dispatchEvent(new CustomEvent(SHOWCASE_RETURN))
-    media.scrollIntoView({ block: 'center', behavior: 'instant' })
+    // phones: the card is one screen tall, so the whole card comes back; wider: its media, centred
+    const onPhone = window.matchMedia(`(max-width: ${tokens.breakpoints.md - 1}px)`).matches
+    const card = onPhone ? media.closest<HTMLElement>(`.${styles.card}`) : null
+    if (card) card.scrollIntoView({ block: 'start', behavior: 'instant' })
+    else media.scrollIntoView({ block: 'center', behavior: 'instant' })
     const clear = window.setTimeout(() => nameCard(media, browserRef.current, false), RETURN_NAME_MS)
     return () => window.clearTimeout(clear)
   }, [study, mediaRef])

@@ -61,19 +61,41 @@
     padding-bottom: 70px;
   }
 }
-/* reference ≤479px: padding 91px 20px 64px, canvas 100px below the text */
+/*
+ * Phones: the hero fills one screen. `svh` is the screen with the browser bars shown, so nothing is
+ * cut and the height does not change while they slide away (`vh` for browsers without it). The
+ * headline is centred in the space under the fixed bar: equal rows above and below it, the caption
+ * at the top of the lower one. On a screen too short for that, both rows grow to the caption and
+ * the hero grows with them (a minimum height, never a fixed one).
+ */
 @media (max-width: 767px) {
   .hero {
-    min-height: 0;
-    padding-top: 91px;
-    padding-bottom: 64px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100svh;
+    padding-top: var(--layout-navHeightMobile);
+    padding-bottom: 0;
+  }
+  .content {
+    flex: 1;
+    display: grid;
+    grid-template-rows: 1fr auto 1fr;
+    width: 100%;
+  }
+  .headline {
+    grid-row: 2;
   }
   /*
-   * Phones: the G behind the headline as on desktop, but whole: a square canvas centred across the
-   * screen (the mark fills it, so the G never reaches the screen edges), centred on the headline block
+   * The G behind the headline as on desktop, but whole: a square canvas centred across the screen
+   * (the mark fills it, so the G never reaches the screen edges) and on the headline, which sits in
+   * the middle of the space under the bar
    */
   .canvasWrap {
-    top: calc(var(--layout-hero-phone-markCenter) - var(--layout-hero-phone-canvasSize) / 2);
+    top: calc(
+      var(--layout-navHeightMobile) + (100% - var(--layout-navHeightMobile)) / 2 -
+        var(--layout-hero-phone-canvasSize) / 2
+    );
     left: calc((100% - var(--layout-hero-phone-canvasSize)) / 2);
     width: var(--layout-hero-phone-canvasSize);
     height: var(--layout-hero-phone-canvasSize);
@@ -92,7 +114,10 @@
     align-items: flex-start;
   }
   .caption {
+    grid-row: 3;
+    align-self: start;
     margin-top: 48px;
+    padding-bottom: var(--layout-gutter);
   }
 }
 
