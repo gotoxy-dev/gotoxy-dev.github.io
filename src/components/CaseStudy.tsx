@@ -136,9 +136,13 @@ function chapterLayout(study: CaseStudyContent) {
   const hasJourney = steps.length > 0
   const count = 3
   const k = steps.length
-  /** CSS top of each chapter's snap point */
-  const areas = range(count).map((i) => `calc(${i} * 100vh)`)
-  return { steps, hasJourney, count, k, areas, totalHeight: `calc(${count} * 100vh)` }
+  /**
+   * CSS top of each chapter's snap point. `--case-film` (CaseStudy.module.css `.film`) is the
+   * number of extra screens the story film is scrolled through while its chapter (the second)
+   * stays pinned; 0 wherever the film is not scroll-driven.
+   */
+  const areas = range(count).map((i) => (i < 2 ? `calc(${i} * 100vh)` : `calc((${i} + var(--case-film, 0)) * 100vh)`))
+  return { steps, hasJourney, count, k, areas, totalHeight: `calc((${count} + var(--case-film, 0)) * 100vh)` }
 }
 
 /**
@@ -687,6 +691,9 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
   const stackStoryOn = useOnScreen(stackStoryRef, 0.5, study.slug)
   const stackOutcomesOn = useOnScreen(stackOutcomesRef, 0.25, study.slug)
 
+  /** Split layout: the stretch of scroll that plays the story film (see `.filmTrack`) */
+  const [filmTrack, setFilmTrack] = useState<HTMLDivElement | null>(null)
+
   useSnapScroll({ count, snapClass: SNAP_CLASS })
 
   // Split layout: chapter swaps and the snapped journey. Stacked layout: the one-screen journey
@@ -852,7 +859,11 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
   )
 
   return (
-    <div ref={setRefs} className={styles.root} style={cssVars({ '--case-height': totalHeight })}>
+    <div
+      ref={setRefs}
+      className={`${styles.root}${showcase ? ` ${styles.film}` : ''}`}
+      style={cssVars({ '--case-height': totalHeight })}
+    >
       {/* hit area of at least layout.tapMin (global .tap-area); below lg it also paints a disc behind the X */}
       <Link
         to="/"
@@ -872,7 +883,7 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
             key={`a${i}`}
             data-case={`area-${i}`}
             data-section={i}
-            className={styles.snapPoint}
+            className={`${styles.snapPoint}${showcase && i === 1 ? ` ${styles.snapPointFilm}` : ''}`}
             style={cssVars({ '--top': top })}
           />
         ))}
@@ -997,11 +1008,15 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
           )}
         </section>
         {visuals && showcase ? (
-          <section className={styles.section} style={cssVars({ zIndex: 2 })}>
-            <div className={styles.bg} data-visual="1">
-              <visuals.Story story={showcase.story} active={chapter === 1} />
-            </div>
-          </section>
+          <>
+            <section className={styles.section} style={cssVars({ zIndex: 2 })}>
+              <div className={styles.bg} data-visual="1">
+                <visuals.Story story={showcase.story} active={chapter === 1} scrollTrack={filmTrack} />
+              </div>
+            </section>
+            {/* the scroll that plays the film: the story stays pinned above it until the results arrive */}
+            <div ref={setFilmTrack} className={styles.filmTrack} aria-hidden="true" />
+          </>
         ) : hasJourney ? (
           <section className={styles.section} style={cssVars({ zIndex: 2 })}>
             <div className={`${styles.bg} ${styles.bgJourney}`} data-case="phone-split" data-visual="1">
@@ -1047,129 +1062,137 @@ export function CaseStudy({ study }: { study: CaseStudyContent }) {
           language. Its cover carries the card transition names (the split visual 0 is not rendered
           here, and this layout is not rendered from lg up, so only one set exists at any width). */}
       <div className={styles.stack} data-case="stack">
-        <h1 className={styles.title} {...stackLine(0)}>
-          {study.title}
-        </h1>
-        {stackVisual(false)}
-        <dl className={styles.table}>
-          {study.table.map((row, i) => (
-            <div key={row.label} className={styles.row} {...stackLine(i + 1)}>
-              <dt className={styles.rowLabel}>{row.label}</dt>
-              <dd className={styles.rowValue}>{row.value}</dd>
-            </div>
-          ))}
-        </dl>
-        <div className={styles.stackLink} {...stackLine(study.table.length + 1)}>
-          <a href={study.link.href} target="_blank" rel="noreferrer" className={styles.caseLink}>
-            {study.link.label}
-            <ArrowIcon />
-          </a>
-        </div>
-        {visuals && showcase && (
-          <>
-            <StackReveal section={1}>
-              <div ref={stackStoryRef}>
-                <visuals.Story story={showcase.story} active={stackStoryOn} />
+        {/* one snap area per chapter (cover, story or journey, results): the scroll lands on a
+            chapter start and rests freely inside a chapter taller than the screen */}
+        <section className={styles.stackChapter}>
+          <h1 className={styles.title} {...stackLine(0)}>
+            {study.title}
+          </h1>
+          {stackVisual(false)}
+          <dl className={styles.table}>
+            {study.table.map((row, i) => (
+              <div key={row.label} className={styles.row} {...stackLine(i + 1)}>
+                <dt className={styles.rowLabel}>{row.label}</dt>
+                <dd className={styles.rowValue}>{row.value}</dd>
               </div>
-            </StackReveal>
-            <StackReveal className={styles.stackBlock}>
-              <span className={styles.caps}>{goal.label}</span>
-              <h2 className={styles.heading}>{goal.heading}</h2>
-              {goal.paragraphs.map((t, i) => (
-                <p key={i} className={styles.paragraph}>
-                  {t}
-                </p>
-              ))}
-            </StackReveal>
-          </>
-        )}
-        {!visuals && !hasJourney && (
-          <>
-            <StackReveal section={1}>
-              <video
-                ref={stackVideoRef}
-                className={styles.stackVideo}
-                src={study.media.video}
-                poster={study.media.videoPoster}
-                loop
-                muted
-                playsInline
-                preload="none"
-              />
-            </StackReveal>
-            <StackReveal className={styles.stackBlock}>
-              <span className={styles.caps}>{goal.label}</span>
-              <h2 className={styles.heading}>{goal.heading}</h2>
-              {goal.paragraphs.map((t, i) => (
-                <p key={i} className={styles.paragraph}>
-                  {t}
-                </p>
-              ))}
-            </StackReveal>
-          </>
-        )}
-        {hasJourney && (
-          <StackReveal className={styles.stackBlock} section={1}>
-            <span className={styles.caps}>{journeyLabel}</span>
-            {/* one screen: the phone plays on its own, its caption swaps with each step */}
-            <div className={styles.mJourney} data-case="stage-stack">
-              <div className={styles.mPhoneLayer} data-case="phone-stack">
-                <JourneyPhone steps={steps} className={styles.mPhone} />
-                <ol className={styles.mCaptions}>
-                  {steps.map((step, i) => (
-                    <li key={step.title} className={styles.mCaption} data-case={`caption-${i}`}>
-                      <span className={styles.mCaptionHead}>
-                        <span className={styles.stepNumber}>{`${pad(i + 1)} / ${pad(k)}`}</span>
-                        {/* once the phone has played the last step, its caption offers the replay */}
-                        {i === k - 1 && (
-                          <button type="button" className={`${styles.replay} tap-area`} data-case="replay-stack" hidden>
-                            {replayLabel}
-                          </button>
-                        )}
-                      </span>
-                      <h3 className={styles.mCaptionTitle}>{step.title}</h3>
-                      <p className={styles.mCaptionText}>{step.text}</p>
-                    </li>
-                  ))}
-                </ol>
-                {/* one dot per step, each jumping to it; the row of hit areas spans the screen */}
-                <div className={styles.mControls}>
-                  <div className={styles.mDots}>
+            ))}
+          </dl>
+          <div className={styles.stackLink} {...stackLine(study.table.length + 1)}>
+            <a href={study.link.href} target="_blank" rel="noreferrer" className={styles.caseLink}>
+              {study.link.label}
+              <ArrowIcon />
+            </a>
+          </div>
+        </section>
+        <section className={styles.stackChapter}>
+          {visuals && showcase && (
+            <>
+              <StackReveal section={1}>
+                <div ref={stackStoryRef}>
+                  <visuals.Story story={showcase.story} active={stackStoryOn} />
+                </div>
+              </StackReveal>
+              <StackReveal className={styles.stackBlock}>
+                <span className={styles.caps}>{goal.label}</span>
+                <h2 className={styles.heading}>{goal.heading}</h2>
+                {goal.paragraphs.map((t, i) => (
+                  <p key={i} className={styles.paragraph}>
+                    {t}
+                  </p>
+                ))}
+              </StackReveal>
+            </>
+          )}
+          {!visuals && !hasJourney && (
+            <>
+              <StackReveal section={1}>
+                <video
+                  ref={stackVideoRef}
+                  className={styles.stackVideo}
+                  src={study.media.video}
+                  poster={study.media.videoPoster}
+                  loop
+                  muted
+                  playsInline
+                  preload="none"
+                />
+              </StackReveal>
+              <StackReveal className={styles.stackBlock}>
+                <span className={styles.caps}>{goal.label}</span>
+                <h2 className={styles.heading}>{goal.heading}</h2>
+                {goal.paragraphs.map((t, i) => (
+                  <p key={i} className={styles.paragraph}>
+                    {t}
+                  </p>
+                ))}
+              </StackReveal>
+            </>
+          )}
+          {hasJourney && (
+            <StackReveal className={styles.stackBlock} section={1}>
+              <span className={styles.caps}>{journeyLabel}</span>
+              {/* one screen: the phone plays on its own, its caption swaps with each step */}
+              <div className={styles.mJourney} data-case="stage-stack">
+                <div className={styles.mPhoneLayer} data-case="phone-stack">
+                  <JourneyPhone steps={steps} className={styles.mPhone} />
+                  <ol className={styles.mCaptions}>
                     {steps.map((step, i) => (
-                      <button key={step.title} type="button" className={styles.mDot} data-case={`dot-${i}`} aria-label={`${pad(i + 1)} · ${step.title}`} />
+                      <li key={step.title} className={styles.mCaption} data-case={`caption-${i}`}>
+                        <span className={styles.mCaptionHead}>
+                          <span className={styles.stepNumber}>{`${pad(i + 1)} / ${pad(k)}`}</span>
+                          {/* once the phone has played the last step, its caption offers the replay */}
+                          {i === k - 1 && (
+                            <button type="button" className={`${styles.replay} tap-area`} data-case="replay-stack" hidden>
+                              {replayLabel}
+                            </button>
+                          )}
+                        </span>
+                        <h3 className={styles.mCaptionTitle}>{step.title}</h3>
+                        <p className={styles.mCaptionText}>{step.text}</p>
+                      </li>
                     ))}
+                  </ol>
+                  {/* one dot per step, each jumping to it; the row of hit areas spans the screen */}
+                  <div className={styles.mControls}>
+                    <div className={styles.mDots}>
+                      {steps.map((step, i) => (
+                        <button key={step.title} type="button" className={styles.mDot} data-case={`dot-${i}`} aria-label={`${pad(i + 1)} · ${step.title}`} />
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </StackReveal>
+          )}
+        </section>
+        <section className={styles.stackChapter}>
+          <StackReveal className={styles.stackBlock} section={resultsIndex}>
+            <span className={styles.caps}>{results.label}</span>
+            <h2 className={styles.heading}>{results.heading}</h2>
+            {results.paragraphs.map((t, i) => (
+              <p key={i} className={styles.paragraph}>
+                {t}
+              </p>
+            ))}
           </StackReveal>
-        )}
-        <StackReveal className={styles.stackBlock} section={resultsIndex}>
-          <span className={styles.caps}>{results.label}</span>
-          <h2 className={styles.heading}>{results.heading}</h2>
-          {results.paragraphs.map((t, i) => (
-            <p key={i} className={styles.paragraph}>
-              {t}
-            </p>
-          ))}
-        </StackReveal>
-        {visuals && showcase ? (
-          <StackReveal>
-            <div ref={stackOutcomesRef}>
-              <visuals.Outcomes outcomes={showcase.outcomes} active={stackOutcomesOn} />
-            </div>
-          </StackReveal>
-        ) : (
-          <StackReveal>{stackVisual(true)}</StackReveal>
-        )}
-        {next && (
-          <StackReveal className={styles.stackLink}>
-            <Link to="/projects/$slug" params={{ slug: next.slug }} className={styles.caseLink}>
-              {nextLabel}
-              <ArrowIcon />
-            </Link>
-          </StackReveal>
-        )}
+          {visuals && showcase ? (
+            <StackReveal>
+              <div ref={stackOutcomesRef}>
+                <visuals.Outcomes outcomes={showcase.outcomes} active={stackOutcomesOn} />
+              </div>
+            </StackReveal>
+          ) : (
+            <StackReveal>{stackVisual(true)}</StackReveal>
+          )}
+          {next && (
+            <StackReveal className={styles.stackLink}>
+              <Link to="/projects/$slug" params={{ slug: next.slug }} className={styles.caseLink}>
+                {nextLabel}
+                <ArrowIcon />
+              </Link>
+            </StackReveal>
+          )}
+        </section>
       </div>
     </div>
   )

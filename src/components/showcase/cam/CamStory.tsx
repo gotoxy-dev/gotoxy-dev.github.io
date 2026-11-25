@@ -1,8 +1,8 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { CaseShowcase } from '@/content/site'
-import { gsap, prefersReducedMotion } from '@/theme/motion'
+import { gsap, prefersReducedMotion, ScrollTrigger } from '@/theme/motion'
 import { tokens } from '@/theme/tokens'
-import { HOLD, SEEK, SEGMENTS } from './story/script'
+import { HOLD, PTOTAL, SEEK, SEGMENTS } from './story/script'
 import { Film } from './story/Film'
 import { buildFilm, type Film as FilmHandle, type FilmView } from './story/timeline'
 import styles from './CamStory.module.css'
@@ -21,14 +21,27 @@ import styles from './CamStory.module.css'
  *
  * Every visible state is a function of the timeline's time (story/timeline.ts), so a seek or a
  * restart lands on the right frame. `active` plays it from 0 the first time it turns true, pauses
- * it when false and resumes from that frame when it turns true again (from 0 once it has ended). With reduced motion nothing plays: each segment shows a composed still and the
- * segment buttons switch between them.
+ * it when false and resumes from that frame when it turns true again (from 0 once it has ended).
+ * With `scrollTrack` (the case page's split layout) nothing plays on its own: the scroll through
+ * that element is the clock, the film follows it with a short catch-up (`filmScrubSec`), and the
+ * segment buttons scroll to their cut. With reduced motion nothing plays: each segment shows a
+ * composed still and the segment buttons switch between them.
  */
 
 const PROBLEM = 0
 const RESULTS = SEGMENTS - 1
 
-export function CamStory({ story, active, className }: { story: CaseShowcase['story']; active: boolean; className?: string }) {
+export function CamStory({
+  story,
+  active,
+  className,
+  scrollTrack,
+}: {
+  story: CaseShowcase['story']
+  active: boolean
+  className?: string
+  scrollTrack?: HTMLElement | null
+}) {
   const rootRef = useRef<HTMLElement>(null)
   const frameRef = useRef<HTMLDivElement>(null)
   const fillRefs = useRef<(HTMLSpanElement | null)[]>([])
@@ -38,6 +51,9 @@ export function CamStory({ story, active, className }: { story: CaseShowcase['st
   const [view, setView] = useState<FilmView>({ segment: 0, ended: false })
   const [playing, setPlaying] = useState(false)
   const [reduced] = useState(prefersReducedMotion)
+  /** The scroll is the clock (see the header comment) */
+  const driven = Boolean(scrollTrack) && !reduced
+  const scrollRef = useRef<ScrollTrigger | null>(null)
 
   /** Jump to `t` (rendering that frame now), then play or stay paused */
   const seek = (t: number, play: boolean) => {
@@ -51,6 +67,7 @@ export function CamStory({ story, active, className }: { story: CaseShowcase['st
   const start = () => {
     if (!filmRef.current) return // not built yet: the build starts it if the chapter is in focus
     startedRef.current = true
+    if (driven) return // the scroll places the film
     if (reduced) seek(HOLD[0], false)
     else seek(0, true)
   }
@@ -58,7 +75,7 @@ export function CamStory({ story, active, className }: { story: CaseShowcase['st
   const resume = () => {
     const tl = filmRef.current?.tl
     if (!tl || !startedRef.current || (!reduced && tl.progress() >= 1)) return start()
-    if (reduced) return
+    if (reduced || driven) return
     tl.play()
     setPlaying(true)
   }
@@ -123,24 +140,46 @@ export function CamStory({ story, active, className }: { story: CaseShowcase['st
     startedRef.current = false // a rebuilt film (new copy) plays from its start
     const observer = new ResizeObserver(() => handle.resize())
     observer.observe(frame)
-    if (reduced || activeRef.current) start()
+
+    // Scroll-driven: the film rests on its first title card (not on the empty frame before it)
+    // and the scroll through `scrollTrack` carries it from there to its end.
+    let scrubbed: gsap.core.Tween | null = null
+    if (driven && scrollTrack) {
+      const M = tokens.motion.showcase
+      const rest = M.filmCardInSec + M.filmTitleInSec
+      startedRef.current = true
+      handle.tl.pause(rest)
+      handle.sync(rest)
+      scrubbed = handle.tl.tweenFromTo(rest, PTOTAL, { ease: 'none', paused: true })
+      scrollRef.current = ScrollTrigger.create({
+        trigger: scrollTrack,
+        start: 'top bottom',
+        end: 'bottom bottom',
+        scrub: M.filmScrubSec,
+        animation: scrubbed,
+      })
+    } else if (reduced || activeRef.current) start()
     else handle.sync(0)
 
     return () => {
       observer.disconnect()
+      scrollRef.current?.kill()
+      scrollRef.current = null
+      scrubbed?.kill()
       filmRef.current = null
       if (unmountingRef.current) return ctx.kill()
       handle.dispose()
       ctx.revert()
     }
     // `start` only reads refs and `reduced` (fixed for the component's life)
-  }, [story, armed])
+  }, [story, armed, driven, scrollTrack])
 
   // Focus: the first time the chapter becomes active it plays from the start; leaving it pauses,
   // and coming back carries on from that frame.
   useEffect(() => {
     if (activeRef.current === active) return
     activeRef.current = active
+    if (driven) return
     if (active) resume()
     else if (!reduced) {
       filmRef.current?.tl.pause()
@@ -160,7 +199,12 @@ export function CamStory({ story, active, className }: { story: CaseShowcase['st
       setPlaying(true)
     }
   }
-  const goTo = (i: number) => (reduced ? seek(HOLD[i], false) : seek(SEEK[i], true))
+  const goTo = (i: number) => {
+    const st = scrollRef.current
+    if (!driven) return reduced ? seek(HOLD[i], false) : seek(SEEK[i], true)
+    // scroll to where that cut sits on the track (the page scrolls smoothly unless motion is reduced)
+    if (st) window.scrollTo({ top: st.start + (SEEK[i] / PTOTAL) * (st.end - st.start) + 1 })
+  }
 
   const labels = [story.scenes[0].label, ...story.words, story.scenes[2].label]
   /** What each section is about, under its big title on the entry card */
@@ -195,7 +239,14 @@ export function CamStory({ story, active, className }: { story: CaseShowcase['st
             </button>
           ))}
         </div>
-        {!reduced && (
+        {driven && (
+          <span className={`${styles.toggle} ${styles.hint}`} aria-hidden="true">
+            <svg viewBox="0 0 16 16" className={styles.icon}>
+              <path d="M8 2v10M3.5 8 8 12.5 12.5 8" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </span>
+        )}
+        {!reduced && !driven && (
           <button type="button" className={`${styles.toggle} tap-area`} onClick={toggle}>
             <ToggleIcon kind={toggleIcon} />
             <span>{toggleLabel}</span>

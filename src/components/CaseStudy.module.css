@@ -13,6 +13,23 @@
     scroll-snap-type: y mandatory;
   }
 }
+/*
+ * Scroll-driven story (cases with a showcase, split layout, motion allowed): the second chapter
+ * stays pinned for `--case-film` extra screens while the scroll plays its film (`.filmTrack` is
+ * that stretch of scroll, see CamStory). Its snap area is as tall as that whole stretch
+ * (`.snapPointFilm`): a snap area taller than the screen lets the scroll rest anywhere inside it,
+ * so the snap stays mandatory and still lands on a chapter start outside the film. With reduced
+ * motion the film shows stills: `--case-film` is 0 and nothing changes.
+ */
+@media (min-width: 992px) and (prefers-reduced-motion: no-preference) {
+  .film {
+    --case-film: var(--layout-showcase-filmScrollScreens);
+  }
+}
+.filmTrack {
+  height: calc(var(--case-film, 0) * 100vh);
+  pointer-events: none;
+}
 .snapPoints {
   position: absolute;
   inset: 0;
@@ -26,6 +43,9 @@
   height: 100vh;
   scroll-snap-align: start;
   scroll-snap-stop: always;
+}
+.snapPointFilm {
+  height: calc((1 + var(--case-film, 0)) * 100vh);
 }
 
 .close {
@@ -503,10 +523,29 @@
     -webkit-backdrop-filter: blur(var(--layout-nav-blur));
     backdrop-filter: blur(var(--layout-nav-blur));
   }
+  /*
+   * Chapters snap: the scroll lands on a chapter start and rests freely inside a chapter taller
+   * than the screen. Each chapter starts at the top edge and carries the top padding itself
+   * (clear of the X), so nothing of the previous chapter shows above it; the stack pulls up by
+   * that padding, which the page already has. Each chapter is at least one screen (`svh`, `vh`
+   * for browsers without it), so the next one never shows under a short chapter.
+   */
+  :global(html.case-snap) {
+    scroll-snap-type: y mandatory;
+  }
   .stack {
     display: flex;
     flex-direction: column;
+    margin-top: calc(-1 * var(--layout-caseStudy-stack-padTop));
+  }
+  .stackChapter {
+    display: flex;
+    flex-direction: column;
     gap: var(--layout-caseStudy-stack-gap);
+    min-height: 100vh;
+    min-height: 100svh;
+    padding-top: var(--layout-caseStudy-stack-padTop);
+    scroll-snap-align: start;
   }
   /* `#2` / `#3` deep links land a top padding below the edge, clear of the X (see useSnapScroll) */
   .stack [data-section] {

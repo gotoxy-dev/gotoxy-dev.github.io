@@ -78,6 +78,18 @@
   height: 1.2em;
   fill: currentColor;
 }
+/* scroll-driven film: an arrow nodding down in place of the play button (only rendered with motion allowed) */
+.hint .icon {
+  animation: story-hint calc(var(--motion-showcase-filmHintSec) * 1s) var(--motion-ease-outSine) infinite alternate;
+}
+@keyframes story-hint {
+  from {
+    transform: translateY(-0.15em);
+  }
+  to {
+    transform: translateY(0.2em);
+  }
+}
 @media (hover: hover) {
   .segment:hover .track {
     background: color-mix(in srgb, var(--color-cam-navyText) 55%, transparent);

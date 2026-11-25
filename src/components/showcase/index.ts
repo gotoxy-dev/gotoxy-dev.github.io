@@ -20,7 +20,13 @@ export interface ShowcaseVisuals {
     /** View transition name of the board's square stage (`[data-showcase-stage]`), the part that morphs */
     transitionName?: string
   }>
-  Story: ComponentType<{ story: CaseShowcase['story']; active: boolean; className?: string }>
+  Story: ComponentType<{
+    story: CaseShowcase['story']
+    active: boolean
+    className?: string
+    /** The stretch of scroll that plays the film (motion allowed); without it the film plays on its own */
+    scrollTrack?: HTMLElement | null
+  }>
   Outcomes: ComponentType<{ outcomes: CaseShowcase['outcomes']; active: boolean; className?: string }>
 }
 
