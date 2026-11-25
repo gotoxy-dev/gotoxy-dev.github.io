@@ -83,16 +83,25 @@ export function Clients() {
 
       <div className={styles.marquee} aria-hidden="true">
         <div className={styles.track}>
-          {/* two sets for the desktop loop; phones stack the first set only (`.copy` hidden) */}
+          {/* two sets, so the loop restarts unnoticed half-way (`scroll` keyframes) */}
           {[...clients.logos, ...clients.logos].map((l, i) => (
-            <div key={`${l.id}-${i}`} className={`${styles.logoItem} ${i >= clients.logos.length ? styles.copy : ''}`}>
-              {l.src ? (
-                <img src={l.src} alt={l.name} />
-              ) : (
-                <span className={styles.logoText} style={{ color: `var(--color-brand-${l.brand})` }}>
-                  {l.name}
+            <div key={`${l.id}-${i}`} className={`${styles.logoItem}${l.labelAfter ? ` ${styles.labelAfter}` : ''}`}>
+              {/* the part of the name the logo file does not carry, before or after it (row-reverse) */}
+              {l.label && (
+                <span
+                  className={styles.logoLabel}
+                  style={
+                    l.font && {
+                      fontFamily: `var(--font-brand-${l.font}-family)`,
+                      fontWeight: `var(--font-brand-${l.font}-weight)`,
+                      letterSpacing: `var(--font-brand-${l.font}-letterSpacing)`,
+                    }
+                  }
+                >
+                  {l.label}
                 </span>
               )}
+              <img src={l.src} alt={l.name} />
             </div>
           ))}
         </div>

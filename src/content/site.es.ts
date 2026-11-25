@@ -90,11 +90,11 @@ export const clients: SiteContent['clients'] = {
   ],
   logos: [
     { id: 'l1', name: 'Japón in Box', src: '/assets/logos/client-japon-in-box.svg' },
-    { id: 'l2', name: 'Instituto CAM', src: '/assets/logos/client-instituto-cam.png' },
-    { id: 'l4', name: 'WhatsApp Business API', brand: 'whatsapp' },
+    { id: 'l2', name: 'Instituto CAM', src: '/assets/logos/client-instituto-cam.png', label: 'INSTITUTO', font: 'institutoCam' },
+    { id: 'l4', name: 'WhatsApp Business API', src: '/assets/logos/stack-whatsapp.svg', label: 'WhatsApp Business API', labelAfter: true },
+    { id: 'l9', name: 'Meta', src: '/assets/logos/stack-meta.svg', label: 'Meta', labelAfter: true },
     { id: 'l5', name: 'Cloudflare Workers', src: '/assets/logos/stack-cloudflare.svg' },
-    { id: 'l6', name: 'Mercado Libre', brand: 'mercadoLibre' },
-    { id: 'l7', name: 'Moodle', brand: 'moodle' },
+    { id: 'l7', name: 'Moodle', src: '/assets/logos/stack-moodle.svg', label: 'Moodle', labelAfter: true },
     { id: 'l8', name: 'Mercado Pago', src: '/assets/logos/stack-mercado-pago.svg' },
   ],
 }

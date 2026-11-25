@@ -134,16 +134,22 @@
   padding-inline: clamp(40px, 6vw, 110px);
   display: flex;
   align-items: center;
+  gap: 0.6em;
+  font-size: var(--layout-clients-logoText);
 }
-/* logos keep their brand colors: official files as they are, the rest as their name in the brand color */
+/* the part of the brand's name its logo file does not carry, in the text color */
+.logoLabel {
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--color-textStrong);
+}
+.labelAfter {
+  flex-direction: row-reverse;
+}
+/* logos keep their brand colors, as their files have them */
 .logoItem img {
   height: var(--layout-clients-logoHeight);
   width: auto;
-}
-.logoText {
-  font-size: var(--layout-clients-logoText);
-  line-height: 1;
-  white-space: nowrap;
 }
 @keyframes scroll {
   to {
@@ -154,7 +160,7 @@
 /*
  * Reference phone layout (`.what-our-clients-sec.mobile`): title, then the rows
  * (name + role + READ, company on its own line), then a full-width "SEE MORE ON"
- * pill, then the client logos stacked vertically.
+ * pill, then the logo marquee, the same moving row as on desktop.
  */
 @media (max-width: 767px) {
   .section {
@@ -226,31 +232,16 @@
   .quote {
     grid-column: 1 / -1;
   }
-  .marquee {
-    padding-block: 60px 20px;
-    -webkit-mask-image: none;
-    mask-image: none;
-  }
-  .track {
-    flex-direction: column;
-    align-items: center;
-    gap: 60px;
-    width: 100%;
-    animation: none;
-  }
+  /* the same marquee as on desktop (one moving row, faded at the edges), with smaller logos */
   .logoItem {
-    padding: 0;
+    font-size: var(--layout-clients-phone-logoText);
   }
-  /* reference phones: logos ~24px tall, stacked */
   .logoItem img {
     height: var(--layout-clients-phone-logoHeight);
   }
-  .logoText {
-    font-size: var(--layout-clients-phone-logoText);
-  }
-  /* the duplicated set used by the desktop loop */
-  .copy {
-    display: none;
+  /* 8.5vw is only ~32px on a phone: the row needs more air above and below */
+  .marquee {
+    padding-block: var(--layout-clients-phone-marqueePad);
   }
 }
 /* reference ≤991px: padding-top 60px */

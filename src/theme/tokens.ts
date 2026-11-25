@@ -18,12 +18,6 @@ export const tokens = {
     textStrong: '#e8e6e3', // nav links (reference rgb(232,230,227))
     textMuted: '#969494', // rgb(150,148,148) — captions, tags, roles
     textDim: '#575757', // secondary hairlines / footer small print
-    /* brands shown by name in the clients marquee (colors read from each brand's own site) */
-    brand: {
-      whatsapp: '#25D366',
-      moodle: '#F98012',
-      mercadoLibre: '#FFE600',
-    },
     line: '#333333', // rgb(51,51,51) — list hairlines
     lineStrong: '#575757',
     lineHover: '#ffffff', // award rows on hover
@@ -344,7 +338,7 @@ export const tokens = {
       titleBottom: '4.167vw',
       rowHeight: '74px',
       marqueePad: '8.5vw',
-      /** Marquee logos: image height and the size of the brands shown by name */
+      /** Marquee logos: image height and the size of the part of a name set beside its logo */
       logoHeight: '44px',
       logoText: '26px',
       /** READ / CLOSE pill (reference .21vw .69vw); phones get px, the vw values collapse to ≈ 1 × 3 px */
@@ -353,6 +347,8 @@ export const tokens = {
         readPad: '6px 14px',
         logoHeight: '26px',
         logoText: '16px',
+        /** Space above and below the logo marquee on phones */
+        marqueePad: '72px',
       },
     },
     awards: {
@@ -472,6 +468,8 @@ export const tokens = {
        * Stacked layout (below lg: phones and tablets). Sizes and gaps in px: the panel's vw values
        * above are measured at 1536px and collapse to a few px on a phone.
        */
+      /** Contact button that closes a case: padding of its pill */
+      contactPad: '0 28px',
       stack: {
         padTop: '72px',
         padBottom: '60px',
@@ -702,6 +700,8 @@ export const tokens = {
         scrollSec: 0.55,
         tapSec: 0.4,
         ease: 'power2.out',
+        /** The first live screens load this long after the case page mounts, past the card transition */
+        preloadDelaySec: 2,
       },
     },
   },
